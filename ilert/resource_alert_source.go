@@ -75,7 +75,7 @@ func resourceAlertSource() *schema.Resource {
 					"KENTIXAM",
 				}),
 			},
-			"escalation_policy_id": {
+			"escalation_policy": {
 				Type:        schema.TypeInt,
 				Required:    true,
 				ForceNew:    false,
@@ -405,7 +405,7 @@ func resourceAlertSourceCreate(d *schema.ResourceData, m interface{}) error {
 		Name:            d.Get("name").(string),
 		IntegrationType: d.Get("integration_type").(string),
 		EscalationPolicy: &ilert.EscalationPolicy{
-			ID: d.Get("escalation_policy_id").(int64),
+			ID: d.Get("escalation_policy").(int64),
 		},
 	}
 
@@ -441,7 +441,7 @@ func resourceAlertSourceRead(d *schema.ResourceData, m interface{}) error {
 
 	d.Set("name", result.AlertSource.Name)
 	d.Set("integration_type", result.AlertSource.IntegrationType)
-	d.Set("escalation_policy_id", result.AlertSource.EscalationPolicy.ID)
+	d.Set("escalation_policy", result.AlertSource.EscalationPolicy.ID)
 	d.Set("incident_creation", result.AlertSource.IncidentCreation)
 	d.Set("active", result.AlertSource.Active)
 	d.Set("incident_priority_rule", result.AlertSource.IncidentPriorityRule)
@@ -525,7 +525,7 @@ func resourceAlertSourceUpdate(d *schema.ResourceData, m interface{}) error {
 		Name:            d.Get("name").(string),
 		IntegrationType: d.Get("integration_type").(string),
 		EscalationPolicy: &ilert.EscalationPolicy{
-			ID: int64(d.Get("escalation_policy_id").(int)),
+			ID: int64(d.Get("escalation_policy").(int)),
 		},
 	}
 	if val, ok := d.GetOk("incident_creation"); ok {
