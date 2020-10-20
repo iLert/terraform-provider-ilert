@@ -15,12 +15,12 @@ func getSupportDaySchemaResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"start": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				Default:  "08:00",
 			},
 			"end": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				Default:  "17:00",
 			},
 		},
@@ -153,7 +153,7 @@ func resourceAlertSource() *schema.Resource {
 						},
 						"interval_sec": {
 							Type:        schema.TypeInt,
-							Required:    true,
+							Optional:    true,
 							Default:     900,
 							Description: "The interval after which the heartbeat alert source will create an incident if it does not receive a ping",
 						},
