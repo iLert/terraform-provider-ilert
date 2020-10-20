@@ -181,49 +181,49 @@ func resourceAlertSource() *schema.Resource {
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"MONDAY": {
+									"monday": {
 										Type:     schema.TypeList,
 										MaxItems: 1,
 										MinItems: 1,
 										Optional: true,
 										Elem:     getSupportDaySchemaResource(),
 									},
-									"TUESDAY": {
+									"tuesday": {
 										Type:     schema.TypeList,
 										MaxItems: 1,
 										MinItems: 1,
 										Optional: true,
 										Elem:     getSupportDaySchemaResource(),
 									},
-									"WEDNESDAY": {
+									"wednesday": {
 										Type:     schema.TypeList,
 										MaxItems: 1,
 										MinItems: 1,
 										Optional: true,
 										Elem:     getSupportDaySchemaResource(),
 									},
-									"THURSDAY": {
+									"thursday": {
 										Type:     schema.TypeList,
 										MaxItems: 1,
 										MinItems: 1,
 										Optional: true,
 										Elem:     getSupportDaySchemaResource(),
 									},
-									"FRIDAY": {
+									"friday": {
 										Type:     schema.TypeList,
 										MaxItems: 1,
 										MinItems: 1,
 										Optional: true,
 										Elem:     getSupportDaySchemaResource(),
 									},
-									"SATURDAY": {
+									"saturday": {
 										Type:     schema.TypeList,
 										MaxItems: 1,
 										MinItems: 1,
 										Optional: true,
 										Elem:     getSupportDaySchemaResource(),
 									},
-									"SUNDAY": {
+									"sunday": {
 										Type:     schema.TypeList,
 										MaxItems: 1,
 										MinItems: 1,
@@ -568,43 +568,43 @@ func resourceAlertSourceUpdate(d *schema.ResourceData, m interface{}) error {
 				s := sd.(*schema.Set).List()
 				if len(s) > 0 {
 					v := s[0].(map[string]interface{})
-					if d == "MONDAY" {
+					if d == "monday" {
 						supportHours.SupportDays.MONDAY = &ilert.SupportDay{
 							Start: v["start"].(string),
 							End:   v["end"].(string),
 						}
 					}
-					if d == "TUESDAY" {
+					if d == "tuesday" {
 						supportHours.SupportDays.TUESDAY = &ilert.SupportDay{
 							Start: v["start"].(string),
 							End:   v["end"].(string),
 						}
 					}
-					if d == "WEDNESDAY" {
+					if d == "wednesday" {
 						supportHours.SupportDays.WEDNESDAY = &ilert.SupportDay{
 							Start: v["start"].(string),
 							End:   v["end"].(string),
 						}
 					}
-					if d == "THURSDAY" {
+					if d == "thursday" {
 						supportHours.SupportDays.THURSDAY = &ilert.SupportDay{
 							Start: v["start"].(string),
 							End:   v["end"].(string),
 						}
 					}
-					if d == "FRIDAY" {
+					if d == "friday" {
 						supportHours.SupportDays.FRIDAY = &ilert.SupportDay{
 							Start: v["start"].(string),
 							End:   v["end"].(string),
 						}
 					}
-					if d == "SATURDAY" {
+					if d == "saturday" {
 						supportHours.SupportDays.SATURDAY = &ilert.SupportDay{
 							Start: v["start"].(string),
 							End:   v["end"].(string),
 						}
 					}
-					if d == "SUNDAY" {
+					if d == "sunday" {
 						supportHours.SupportDays.SUNDAY = &ilert.SupportDay{
 							Start: v["start"].(string),
 							End:   v["end"].(string),
@@ -752,43 +752,43 @@ func flattenSupportHours(supportHours *ilert.SupportHours) ([]interface{}, error
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.MONDAY.Start
 		supportDay["end"] = supportHours.SupportDays.MONDAY.End
-		supportDays["MONDAY"] = supportDay
+		supportDays["monday"] = supportDay
 	}
 	if supportHours.SupportDays.TUESDAY != nil {
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.TUESDAY.Start
 		supportDay["end"] = supportHours.SupportDays.TUESDAY.End
-		supportDays["TUESDAY"] = supportDay
+		supportDays["tuesday"] = supportDay
 	}
 	if supportHours.SupportDays.WEDNESDAY != nil {
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.WEDNESDAY.Start
 		supportDay["end"] = supportHours.SupportDays.WEDNESDAY.End
-		supportDays["WEDNESDAY"] = supportDay
+		supportDays["wednesday"] = supportDay
 	}
 	if supportHours.SupportDays.THURSDAY != nil {
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.THURSDAY.Start
 		supportDay["end"] = supportHours.SupportDays.THURSDAY.End
-		supportDays["THURSDAY"] = supportDay
+		supportDays["thursday"] = supportDay
 	}
 	if supportHours.SupportDays.FRIDAY != nil {
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.FRIDAY.Start
 		supportDay["end"] = supportHours.SupportDays.FRIDAY.End
-		supportDays["FRIDAY"] = supportDay
+		supportDays["friday"] = supportDay
 	}
 	if supportHours.SupportDays.SATURDAY != nil {
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.SATURDAY.Start
 		supportDay["end"] = supportHours.SupportDays.SATURDAY.End
-		supportDays["SATURDAY"] = supportDay
+		supportDays["saturday"] = supportDay
 	}
 	if supportHours.SupportDays.SUNDAY != nil {
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.SUNDAY.Start
 		supportDay["end"] = supportHours.SupportDays.SUNDAY.End
-		supportDays["SUNDAY"] = supportDay
+		supportDays["sunday"] = supportDay
 	}
 	result["support_days"] = supportDays
 
