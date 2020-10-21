@@ -169,7 +169,7 @@ func resourceAlertSource() *schema.Resource {
 				Optional: true,
 				MaxItems: 1,
 				MinItems: 1,
-				ForceNew: false,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"timezone": {
@@ -179,6 +179,9 @@ func resourceAlertSource() *schema.Resource {
 						"support_days": {
 							Type:     schema.TypeList,
 							Optional: true,
+							MaxItems: 1,
+							MinItems: 1,
+							ForceNew: false,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"monday": {
@@ -439,57 +442,60 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		alertSource.ResolveFilterOperator = resolveFilterOperator
 	}
 	if val, ok := d.GetOk("support_hours"); ok {
-		vL := val.(*schema.Set).List()
+		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
 			supportHours := &ilert.SupportHours{
 				Timezone: v["timezone"].(string),
 			}
-			sds := v["support_days"].(map[string]interface{})
-			for d, sd := range sds {
-				s := sd.(*schema.Set).List()
-				if len(s) > 0 {
-					v := s[0].(map[string]interface{})
-					if d == "monday" {
-						supportHours.SupportDays.MONDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+			sdA := v["support_days"].([]interface{})
+			if len(vL) > 0 {
+				sds := sdA[0].(map[string]interface{})
+				for d, sd := range sds {
+					s := sd.([]interface{})
+					if len(s) > 0 {
+						v := s[0].(map[string]interface{})
+						if d == "monday" {
+							supportHours.SupportDays.MONDAY = &ilert.SupportDay{
+								Start: v["start"].(string),
+								End:   v["end"].(string),
+							}
 						}
-					}
-					if d == "tuesday" {
-						supportHours.SupportDays.TUESDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+						if d == "tuesday" {
+							supportHours.SupportDays.TUESDAY = &ilert.SupportDay{
+								Start: v["start"].(string),
+								End:   v["end"].(string),
+							}
 						}
-					}
-					if d == "wednesday" {
-						supportHours.SupportDays.WEDNESDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+						if d == "wednesday" {
+							supportHours.SupportDays.WEDNESDAY = &ilert.SupportDay{
+								Start: v["start"].(string),
+								End:   v["end"].(string),
+							}
 						}
-					}
-					if d == "thursday" {
-						supportHours.SupportDays.THURSDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+						if d == "thursday" {
+							supportHours.SupportDays.THURSDAY = &ilert.SupportDay{
+								Start: v["start"].(string),
+								End:   v["end"].(string),
+							}
 						}
-					}
-					if d == "friday" {
-						supportHours.SupportDays.FRIDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+						if d == "friday" {
+							supportHours.SupportDays.FRIDAY = &ilert.SupportDay{
+								Start: v["start"].(string),
+								End:   v["end"].(string),
+							}
 						}
-					}
-					if d == "saturday" {
-						supportHours.SupportDays.SATURDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+						if d == "saturday" {
+							supportHours.SupportDays.SATURDAY = &ilert.SupportDay{
+								Start: v["start"].(string),
+								End:   v["end"].(string),
+							}
 						}
-					}
-					if d == "sunday" {
-						supportHours.SupportDays.SUNDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+						if d == "sunday" {
+							supportHours.SupportDays.SUNDAY = &ilert.SupportDay{
+								Start: v["start"].(string),
+								End:   v["end"].(string),
+							}
 						}
 					}
 				}
@@ -592,7 +598,7 @@ func resourceAlertSourceRead(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[DEBUG] Reading alert source: %s", d.Id())
 	result, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
+		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
 			log.Printf("[WARN] Removing alert source %s from state because it no longer exist", d.Id())
 			d.SetId("")
 			return nil
@@ -727,7 +733,7 @@ func resourceAlertSourceExists(d *schema.ResourceData, m interface{}) (bool, err
 	log.Printf("[DEBUG] Reading alert source: %s", d.Id())
 	_, err = client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
+		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
 			return false, nil
 		}
 		return false, err
@@ -760,49 +766,51 @@ func flattenSupportHours(supportHours *ilert.SupportHours) ([]interface{}, error
 	result := make(map[string]interface{})
 	result["timezone"] = supportHours.Timezone
 
-	supportDays := make(map[string]interface{})
+	supportDays := make([]interface{}, 0)
+	supportDaysItem := make(map[string]interface{})
 	if supportHours.SupportDays.MONDAY != nil {
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.MONDAY.Start
 		supportDay["end"] = supportHours.SupportDays.MONDAY.End
-		supportDays["monday"] = supportDay
+		supportDaysItem["monday"] = []interface{}{supportDay}
 	}
 	if supportHours.SupportDays.TUESDAY != nil {
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.TUESDAY.Start
 		supportDay["end"] = supportHours.SupportDays.TUESDAY.End
-		supportDays["tuesday"] = supportDay
+		supportDaysItem["tuesday"] = []interface{}{supportDay}
 	}
 	if supportHours.SupportDays.WEDNESDAY != nil {
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.WEDNESDAY.Start
 		supportDay["end"] = supportHours.SupportDays.WEDNESDAY.End
-		supportDays["wednesday"] = supportDay
+		supportDaysItem["wednesday"] = []interface{}{supportDay}
 	}
 	if supportHours.SupportDays.THURSDAY != nil {
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.THURSDAY.Start
 		supportDay["end"] = supportHours.SupportDays.THURSDAY.End
-		supportDays["thursday"] = supportDay
+		supportDaysItem["thursday"] = []interface{}{supportDay}
 	}
 	if supportHours.SupportDays.FRIDAY != nil {
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.FRIDAY.Start
 		supportDay["end"] = supportHours.SupportDays.FRIDAY.End
-		supportDays["friday"] = supportDay
+		supportDaysItem["friday"] = []interface{}{supportDay}
 	}
 	if supportHours.SupportDays.SATURDAY != nil {
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.SATURDAY.Start
 		supportDay["end"] = supportHours.SupportDays.SATURDAY.End
-		supportDays["saturday"] = supportDay
+		supportDaysItem["saturday"] = []interface{}{supportDay}
 	}
 	if supportHours.SupportDays.SUNDAY != nil {
 		supportDay := make(map[string]interface{})
 		supportDay["start"] = supportHours.SupportDays.SUNDAY.Start
 		supportDay["end"] = supportHours.SupportDays.SUNDAY.End
-		supportDays["sunday"] = supportDay
+		supportDaysItem["sunday"] = []interface{}{supportDay}
 	}
+	supportDays = append(supportDays, supportDaysItem)
 	result["support_days"] = supportDays
 
 	results = append(results, result)
