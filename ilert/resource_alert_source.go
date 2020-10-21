@@ -1,6 +1,7 @@
 package ilert
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -107,6 +108,26 @@ func resourceAlertSource() *schema.Resource {
 					"LOW",
 					"HIGH_DURING_SUPPORT_HOURS",
 					"LOW_DURING_SUPPORT_HOURS",
+				}),
+			},
+			"auto_resolution_timeout": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: validateValueFunc([]string{
+					"PT10M",
+					"PT20M",
+					"PT30M",
+					"PT40M",
+					"PT50M",
+					"PT60M",
+					"PT90M",
+					"PT2H",
+					"PT3H",
+					"PT4H",
+					"PT5H",
+					"PT6H",
+					"PT12H",
+					"PT24H",
 				}),
 			},
 			"email_filtered": {
@@ -263,12 +284,15 @@ func resourceAlertSource() *schema.Resource {
 					},
 				},
 			},
+			"email": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"resolve_key_extractor": {
 				Type:     schema.TypeList,
 				Optional: true,
 				MaxItems: 1,
 				MinItems: 1,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"field": {
@@ -284,8 +308,8 @@ func resourceAlertSource() *schema.Resource {
 							Required: true,
 							ValidateFunc: validateValueFunc([]string{
 								"ALL_TEXT_BEFORE",
-								"MATCHES_REGEX",
 								"ALL_TEXT_AFTER",
+								"MATCHES_REGEX",
 							}),
 						},
 						"value": {
@@ -295,11 +319,10 @@ func resourceAlertSource() *schema.Resource {
 					},
 				},
 			},
-			"email_predicates": {
+			"email_predicate": {
 				Type:     schema.TypeList,
 				Optional: true,
 				MinItems: 1,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"field": {
@@ -332,11 +355,10 @@ func resourceAlertSource() *schema.Resource {
 					},
 				},
 			},
-			"email_resolve_predicates": {
+			"email_resolve_predicate": {
 				Type:     schema.TypeList,
 				Optional: true,
 				MinItems: 1,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"field": {
@@ -377,18 +399,6 @@ func resourceAlertSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"icon_url": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"light_icon_url": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"dark_icon_url": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 		},
 		Create: resourceAlertSourceCreate,
 		Read:   resourceAlertSourceRead,
@@ -406,12 +416,24 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 	if err != nil {
 		return nil, unconvertibleIDErr(d.Id(), err)
 	}
+	name := d.Get("name").(string)
+	integrationType := d.Get("integration_type").(string)
+
 	alertSource := &ilert.AlertSource{
-		Name:            d.Get("name").(string),
-		IntegrationType: d.Get("integration_type").(string),
+		Name:            name,
+		IntegrationType: integrationType,
 		EscalationPolicy: &ilert.EscalationPolicy{
 			ID: escalationPolicyID,
 		},
+	}
+
+	if integrationType == "EMAIL" {
+		if val, ok := d.GetOk("email"); ok {
+			email := val.(string)
+			alertSource.IntegrationKey = email
+		} else {
+			return nil, errors.New("email is required")
+		}
 	}
 	if val, ok := d.GetOk("incident_creation"); ok {
 		incidentCreation := val.(string)
@@ -424,6 +446,10 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 	if val, ok := d.GetOk("incident_priority_rule"); ok {
 		incidentPriorityRule := val.(string)
 		alertSource.IncidentPriorityRule = incidentPriorityRule
+	}
+	if val, ok := d.GetOk("auto_resolution_timeout"); ok {
+		autoResolutionTimeout := val.(string)
+		alertSource.AutoResolutionTimeout = autoResolutionTimeout
 	}
 	if val, ok := d.GetOk("email_filtered"); ok {
 		emailFiltered := val.(bool)
@@ -504,7 +530,7 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		}
 	}
 	if val, ok := d.GetOk("heartbeat"); ok {
-		vL := val.(*schema.Set).List()
+		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
 			alertSource.Heartbeat = &ilert.Heartbeat{
@@ -514,7 +540,7 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		}
 	}
 	if val, ok := d.GetOk("autotask_metadata"); ok {
-		vL := val.(*schema.Set).List()
+		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
 			alertSource.AutotaskMetadata = &ilert.AutotaskMetadata{
@@ -525,7 +551,7 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		}
 	}
 	if val, ok := d.GetOk("resolve_key_extractor"); ok {
-		vL := val.(*schema.Set).List()
+		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
 			alertSource.ResolveKeyExtractor = &ilert.EmailPredicate{
@@ -535,8 +561,8 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 			}
 		}
 	}
-	if val, ok := d.GetOk("email_predicates"); ok {
-		vL := val.(*schema.Set).List()
+	if val, ok := d.GetOk("email_predicate"); ok {
+		vL := val.([]interface{})
 		eps := make([]ilert.EmailPredicate, 0)
 		for _, m := range vL {
 			v := m.(map[string]interface{})
@@ -549,8 +575,8 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		}
 		alertSource.EmailPredicates = eps
 	}
-	if val, ok := d.GetOk("email_resolve_predicates"); ok {
-		vL := val.(*schema.Set).List()
+	if val, ok := d.GetOk("email_resolve_predicate"); ok {
+		vL := val.([]interface{})
 		eps := make([]ilert.EmailPredicate, 0)
 		for _, m := range vL {
 			v := m.(map[string]interface{})
@@ -612,15 +638,13 @@ func resourceAlertSourceRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("incident_creation", result.AlertSource.IncidentCreation)
 	d.Set("active", result.AlertSource.Active)
 	d.Set("incident_priority_rule", result.AlertSource.IncidentPriorityRule)
+	d.Set("auto_resolution_timeout", result.AlertSource.AutoResolutionTimeout)
 	d.Set("email_filtered", result.AlertSource.EmailFiltered)
 	d.Set("email_resolve_filtered", result.AlertSource.EmailResolveFiltered)
 	d.Set("filter_operator", result.AlertSource.FilterOperator)
 	d.Set("resolve_filter_operator", result.AlertSource.ResolveFilterOperator)
 	d.Set("status", result.AlertSource.Status)
 	d.Set("integration_key", result.AlertSource.IntegrationKey)
-	d.Set("icon_url", result.AlertSource.IconURL)
-	d.Set("light_icon_url", result.AlertSource.LightIconURL)
-	d.Set("dark_icon_url", result.AlertSource.DarkIconURL)
 
 	if result.AlertSource.Heartbeat != nil {
 		d.Set("heartbeat", []interface{}{
@@ -662,7 +686,7 @@ func resourceAlertSourceRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	if err := d.Set("email_predicates", emailPredicates); err != nil {
+	if err := d.Set("email_predicate", emailPredicates); err != nil {
 		return fmt.Errorf("error setting email predicates: %s", err)
 	}
 
@@ -670,7 +694,7 @@ func resourceAlertSourceRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	if err := d.Set("email_resolve_predicates", emailResolvePredicates); err != nil {
+	if err := d.Set("email_resolve_predicate", emailResolvePredicates); err != nil {
 		return fmt.Errorf("error setting email resolve predicates: %s", err)
 	}
 

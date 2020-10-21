@@ -1,7 +1,7 @@
 ---
 layout: "ilert"
-page_title: "iLert: alert_source_data_source"
-sidebar_current: "docs-ilert-alert-source-data-source"
+page_title: "iLert: ilert_alert_source"
+sidebar_current: "docs-ilert-data-source-alert-source"
 description: |-
   Get information about an alert source that you have created.
 ---
@@ -28,5 +28,7 @@ The following arguments are supported:
 
 - `id` - The ID of the found alert source.
 - `name` - The name of the found alert source.
+- `status` - The status of the found alert source.
+- `integration_key` - The integration key of the found alert source.
 
 [1]: https://api.ilert.com/api-docs/#tag/Alert-Sources
