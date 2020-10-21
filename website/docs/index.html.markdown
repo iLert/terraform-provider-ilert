@@ -22,7 +22,7 @@ provider "ilert" {
 }
 
 # Example resource configuration
-resource "alert_source_resource" "example" {
+resource "ilert_alert_source" "example" {
   # ...
 }
 ```
