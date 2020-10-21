@@ -14,7 +14,7 @@ Use this data source to get information about a specific [alert source][1].
 
 ```hcl
 data "ilert_alert_source" "example" {
-  name = "foo"
+  name = "example"
 }
 ```
 

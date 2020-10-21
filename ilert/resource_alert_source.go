@@ -645,6 +645,9 @@ func resourceAlertSourceRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("resolve_filter_operator", result.AlertSource.ResolveFilterOperator)
 	d.Set("status", result.AlertSource.Status)
 	d.Set("integration_key", result.AlertSource.IntegrationKey)
+	if result.AlertSource.IntegrationType == "EMAIL" {
+		d.Set("email", result.AlertSource.IntegrationKey)
+	}
 
 	if result.AlertSource.Heartbeat != nil {
 		d.Set("heartbeat", []interface{}{

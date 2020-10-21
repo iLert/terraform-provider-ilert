@@ -16,6 +16,5 @@ export ILERT_PASSWORD=
 terraform apply \
   -var "organization=${ILERT_ORGANIZATION}" \
   -var "username=${ILERT_USERNAME}" \
-  -var "password=${ILERT_PASSWORD}" \
-  -var "escalation_policy=123456789
+  -var "password=${ILERT_PASSWORD}"
 ```

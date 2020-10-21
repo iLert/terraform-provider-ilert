@@ -11,9 +11,9 @@ import (
 	"github.com/iLert/ilert-go"
 )
 
-func dataSourceAlertSource() *schema.Resource {
+func dataSourceSchedule() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceAlertSourceRead,
+		Read: dataSourceScheduleRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -24,33 +24,33 @@ func dataSourceAlertSource() *schema.Resource {
 	}
 }
 
-func dataSourceAlertSourceRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceScheduleRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert alert source")
+	log.Printf("[DEBUG] Reading iLert schedule")
 
 	searchName := d.Get("name").(string)
-	o := &ilert.GetAlertSourcesInput{}
+	o := &ilert.GetSchedulesInput{}
 
 	return resource.Retry(2*time.Minute, func() *resource.RetryError {
-		resp, err := client.GetAlertSources(o)
+		resp, err := client.GetSchedules(o)
 		if err != nil {
 			time.Sleep(2 * time.Second)
 			return resource.RetryableError(err)
 		}
 
-		var found *ilert.AlertSource
+		var found *ilert.Schedule
 
-		for _, alertSource := range resp.AlertSources {
-			if alertSource.Name == searchName {
-				found = alertSource
+		for _, schedule := range resp.Schedules {
+			if schedule.Name == searchName {
+				found = schedule
 				break
 			}
 		}
 
 		if found == nil {
 			return resource.NonRetryableError(
-				fmt.Errorf("Unable to locate any alert source with the name: %s", searchName),
+				fmt.Errorf("Unable to locate any schedule with the name: %s", searchName),
 			)
 		}
 

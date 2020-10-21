@@ -41,7 +41,10 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"ilert_alert_source": dataSourceAlertSource(),
+			"ilert_alert_source":      dataSourceAlertSource(),
+			"ilert_escalation_policy": dataSourceEscalationPolicy(),
+			"ilert_user":              dataSourceUser(),
+			"ilert_schedule":          dataSourceSchedule(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ilert_alert_source": resourceAlertSource(),

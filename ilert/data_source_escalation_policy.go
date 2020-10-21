@@ -11,9 +11,9 @@ import (
 	"github.com/iLert/ilert-go"
 )
 
-func dataSourceAlertSource() *schema.Resource {
+func dataSourceEscalationPolicy() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceAlertSourceRead,
+		Read: dataSourceEscalationPolicyRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -24,33 +24,33 @@ func dataSourceAlertSource() *schema.Resource {
 	}
 }
 
-func dataSourceAlertSourceRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceEscalationPolicyRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert alert source")
+	log.Printf("[DEBUG] Reading iLert escalation policy")
 
 	searchName := d.Get("name").(string)
-	o := &ilert.GetAlertSourcesInput{}
+	o := &ilert.GetEscalationPoliciesInput{}
 
 	return resource.Retry(2*time.Minute, func() *resource.RetryError {
-		resp, err := client.GetAlertSources(o)
+		resp, err := client.GetEscalationPolicies(o)
 		if err != nil {
 			time.Sleep(2 * time.Second)
 			return resource.RetryableError(err)
 		}
 
-		var found *ilert.AlertSource
+		var found *ilert.EscalationPolicy
 
-		for _, alertSource := range resp.AlertSources {
-			if alertSource.Name == searchName {
-				found = alertSource
+		for _, escalationPolicy := range resp.EscalationPolicies {
+			if escalationPolicy.Name == searchName {
+				found = escalationPolicy
 				break
 			}
 		}
 
 		if found == nil {
 			return resource.NonRetryableError(
-				fmt.Errorf("Unable to locate any alert source with the name: %s", searchName),
+				fmt.Errorf("Unable to locate any escalation policy with the name: %s", searchName),
 			)
 		}
 

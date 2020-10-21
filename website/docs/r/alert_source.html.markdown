@@ -13,10 +13,14 @@ An [alert source](https://api.ilert.com/api-docs/#tag/Alert-Sources) represents 
 ## Example Usage
 
 ```hcl
+data "ilert_escalation_policy" "default" {
+  name = "Default"
+}
+
 resource "ilert_alert_source" "example" {
   name                    = "My Grafana Integration"
   integration_type        = "GRAFANA"
-  escalation_policy       = ilert_escalation_policy.example.id
+  escalation_policy       = data.ilert_escalation_policy.default.id
 }
 ```
 
@@ -91,6 +95,52 @@ The following arguments are supported:
 - `field` - The field of the email resolve predicate. Allowed values are `EMAIL_FROM`, `EMAIL_SUBJECT` and `EMAIL_BODY`.
 - `criteria` - The criteria of the email resolve predicate. Allowed values are `CONTAINS_ANY_WORDS`, `CONTAINS_NOT_WORDS`, `CONTAINS_STRING`, `CONTAINS_NOT_STRING`, `IS_STRING`, `IS_NOT_STRING`, `MATCHES_REGEX`, `MATCHES_NOT_REGEX`.
 - `value` - The value of the email resolve predicate.
+
+### Support Hours Example
+
+```hcl
+data "ilert_escalation_policy" "default" {
+  name = "Default"
+}
+
+resource "ilert_alert_source" "example" {
+  name                   = "My Grafana Integration"
+  integration_type       = "GRAFANA"
+  escalation_policy      = data.ilert_escalation_policy.default.id
+  incident_priority_rule = "HIGH_DURING_SUPPORT_HOURS"
+
+  support_hours {
+    timezone = "Europe/Berlin"
+
+    support_days {
+      monday {
+        start = "08:00"
+        end   = "17:00"
+      }
+
+      tuesday {
+        start = "08:00"
+        end   = "17:00"
+      }
+
+      wednesday {
+        start = "08:00"
+        end   = "17:00"
+      }
+
+      thursday {
+        start = "08:00"
+        end   = "17:00"
+      }
+
+      friday {
+        start = "08:00"
+        end   = "17:00"
+      }
+    }
+  }
+}
+```
 
 ## Attributes Reference
 

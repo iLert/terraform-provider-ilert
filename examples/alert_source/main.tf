@@ -1,13 +1,17 @@
+data "ilert_escalation_policy" "default" {
+  name = "Default"
+}
+
 resource "ilert_alert_source" "example" {
   name              = "My Grafana Integration from terraform"
   integration_type  = "GRAFANA"
-  escalation_policy = var.escalation_policy_id
+  escalation_policy = data.ilert_escalation_policy.default.id
 }
 
 resource "ilert_alert_source" "example_with_support_hours" {
   name                   = "My Grafana Integration from terraform with support hours"
   integration_type       = "GRAFANA"
-  escalation_policy      = var.escalation_policy_id
+  escalation_policy      = data.ilert_escalation_policy.default.id
   incident_priority_rule = "HIGH_DURING_SUPPORT_HOURS"
 
   support_hours {
@@ -46,7 +50,7 @@ resource "ilert_alert_source" "example_email" {
   name              = "My Email Integration from terraform"
   integration_type  = "EMAIL"
   email             = "support2@yacut.ilertnow.com"
-  escalation_policy = var.escalation_policy_id
+  escalation_policy = data.ilert_escalation_policy.default.id
 
   incident_creation = "OPEN_RESOLVE_ON_EXTRACTION"
   resolve_key_extractor {

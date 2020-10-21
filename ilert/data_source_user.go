@@ -11,51 +11,56 @@ import (
 	"github.com/iLert/ilert-go"
 )
 
-func dataSourceAlertSource() *schema.Resource {
+func dataSourceUser() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceAlertSourceRead,
+		Read: dataSourceUserRead,
 
 		Schema: map[string]*schema.Schema{
-			"name": {
+			"email": {
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"username": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
 }
 
-func dataSourceAlertSourceRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceUserRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert alert source")
+	log.Printf("[DEBUG] Reading iLert user")
 
-	searchName := d.Get("name").(string)
-	o := &ilert.GetAlertSourcesInput{}
+	searchEmail := d.Get("email").(string)
+	o := &ilert.GetUsersInput{}
 
 	return resource.Retry(2*time.Minute, func() *resource.RetryError {
-		resp, err := client.GetAlertSources(o)
+		resp, err := client.GetUsers(o)
 		if err != nil {
 			time.Sleep(2 * time.Second)
 			return resource.RetryableError(err)
 		}
 
-		var found *ilert.AlertSource
+		var found *ilert.User
 
-		for _, alertSource := range resp.AlertSources {
-			if alertSource.Name == searchName {
-				found = alertSource
+		for _, user := range resp.Users {
+			if user.Email == searchEmail {
+				found = user
 				break
 			}
 		}
 
 		if found == nil {
 			return resource.NonRetryableError(
-				fmt.Errorf("Unable to locate any alert source with the name: %s", searchName),
+				fmt.Errorf("Unable to locate any user with the email: %s", searchEmail),
 			)
 		}
 
 		d.SetId(strconv.FormatInt(found.ID, 10))
-		d.Set("name", found.Name)
+		d.Set("email", found.Email)
+		d.Set("username", found.Username)
 
 		return nil
 	})
