@@ -1,4 +1,5 @@
 bin/
 .terraform/
+.terraform*
 terraform.tfstate*
 crash.log
