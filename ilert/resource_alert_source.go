@@ -76,7 +76,7 @@ func resourceAlertSource() *schema.Resource {
 				}),
 			},
 			"escalation_policy": {
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    false,
 				Description: "The escalation policy specifies who will be notified when an incident is created by this alert source",
@@ -398,134 +398,16 @@ func resourceAlertSource() *schema.Resource {
 	}
 }
 
-func resourceAlertSourceCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*ilert.Client)
-
+func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
+	escalationPolicyID, err := strconv.ParseInt(d.Get("escalation_policy").(string), 10, 64)
+	if err != nil {
+		return nil, unconvertibleIDErr(d.Id(), err)
+	}
 	alertSource := &ilert.AlertSource{
 		Name:            d.Get("name").(string),
 		IntegrationType: d.Get("integration_type").(string),
 		EscalationPolicy: &ilert.EscalationPolicy{
-			ID: d.Get("escalation_policy").(int64),
-		},
-	}
-
-	log.Printf("[DEBUG] Creating iLert alert source %s", alertSource.Name)
-
-	result, err := client.CreateAlertSource(&ilert.CreateAlertSourceInput{
-		AlertSource: alertSource,
-	})
-	if err != nil {
-		return err
-	}
-	d.SetId(strconv.FormatInt(result.AlertSource.ID, 10))
-	return resourceAlertSourceRead(d, m)
-}
-
-func resourceAlertSourceRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(*ilert.Client)
-
-	alertSourceID, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		return unconvertibleIDErr(d.Id(), err)
-	}
-	log.Printf("[DEBUG] Reading alert source: %s", d.Id())
-	result, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
-	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			log.Printf("[WARN] Removing alert source %s from state because it no longer exist", d.Id())
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("Could not read an alert source with ID %s", d.Id())
-	}
-
-	d.Set("name", result.AlertSource.Name)
-	d.Set("integration_type", result.AlertSource.IntegrationType)
-	d.Set("escalation_policy", result.AlertSource.EscalationPolicy.ID)
-	d.Set("incident_creation", result.AlertSource.IncidentCreation)
-	d.Set("active", result.AlertSource.Active)
-	d.Set("incident_priority_rule", result.AlertSource.IncidentPriorityRule)
-	d.Set("email_filtered", result.AlertSource.EmailFiltered)
-	d.Set("email_resolve_filtered", result.AlertSource.EmailResolveFiltered)
-	d.Set("filter_operator", result.AlertSource.FilterOperator)
-	d.Set("resolve_filter_operator", result.AlertSource.ResolveFilterOperator)
-	d.Set("status", result.AlertSource.Status)
-	d.Set("integration_key", result.AlertSource.IntegrationKey)
-	d.Set("icon_url", result.AlertSource.IconURL)
-	d.Set("light_icon_url", result.AlertSource.LightIconURL)
-	d.Set("dark_icon_url", result.AlertSource.DarkIconURL)
-
-	if result.AlertSource.Heartbeat != nil {
-		d.Set("heartbeat", []interface{}{
-			map[string]interface{}{
-				"summary":      result.AlertSource.Heartbeat.Summary,
-				"interval_sec": result.AlertSource.Heartbeat.IntervalSec,
-				"status":       result.AlertSource.Heartbeat.Status,
-			},
-		})
-	} else {
-		d.Set("heartbeat", []interface{}{})
-	}
-
-	if result.AlertSource.AutotaskMetadata != nil {
-		d.Set("autotask_metadata", []interface{}{
-			map[string]interface{}{
-				"username":   result.AlertSource.AutotaskMetadata.Username,
-				"secret":     result.AlertSource.AutotaskMetadata.Secret,
-				"web_server": result.AlertSource.AutotaskMetadata.WebServer,
-			},
-		})
-	} else {
-		d.Set("autotask_metadata", []interface{}{})
-	}
-
-	if result.AlertSource.ResolveKeyExtractor != nil {
-		d.Set("resolve_key_extractor", []interface{}{
-			map[string]interface{}{
-				"field":    result.AlertSource.ResolveKeyExtractor.Field,
-				"criteria": result.AlertSource.ResolveKeyExtractor.Criteria,
-				"value":    result.AlertSource.ResolveKeyExtractor.Value,
-			},
-		})
-	} else {
-		d.Set("resolve_key_extractor", []interface{}{})
-	}
-
-	emailPredicates, err := flattenEmailPredicateList(result.AlertSource.EmailPredicates)
-	if err != nil {
-		return err
-	}
-	if err := d.Set("email_predicates", emailPredicates); err != nil {
-		return fmt.Errorf("error setting email predicates: %s", err)
-	}
-
-	emailResolvePredicates, err := flattenEmailPredicateList(result.AlertSource.EmailResolvePredicates)
-	if err != nil {
-		return err
-	}
-	if err := d.Set("email_resolve_predicates", emailResolvePredicates); err != nil {
-		return fmt.Errorf("error setting email resolve predicates: %s", err)
-	}
-
-	supportHours, err := flattenSupportHours(result.AlertSource.SupportHours)
-	if err != nil {
-		return err
-	}
-	if err := d.Set("support_hours", supportHours); err != nil {
-		return fmt.Errorf("error setting support hours: %s", err)
-	}
-
-	return nil
-}
-
-func resourceAlertSourceUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*ilert.Client)
-
-	alertSource := &ilert.AlertSource{
-		Name:            d.Get("name").(string),
-		IntegrationType: d.Get("integration_type").(string),
-		EscalationPolicy: &ilert.EscalationPolicy{
-			ID: int64(d.Get("escalation_policy").(int)),
+			ID: escalationPolicyID,
 		},
 	}
 	if val, ok := d.GetOk("incident_creation"); ok {
@@ -676,6 +558,136 @@ func resourceAlertSourceUpdate(d *schema.ResourceData, m interface{}) error {
 		alertSource.EmailResolvePredicates = eps
 	}
 
+	return alertSource, nil
+}
+
+func resourceAlertSourceCreate(d *schema.ResourceData, m interface{}) error {
+	client := m.(*ilert.Client)
+
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		log.Printf("[ERROR] Building alert source error %s", err.Error())
+		return err
+	}
+
+	log.Printf("[DEBUG] Creating iLert alert source %s\n", alertSource.Name)
+	result, err := client.CreateAlertSource(&ilert.CreateAlertSourceInput{
+		AlertSource: alertSource,
+	})
+	if err != nil {
+		log.Printf("[ERROR] Creating iLert alert source error %s", err.Error())
+		return err
+	}
+	d.SetId(strconv.FormatInt(result.AlertSource.ID, 10))
+	return resourceAlertSourceRead(d, m)
+}
+
+func resourceAlertSourceRead(d *schema.ResourceData, m interface{}) error {
+	client := m.(*ilert.Client)
+
+	alertSourceID, err := strconv.ParseInt(d.Id(), 10, 64)
+	if err != nil {
+		return unconvertibleIDErr(d.Id(), err)
+	}
+	log.Printf("[DEBUG] Reading alert source: %s", d.Id())
+	result, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			log.Printf("[WARN] Removing alert source %s from state because it no longer exist", d.Id())
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Could not read an alert source with ID %s", d.Id())
+	}
+
+	d.Set("name", result.AlertSource.Name)
+	d.Set("integration_type", result.AlertSource.IntegrationType)
+	d.Set("escalation_policy", strconv.FormatInt(result.AlertSource.EscalationPolicy.ID, 10))
+	d.Set("incident_creation", result.AlertSource.IncidentCreation)
+	d.Set("active", result.AlertSource.Active)
+	d.Set("incident_priority_rule", result.AlertSource.IncidentPriorityRule)
+	d.Set("email_filtered", result.AlertSource.EmailFiltered)
+	d.Set("email_resolve_filtered", result.AlertSource.EmailResolveFiltered)
+	d.Set("filter_operator", result.AlertSource.FilterOperator)
+	d.Set("resolve_filter_operator", result.AlertSource.ResolveFilterOperator)
+	d.Set("status", result.AlertSource.Status)
+	d.Set("integration_key", result.AlertSource.IntegrationKey)
+	d.Set("icon_url", result.AlertSource.IconURL)
+	d.Set("light_icon_url", result.AlertSource.LightIconURL)
+	d.Set("dark_icon_url", result.AlertSource.DarkIconURL)
+
+	if result.AlertSource.Heartbeat != nil {
+		d.Set("heartbeat", []interface{}{
+			map[string]interface{}{
+				"summary":      result.AlertSource.Heartbeat.Summary,
+				"interval_sec": result.AlertSource.Heartbeat.IntervalSec,
+				"status":       result.AlertSource.Heartbeat.Status,
+			},
+		})
+	} else {
+		d.Set("heartbeat", []interface{}{})
+	}
+
+	if result.AlertSource.AutotaskMetadata != nil {
+		d.Set("autotask_metadata", []interface{}{
+			map[string]interface{}{
+				"username":   result.AlertSource.AutotaskMetadata.Username,
+				"secret":     result.AlertSource.AutotaskMetadata.Secret,
+				"web_server": result.AlertSource.AutotaskMetadata.WebServer,
+			},
+		})
+	} else {
+		d.Set("autotask_metadata", []interface{}{})
+	}
+
+	if result.AlertSource.ResolveKeyExtractor != nil {
+		d.Set("resolve_key_extractor", []interface{}{
+			map[string]interface{}{
+				"field":    result.AlertSource.ResolveKeyExtractor.Field,
+				"criteria": result.AlertSource.ResolveKeyExtractor.Criteria,
+				"value":    result.AlertSource.ResolveKeyExtractor.Value,
+			},
+		})
+	} else {
+		d.Set("resolve_key_extractor", []interface{}{})
+	}
+
+	emailPredicates, err := flattenEmailPredicateList(result.AlertSource.EmailPredicates)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("email_predicates", emailPredicates); err != nil {
+		return fmt.Errorf("error setting email predicates: %s", err)
+	}
+
+	emailResolvePredicates, err := flattenEmailPredicateList(result.AlertSource.EmailResolvePredicates)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("email_resolve_predicates", emailResolvePredicates); err != nil {
+		return fmt.Errorf("error setting email resolve predicates: %s", err)
+	}
+
+	supportHours, err := flattenSupportHours(result.AlertSource.SupportHours)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("support_hours", supportHours); err != nil {
+		return fmt.Errorf("error setting support hours: %s", err)
+	}
+
+	return nil
+}
+
+func resourceAlertSourceUpdate(d *schema.ResourceData, m interface{}) error {
+	client := m.(*ilert.Client)
+
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		log.Printf("[ERROR] Building alert source error %s", err.Error())
+		return err
+	}
+
 	alertSourceID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return unconvertibleIDErr(d.Id(), err)
@@ -683,6 +695,7 @@ func resourceAlertSourceUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[DEBUG] Updating alert source: %s", d.Id())
 	_, err = client.UpdateAlertSource(&ilert.UpdateAlertSourceInput{AlertSource: alertSource, AlertSourceID: ilert.Int64(alertSourceID)})
 	if err != nil {
+		log.Printf("[ERROR] Updating iLert alert source error %s", err.Error())
 		return err
 	}
 	return resourceAlertSourceRead(d, m)

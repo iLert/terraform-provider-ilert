@@ -2,6 +2,8 @@ TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=github
+local_service?=alert_source
+local_version?=0.1.5
 
 default: build
 
@@ -11,6 +13,10 @@ tools:
 
 build: fmtcheck
 	go install
+
+build-local:
+	go build -o ./bin/terraform-provider-ilert
+	mv ./bin/terraform-provider-ilert ./examples/$(local_service)/.terraform/plugins/registry.terraform.io/ilert/ilert/$(local_version)/darwin_amd64/terraform-provider-ilert_v$(local_version)
 
 fmt:
 	@echo "==> Fixing source code with gofmt..."
