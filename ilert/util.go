@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Validate a value against a set of possible values
@@ -70,19 +70,4 @@ func validateEntityIDFunc(v interface{}, keyName string) (we []string, errors []
 	}
 
 	return
-}
-
-func validateName(v interface{}, k string) (ws []string, es []error) {
-	var errs []error
-	var warns []string
-	value, ok := v.(string)
-	if !ok {
-		errs = append(errs, fmt.Errorf("Expected name to be string"))
-		return warns, errs
-	}
-	if len(value) > 256 {
-		errs = append(errs, fmt.Errorf("name should be not longer than 256 characters. Got %s", value))
-		return warns, errs
-	}
-	return warns, errs
 }

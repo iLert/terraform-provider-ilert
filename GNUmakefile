@@ -2,7 +2,7 @@ TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=ilert
-local_service?=escalation_policy
+local_service?=uptime_monitor
 local_version?=1.0.0
 
 default: build

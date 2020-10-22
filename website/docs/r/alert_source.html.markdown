@@ -30,7 +30,7 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the alert source.
 - `integration_type` - (Required) The integration type of the alert source. Allowed values are `NAGIOS`, `ICINGA`, `EMAIL`, `SMS`, `API`, `CRN`, `HEARTBEAT`, `PRTG`, `PINGDOM`, `CLOUDWATCH`, `AWSPHD`, `STACKDRIVER`, `INSTANA`, `ZABBIX`, `SOLARWINDS`, `PROMETHEUS`, `NEWRELIC`, `GRAFANA`, `GITHUB`, `DATADOG`, `UPTIMEROBOT`, `APPDYNAMICS`, `DYNATRACE`, `TOPDESK`, `STATUSCAKE`, `MONITOR`, `TOOL`, `CHECKMK`, `AUTOTASK`, `AWSBUDGET`, `KENTIXAM`.
-- `escalation_policy` - (Required) The escalation policy used by this alert source.
+- `escalation_policy` - (Required) The escalation policy id used by this alert source.
 - `incident_creation` - (Optional) iLert receives events from your monitoring systems and can then create incidents in different ways. This option is recommended. Allowed values are `ONE_INCIDENT_PER_EMAIL`, `ONE_INCIDENT_PER_EMAIL_SUBJECT`, `ONE_PENDING_INCIDENT_ALLOWED`, `ONE_OPEN_INCIDENT_ALLOWED`, `OPEN_RESOLVE_ON_EXTRACTION`.
 - `active` - (Optional) The state of the alert source. Default: `true`.
 - `incident_priority_rule` - (Optional) The incident priority rule. This option is recommended. Allowed values are `HIGH`, `LOW`, `HIGH_DURING_SUPPORT_HOURS`, `LOW_DURING_SUPPORT_HOURS`.

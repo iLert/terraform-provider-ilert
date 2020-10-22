@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/iLert/ilert-go"
 )
 
 // Provider represents the provider interface
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	p := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"endpoint": {
@@ -45,11 +44,13 @@ func Provider() terraform.ResourceProvider {
 			"ilert_escalation_policy": dataSourceEscalationPolicy(),
 			"ilert_user":              dataSourceUser(),
 			"ilert_schedule":          dataSourceSchedule(),
+			"ilert_uptime_monitor":    dataSourceUptimeMonitor(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ilert_alert_source":      resourceAlertSource(),
 			"ilert_user":              resourceUser(),
 			"ilert_escalation_policy": resourceEscalationPolicy(),
+			"ilert_uptime_monitor":    resourceUptimeMonitor(),
 		},
 	}
 	p.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {

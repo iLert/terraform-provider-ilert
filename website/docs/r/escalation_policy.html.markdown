@@ -1,14 +1,14 @@
 ---
 layout: "ilert"
 page_title: "iLert: ilert_escalation_policy"
-sidebar_current: "docs-ilert-resource-escalation policy"
+sidebar_current: "docs-ilert-resource-escalation-policy"
 description: |-
   Creates and manages an escalation policy in iLert.
 ---
 
 # ilert_escalation_policy
 
-An [escalation policy](https://api.ilert.com/api-docs/#tag/Escalation-Policies) determines what user or schedule will be notified first, second, and so on when an incident is triggered. Escalation policies are used by one or more alert sources.
+An [escalation policy](https://api.ilert.com/api-docs/#tag/Escalation-Policies) connects an alert source with the users that are responsible for this alert source. It defines which users or on-call schedules should be notified when an incident is created.
 
 ## Example Usage
 

@@ -7,7 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/iLert/ilert-go"
 )
 
@@ -35,8 +36,7 @@ func resourceAlertSource() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The name of the resource, also acts as it's unique ID",
-				ForceNew:     false,
-				ValidateFunc: validateName,
+				ValidateFunc: validation.StringLenBetween(1, 255),
 			},
 			"integration_type": {
 				Type:     schema.TypeString,
@@ -173,9 +173,20 @@ func resourceAlertSource() *schema.Resource {
 							Optional:    true,
 						},
 						"interval_sec": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Default:     900,
+							Type:     schema.TypeInt,
+							Optional: true,
+							Default:  900,
+							ValidateFunc: validateIntValueFunc([]int{
+								1 * 60,
+								5 * 60,
+								10 * 60,
+								15 * 60,
+								30 * 60,
+								60 * 60,
+								24 * 60 * 60,
+								7 * 24 * 60 * 60,
+								30 * 24 * 60 * 60,
+							}),
 							Description: "The interval after which the heartbeat alert source will create an incident if it does not receive a ping",
 						},
 						"status": {
