@@ -35,10 +35,6 @@ func resourceEscalationPolicy() *schema.Resource {
 				MinItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"type": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
 						"escalation_timeout": {
 							Type:         schema.TypeInt,
 							Optional:     true,
@@ -85,7 +81,6 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 		for _, m := range vL {
 			v := m.(map[string]interface{})
 			ep := ilert.EscalationRule{
-				Type:              v["type"].(string),
 				EscalationTimeout: v["escalation_timeout"].(int),
 			}
 			if v["user"] != nil && v["user"].(string) != "" {
@@ -238,7 +233,6 @@ func flattenEscalationRulesList(list []ilert.EscalationRule) ([]interface{}, err
 	for _, item := range list {
 		result := make(map[string]interface{})
 		result["escalation_timeout"] = item.EscalationTimeout
-		result["type"] = item.Type
 		if item.User != nil {
 			result["user"] = strconv.FormatInt(item.User.ID, 10)
 		}
