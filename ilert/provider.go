@@ -47,8 +47,9 @@ func Provider() terraform.ResourceProvider {
 			"ilert_schedule":          dataSourceSchedule(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"ilert_alert_source": resourceAlertSource(),
-			"ilert_user":         resourceUser(),
+			"ilert_alert_source":      resourceAlertSource(),
+			"ilert_user":              resourceUser(),
+			"ilert_escalation_policy": resourceEscalationPolicy(),
 		},
 	}
 	p.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {

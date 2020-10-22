@@ -1,7 +1,6 @@
 package ilert
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
@@ -359,8 +358,7 @@ func resourceUserCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	body, _ := json.Marshal(user)
-	log.Printf("[INFO] Creating user %s\n\n%s\n\n", user.Username, string(body))
+	log.Printf("[INFO] Creating user %s", user.Username)
 
 	result, err := client.CreateUser(&ilert.CreateUserInput{User: user})
 	if err != nil {
