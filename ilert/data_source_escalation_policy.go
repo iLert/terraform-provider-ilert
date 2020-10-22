@@ -30,10 +30,9 @@ func dataSourceEscalationPolicyRead(d *schema.ResourceData, meta interface{}) er
 	log.Printf("[DEBUG] Reading iLert escalation policy")
 
 	searchName := d.Get("name").(string)
-	o := &ilert.GetEscalationPoliciesInput{}
 
 	return resource.Retry(2*time.Minute, func() *resource.RetryError {
-		resp, err := client.GetEscalationPolicies(o)
+		resp, err := client.GetEscalationPolicies(&ilert.GetEscalationPoliciesInput{})
 		if err != nil {
 			time.Sleep(2 * time.Second)
 			return resource.RetryableError(err)

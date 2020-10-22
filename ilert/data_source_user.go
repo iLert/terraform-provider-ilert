@@ -34,10 +34,9 @@ func dataSourceUserRead(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[DEBUG] Reading iLert user")
 
 	searchEmail := d.Get("email").(string)
-	o := &ilert.GetUsersInput{}
 
 	return resource.Retry(2*time.Minute, func() *resource.RetryError {
-		resp, err := client.GetUsers(o)
+		resp, err := client.GetUsers(&ilert.GetUsersInput{})
 		if err != nil {
 			time.Sleep(2 * time.Second)
 			return resource.RetryableError(err)

@@ -42,10 +42,9 @@ func dataSourceUptimeMonitorRead(d *schema.ResourceData, meta interface{}) error
 	log.Printf("[DEBUG] Reading iLert uptime monitor")
 
 	searchName := d.Get("name").(string)
-	o := &ilert.GetUptimeMonitorsInput{}
 
 	return resource.Retry(2*time.Minute, func() *resource.RetryError {
-		resp, err := client.GetUptimeMonitors(o)
+		resp, err := client.GetUptimeMonitors(&ilert.GetUptimeMonitorsInput{})
 		if err != nil {
 			time.Sleep(2 * time.Second)
 			return resource.RetryableError(err)
@@ -66,11 +65,18 @@ func dataSourceUptimeMonitorRead(d *schema.ResourceData, meta interface{}) error
 			)
 		}
 
-		d.SetId(strconv.FormatInt(found.ID, 10))
-		d.Set("name", found.Name)
-		d.Set("status", found.Status)
-		d.Set("embed_url", found.EmbedURL)
-		d.Set("share_url", found.ShareURL)
+		// Fetch uptime monitor again because the list route does not return report urls
+		result, err := client.GetUptimeMonitor(&ilert.GetUptimeMonitorInput{UptimeMonitorID: ilert.Int64(found.ID)})
+		if err != nil {
+			time.Sleep(2 * time.Second)
+			return resource.RetryableError(err)
+		}
+
+		d.SetId(strconv.FormatInt(result.UptimeMonitor.ID, 10))
+		d.Set("name", result.UptimeMonitor.Name)
+		d.Set("status", result.UptimeMonitor.Status)
+		d.Set("embed_url", result.UptimeMonitor.EmbedURL)
+		d.Set("share_url", result.UptimeMonitor.ShareURL)
 
 		return nil
 	})

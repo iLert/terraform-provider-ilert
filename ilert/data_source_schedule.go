@@ -30,10 +30,9 @@ func dataSourceScheduleRead(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[DEBUG] Reading iLert schedule")
 
 	searchName := d.Get("name").(string)
-	o := &ilert.GetSchedulesInput{}
 
 	return resource.Retry(2*time.Minute, func() *resource.RetryError {
-		resp, err := client.GetSchedules(o)
+		resp, err := client.GetSchedules(&ilert.GetSchedulesInput{})
 		if err != nil {
 			time.Sleep(2 * time.Second)
 			return resource.RetryableError(err)

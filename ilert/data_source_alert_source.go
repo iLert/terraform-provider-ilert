@@ -34,10 +34,9 @@ func dataSourceAlertSourceRead(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[DEBUG] Reading iLert alert source")
 
 	searchName := d.Get("name").(string)
-	o := &ilert.GetAlertSourcesInput{}
 
 	return resource.Retry(2*time.Minute, func() *resource.RetryError {
-		resp, err := client.GetAlertSources(o)
+		resp, err := client.GetAlertSources(&ilert.GetAlertSourcesInput{})
 		if err != nil {
 			time.Sleep(2 * time.Second)
 			return resource.RetryableError(err)
