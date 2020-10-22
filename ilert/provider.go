@@ -74,7 +74,7 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 		ilert.WithAPIEndpoint(endpoint)(client)
 	}
 	if terraformVersion != "" {
-		ilert.WithUserAgent(fmt.Sprintf("(%s %s) Terraform/%s", runtime.GOOS, runtime.GOARCH, terraformVersion))(client)
+		ilert.WithUserAgent(fmt.Sprintf("terraform/%s-%s-%s", terraformVersion, runtime.GOOS, runtime.GOARCH))(client)
 	}
 	if apiToken != "" {
 		ilert.WithAPIToken(apiToken)(client)

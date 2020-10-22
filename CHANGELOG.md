@@ -3,6 +3,7 @@
 ## (Unreleased), Version 1.0.1
 
 - remove type argument from escalation rule
+- user standard user agent header for each request
 
 ## 22.10.2020, Version 1.0.0
 
