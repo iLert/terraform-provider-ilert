@@ -45,12 +45,15 @@ func Provider() *schema.Provider {
 			"ilert_user":              dataSourceUser(),
 			"ilert_schedule":          dataSourceSchedule(),
 			"ilert_uptime_monitor":    dataSourceUptimeMonitor(),
+			"ilert_connection":        dataSourceConnection(),
+			"ilert_connector":         dataSourceConnector(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ilert_alert_source":      resourceAlertSource(),
 			"ilert_user":              resourceUser(),
 			"ilert_escalation_policy": resourceEscalationPolicy(),
 			"ilert_uptime_monitor":    resourceUptimeMonitor(),
+			"ilert_connection":        resourceConnection(),
 		},
 	}
 	p.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
