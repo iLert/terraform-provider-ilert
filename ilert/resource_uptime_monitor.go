@@ -24,7 +24,7 @@ func resourceUptimeMonitor() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				Default:  "EU",
-				ValidateFunc: validateValueFunc([]string{
+				ValidateFunc: validateStringValueFunc([]string{
 					"EU",
 					"US",
 				}),
@@ -33,7 +33,7 @@ func resourceUptimeMonitor() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
-				ValidateFunc: validateValueFunc([]string{
+				ValidateFunc: validateStringValueFunc([]string{
 					"http",
 					"ping",
 					"tcp",

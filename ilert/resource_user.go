@@ -71,7 +71,7 @@ func resourceUser() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "Europe/Berlin",
-				ValidateFunc: validateValueFunc([]string{
+				ValidateFunc: validateStringValueFunc([]string{
 					"Europe/Berlin",
 					"America/New_York",
 					"America/Los_Angeles",
@@ -90,7 +90,7 @@ func resourceUser() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "EN",
-				ValidateFunc: validateValueFunc([]string{
+				ValidateFunc: validateStringValueFunc([]string{
 					"EN",
 					"DE",
 				}),
@@ -99,7 +99,7 @@ func resourceUser() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "USER",
-				ValidateFunc: validateValueFunc([]string{
+				ValidateFunc: validateStringValueFunc([]string{
 					"ADMIN",
 					"USER",
 					"RESPONDER",
@@ -115,7 +115,7 @@ func resourceUser() *schema.Resource {
 						"method": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateValueFunc([]string{
+							ValidateFunc: validateStringValueFunc([]string{
 								"EMAIL",
 								"SMS",
 								"ANDROID",
@@ -141,7 +141,7 @@ func resourceUser() *schema.Resource {
 						"method": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateValueFunc([]string{
+							ValidateFunc: validateStringValueFunc([]string{
 								"EMAIL",
 								"SMS",
 								"ANDROID",
@@ -167,7 +167,7 @@ func resourceUser() *schema.Resource {
 						"method": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateValueFunc([]string{
+							ValidateFunc: validateStringValueFunc([]string{
 								"EMAIL",
 								"SMS",
 								"ANDROID",
@@ -197,7 +197,7 @@ func resourceUser() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
-					ValidateFunc: validateValueFunc([]string{
+					ValidateFunc: validateStringValueFunc([]string{
 						"ACCEPTED",
 						"ESCALATED",
 						"RESOLVED",
@@ -209,7 +209,7 @@ func resourceUser() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
-					ValidateFunc: validateValueFunc([]string{
+					ValidateFunc: validateStringValueFunc([]string{
 						"EMAIL",
 						"ANDROID",
 						"IPHONE",

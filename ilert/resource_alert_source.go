@@ -42,7 +42,7 @@ func resourceAlertSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
-				ValidateFunc: validateValueFunc([]string{
+				ValidateFunc: validateStringValueFunc([]string{
 					"NAGIOS",
 					"ICINGA",
 					"EMAIL",
@@ -86,7 +86,7 @@ func resourceAlertSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "ONE_INCIDENT_PER_EMAIL",
-				ValidateFunc: validateValueFunc([]string{
+				ValidateFunc: validateStringValueFunc([]string{
 					"ONE_INCIDENT_PER_EMAIL",
 					"ONE_INCIDENT_PER_EMAIL_SUBJECT",
 					"ONE_PENDING_INCIDENT_ALLOWED",
@@ -103,7 +103,7 @@ func resourceAlertSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "HIGH",
-				ValidateFunc: validateValueFunc([]string{
+				ValidateFunc: validateStringValueFunc([]string{
 					"HIGH",
 					"LOW",
 					"HIGH_DURING_SUPPORT_HOURS",
@@ -113,7 +113,7 @@ func resourceAlertSource() *schema.Resource {
 			"auto_resolution_timeout": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ValidateFunc: validateValueFunc([]string{
+				ValidateFunc: validateStringValueFunc([]string{
 					"PT10M",
 					"PT20M",
 					"PT30M",
@@ -144,7 +144,7 @@ func resourceAlertSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "AND",
-				ValidateFunc: validateValueFunc([]string{
+				ValidateFunc: validateStringValueFunc([]string{
 					"AND",
 					"OR",
 				}),
@@ -153,7 +153,7 @@ func resourceAlertSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "AND",
-				ValidateFunc: validateValueFunc([]string{
+				ValidateFunc: validateStringValueFunc([]string{
 					"AND",
 					"OR",
 				}),
@@ -309,7 +309,7 @@ func resourceAlertSource() *schema.Resource {
 						"field": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateValueFunc([]string{
+							ValidateFunc: validateStringValueFunc([]string{
 								"EMAIL_SUBJECT",
 								"EMAIL_BODY",
 							}),
@@ -317,7 +317,7 @@ func resourceAlertSource() *schema.Resource {
 						"criteria": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateValueFunc([]string{
+							ValidateFunc: validateStringValueFunc([]string{
 								"ALL_TEXT_BEFORE",
 								"ALL_TEXT_AFTER",
 								"MATCHES_REGEX",
@@ -339,7 +339,7 @@ func resourceAlertSource() *schema.Resource {
 						"field": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateValueFunc([]string{
+							ValidateFunc: validateStringValueFunc([]string{
 								"EMAIL_FROM",
 								"EMAIL_SUBJECT",
 								"EMAIL_BODY",
@@ -348,7 +348,7 @@ func resourceAlertSource() *schema.Resource {
 						"criteria": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateValueFunc([]string{
+							ValidateFunc: validateStringValueFunc([]string{
 								"CONTAINS_ANY_WORDS",
 								"CONTAINS_NOT_WORDS",
 								"CONTAINS_STRING",
@@ -375,7 +375,7 @@ func resourceAlertSource() *schema.Resource {
 						"field": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateValueFunc([]string{
+							ValidateFunc: validateStringValueFunc([]string{
 								"EMAIL_FROM",
 								"EMAIL_SUBJECT",
 								"EMAIL_BODY",
@@ -384,7 +384,7 @@ func resourceAlertSource() *schema.Resource {
 						"criteria": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateValueFunc([]string{
+							ValidateFunc: validateStringValueFunc([]string{
 								"CONTAINS_ANY_WORDS",
 								"CONTAINS_NOT_WORDS",
 								"CONTAINS_STRING",
@@ -407,8 +407,9 @@ func resourceAlertSource() *schema.Resource {
 				Computed: true,
 			},
 			"integration_key": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 		},
 		Create: resourceAlertSourceCreate,

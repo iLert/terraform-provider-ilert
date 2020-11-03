@@ -44,11 +44,12 @@ func resourceConnection() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
 						},
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validateStringValueFunc(ilert.ConnectorTypesAll),
 						},
 					},
 				},
@@ -58,7 +59,7 @@ func resourceConnection() *schema.Resource {
 				Optional: true,
 				ForceNew: false,
 				Default:  ilert.ConnectionTriggerModes.Automatic,
-				ValidateFunc: validateValueFunc([]string{
+				ValidateFunc: validateStringValueFunc([]string{
 					ilert.ConnectionTriggerModes.Automatic,
 					ilert.ConnectionTriggerModes.Manual,
 				}),
@@ -68,7 +69,7 @@ func resourceConnection() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validateValueFunc(ilert.ConnectionTriggerTypesAll),
+					ValidateFunc: validateStringValueFunc(ilert.ConnectionTriggerTypesAll),
 				},
 			},
 			"datadog": {
@@ -102,7 +103,7 @@ func resourceConnection() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "EU",
-							ValidateFunc: validateValueFunc([]string{
+							ValidateFunc: validateStringValueFunc([]string{
 								"EU",
 								"US",
 							}),
@@ -148,7 +149,7 @@ func resourceConnection() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "Task",
-							ValidateFunc: validateValueFunc([]string{
+							ValidateFunc: validateStringValueFunc([]string{
 								"Bug",
 								"Epic",
 								"Subtask",
@@ -303,7 +304,7 @@ func resourceConnection() *schema.Resource {
 						"priority": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ValidateFunc: validateValueFunc([]string{
+							ValidateFunc: validateStringValueFunc([]string{
 								"urgent",
 								"high",
 								"normal",
@@ -381,7 +382,7 @@ func resourceConnection() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "firstLine",
-							ValidateFunc: validateValueFunc([]string{
+							ValidateFunc: validateStringValueFunc([]string{
 								"firstLine",
 								"secondLine",
 								"partial",
@@ -669,11 +670,18 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsDatadog{
+			params := &ilert.ConnectionParamsDatadog{
 				Site:     v["site"].(string),
 				Priority: v["priority"].(string),
-				Tags:     v["tags"].([]string),
 			}
+			vL := v["tags"].([]interface{})
+			sL := make([]string, 0)
+			for _, m := range vL {
+				v := m.(string)
+				sL = append(sL, v)
+			}
+			params.Tags = sL
+			connection.Params = params
 		}
 	}
 
@@ -739,11 +747,18 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsGithub{
+			params := &ilert.ConnectionParamsGithub{
 				Owner:      v["owner"].(string),
 				Repository: v["repository"].(string),
-				Labels:     v["labels"].([]string),
 			}
+			vL := v["labels"].([]interface{})
+			sL := make([]string, 0)
+			for _, m := range vL {
+				v := m.(string)
+				sL = append(sL, v)
+			}
+			params.Labels = sL
+			connection.Params = params
 		}
 	}
 
@@ -794,11 +809,18 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsEmail{
-				Recipients:   v["recipients"].([]string),
+			params := &ilert.ConnectionParamsEmail{
 				Subject:      v["url"].(string),
 				BodyTemplate: v["body_template"].(string),
 			}
+			vL := v["recipients"].([]interface{})
+			sL := make([]string, 0)
+			for _, m := range vL {
+				v := m.(string)
+				sL = append(sL, v)
+			}
+			params.Recipients = sL
+			connection.Params = params
 		}
 	}
 
@@ -806,10 +828,17 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsSysdig{
-				Tags:        v["tags"].([]string),
+			params := &ilert.ConnectionParamsSysdig{
 				EventFilter: v["event_filter"].(string),
 			}
+			vL := v["tags"].([]interface{})
+			sL := make([]string, 0)
+			for _, m := range vL {
+				v := m.(string)
+				sL = append(sL, v)
+			}
+			params.Tags = sL
+			connection.Params = params
 		}
 	}
 

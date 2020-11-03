@@ -54,6 +54,7 @@ func Provider() *schema.Provider {
 			"ilert_escalation_policy": resourceEscalationPolicy(),
 			"ilert_uptime_monitor":    resourceUptimeMonitor(),
 			"ilert_connection":        resourceConnection(),
+			"ilert_connector":         resourceConnector(),
 		},
 	}
 	p.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
