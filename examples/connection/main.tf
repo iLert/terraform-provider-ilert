@@ -3,7 +3,7 @@ data "ilert_escalation_policy" "default" {
 }
 
 resource "ilert_alert_source" "example" {
-  name              = "My Grafana Integration for GitHub 1"
+  name              = "My Grafana Integration for GitHub"
   integration_type  = "GRAFANA"
   escalation_policy = data.ilert_escalation_policy.default.id
 }
