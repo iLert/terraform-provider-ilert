@@ -451,6 +451,10 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		incidentCreation := val.(string)
 		alertSource.IncidentCreation = incidentCreation
 	}
+	if val, ok := d.GetOk("integration_key"); ok {
+		integrationKey := val.(string)
+		alertSource.IntegrationKey = integrationKey
+	}
 	if val, ok := d.GetOk("active"); ok {
 		active := val.(bool)
 		alertSource.Active = active

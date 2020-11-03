@@ -29,18 +29,18 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the connector.
 - `type` - (Required) The type of the connector. Allowed values are `aws_lambda`, `azure_faas`, `datadog`, `discord`, `email`, `github`, `google_faas`, `jira`, `microsoft_teams`, `servicenow`, `slack`, `sysdig`, `topdesk`, `webhook`, `zapier`, `zendesk`.
-- `datadog` - (Required) A [datadog](#datadog-arguments) block.
-- `jira` - (Required) A [jira](#jira-arguments) block.
-- `microsoft_teams` - (Required) A [microsoft_teams](#microsoft-teams-arguments) block.
-- `servicenow` - (Required) A [servicenow](#servicenow-arguments) block.
-- `zendesk` - (Required) A [zendesk](#zendesk-arguments) block.
-- `discord` - (Required) A [discord](#discord-arguments) block.
-- `github` - (Required) A [github](#github-arguments) block.
-- `topdesk` - (Required) A [topdesk](#topdesk-arguments) block.
-- `aws_lambda` - (Required) A [aws_lambda](#aws-lambda-arguments) block.
-- `azure_faas` - (Required) A [azure_faas](#azure-function-arguments) block.
-- `google_faas` - (Required) A [google_faas](#google-cloud-function-arguments) block.
-- `sysdig` - (Required) A [sysdig](#sysdig-arguments) block.
+- `datadog` - (Optional) A [datadog](#datadog-arguments) block.
+- `jira` - (Optional) A [jira](#jira-arguments) block.
+- `microsoft_teams` - (Optional) A [microsoft_teams](#microsoft-teams-arguments) block.
+- `servicenow` - (Optional) A [servicenow](#servicenow-arguments) block.
+- `zendesk` - (Optional) A [zendesk](#zendesk-arguments) block.
+- `discord` - (Optional) A [discord](#discord-arguments) block.
+- `github` - (Optional) A [github](#github-arguments) block.
+- `topdesk` - (Optional) A [topdesk](#topdesk-arguments) block.
+- `aws_lambda` - (Optional) A [aws_lambda](#aws-lambda-arguments) block.
+- `azure_faas` - (Optional) A [azure_faas](#azure-function-arguments) block.
+- `google_faas` - (Optional) A [google_faas](#google-cloud-function-arguments) block.
+- `sysdig` - (Optional) A [sysdig](#sysdig-arguments) block.
 
 #### Datadog Arguments
 

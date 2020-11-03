@@ -60,19 +60,19 @@ The following arguments are supported:
 - `connector` - (Required) A [connector](#connector-arguments) block.
 - `trigger_mode` - (Optional) The trigger mode of the connection. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
 - `trigger_types` - (Optional) A list of the trigger types. Allowed values are `incident-created`, `incident-assigned`, `incident-auto-escalated`, `incident-acknowledged`, `incident-raised`, `incident-comment-added`, `incident-resolved`.
-- `datadog` - (Required) A [datadog](#datadog-arguments) block.
-- `jira` - (Required) A [jira](#jira-arguments) block.
-- `servicenow` - (Required) A [servicenow](#servicenow-arguments) block.
-- `slack` - (Required) A [slack](#slack-arguments) block.
-- `webhook` - (Required) A [webhook](#webhook-arguments) block.
-- `zendesk` - (Required) A [zendesk](#zendesk-arguments) block.
-- `github` - (Required) A [github](#github-arguments) block.
-- `aws_lambda` - (Required) A [aws_lambda](#aws-lambda-arguments) block.
-- `azure_faas` - (Required) A [azure_faas](#azure-function-arguments) block.
-- `google_faas` - (Required) A [google_faas](#google-cloud-function-arguments) block.
-- `email` - (Required) A [email](#email-arguments) block.
-- `sysdig` - (Required) A [sysdig](#sysdig-arguments) block.
-- `zapier` - (Required) A [zapier](#zapier-arguments) block.
+- `datadog` - (Optional) A [datadog](#datadog-arguments) block.
+- `jira` - (Optional) A [jira](#jira-arguments) block.
+- `servicenow` - (Optional) A [servicenow](#servicenow-arguments) block.
+- `slack` - (Optional) A [slack](#slack-arguments) block.
+- `webhook` - (Optional) A [webhook](#webhook-arguments) block.
+- `zendesk` - (Optional) A [zendesk](#zendesk-arguments) block.
+- `github` - (Optional) A [github](#github-arguments) block.
+- `aws_lambda` - (Optional) A [aws_lambda](#aws-lambda-arguments) block.
+- `azure_faas` - (Optional) A [azure_faas](#azure-function-arguments) block.
+- `google_faas` - (Optional) A [google_faas](#google-cloud-function-arguments) block.
+- `email` - (Optional) A [email](#email-arguments) block.
+- `sysdig` - (Optional) A [sysdig](#sysdig-arguments) block.
+- `zapier` - (Optional) A [zapier](#zapier-arguments) block.
 
 #### Alert Source Arguments
 
