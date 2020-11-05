@@ -16,5 +16,5 @@ variable "password" {
 variable "endpoint" {
   description = "iLert organization used to configure the provider"
   type        = string
-  defualt     = "https://api.ilert.com"
+  default     = "https://api.ilert.com"
 }
