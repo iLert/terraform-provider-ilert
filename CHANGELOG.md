@@ -1,9 +1,9 @@
 # Changelog
 
-## (Unreleased), Version 1.1.0
+## 6.11.2020, Version 1.1.0
 
 - add connection data source and resource
-- add connector data source
+- add connector data source and resource
 - remove type argument from escalation rule
 - user standard user agent header for each request
 
