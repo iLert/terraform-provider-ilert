@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "ilert" {
-  endpoint     = "https://api.ilert.dev"
+  endpoint     = var.endpoint
   organization = var.organization
   username     = var.username
   password     = var.password
