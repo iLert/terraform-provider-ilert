@@ -351,6 +351,7 @@ github.com/iLert/ilert-go v1.0.9/go.mod h1:P52Sxj8CCa8PfDRl95dtM5FsOzDc5SgETLRRo
 github.com/iLert/ilert-go v1.1.0/go.mod h1:PrNMkYxliUZEO4Smc6XhDkv7Uevr5DpkLvlm9AX2hyI=
 github.com/iLert/ilert-go v1.1.1 h1:gmHKmwQOLSQGYql/G83T7YNU9np5QbO+/63rBMLEvFw=
 github.com/iLert/ilert-go v1.1.1/go.mod h1:PrNMkYxliUZEO4Smc6XhDkv7Uevr5DpkLvlm9AX2hyI=
+github.com/iLert/ilert-go v1.1.2/go.mod h1:PrNMkYxliUZEO4Smc6XhDkv7Uevr5DpkLvlm9AX2hyI=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/imdario/mergo v0.3.9 h1:UauaLniWCFHWd+Jp9oCEkTBj8VO/9DKg3PV3VCNMDIg=
 github.com/imdario/mergo v0.3.9/go.mod h1:2EnlNZ0deacrJVfApfmtdGgDfMuh/nq6Ok1EcJh5FfA=

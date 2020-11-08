@@ -1,5 +1,9 @@
 # Changelog
 
+## 8.11.2020, Version 1.1.1
+
+- add jira alert source type
+
 ## 6.11.2020, Version 1.1.0
 
 - add connection data source and resource
