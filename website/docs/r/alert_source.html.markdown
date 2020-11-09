@@ -150,6 +150,7 @@ The following attributes are exported:
 - `name` - The name of the found alert source.
 - `status` - The status of the found alert source.
 - `integration_key` - The integration key of the found alert source.
+- `integration_url` - The integration URL of the found alert source.
 
 ## Import
 

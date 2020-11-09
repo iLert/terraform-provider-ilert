@@ -1,5 +1,9 @@
 # Changelog
 
+## 9.11.2020, Version 1.1.2
+
+- add integration url to alert source data source and resource
+
 ## 8.11.2020, Version 1.1.1
 
 - add jira alert source type

@@ -24,6 +24,16 @@ func dataSourceAlertSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"integration_key": {
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
+			},
+			"integration_url": {
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
+			},
 		},
 	}
 }
@@ -61,6 +71,7 @@ func dataSourceAlertSourceRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("name", found.Name)
 		d.Set("status", found.Status)
 		d.Set("integration_key", found.IntegrationKey)
+		d.Set("integration_url", found.IntegrationURL)
 
 		return nil
 	})

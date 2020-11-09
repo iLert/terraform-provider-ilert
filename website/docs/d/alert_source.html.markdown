@@ -30,5 +30,6 @@ The following arguments are supported:
 - `name` - The name of the found alert source.
 - `status` - The status of the found alert source.
 - `integration_key` - The integration key of the found alert source.
+- `integration_url` - The integration URL of the found alert source.
 
 [1]: https://api.ilert.com/api-docs/#tag/Alert-Sources

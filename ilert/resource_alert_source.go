@@ -379,6 +379,11 @@ func resourceAlertSource() *schema.Resource {
 				Computed:  true,
 				Sensitive: true,
 			},
+			"integration_url": {
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
+			},
 		},
 		Create: resourceAlertSourceCreate,
 		Read:   resourceAlertSourceRead,
@@ -422,6 +427,10 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 	if val, ok := d.GetOk("integration_key"); ok {
 		integrationKey := val.(string)
 		alertSource.IntegrationKey = integrationKey
+	}
+	if val, ok := d.GetOk("integration_url"); ok {
+		integrationURL := val.(string)
+		alertSource.IntegrationURL = integrationURL
 	}
 	if val, ok := d.GetOk("active"); ok {
 		active := val.(bool)
@@ -629,6 +638,7 @@ func resourceAlertSourceRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("resolve_filter_operator", result.AlertSource.ResolveFilterOperator)
 	d.Set("status", result.AlertSource.Status)
 	d.Set("integration_key", result.AlertSource.IntegrationKey)
+	d.Set("integration_url", result.AlertSource.IntegrationURL)
 	if result.AlertSource.IntegrationType == "EMAIL" {
 		d.Set("email", result.AlertSource.IntegrationKey)
 	}
