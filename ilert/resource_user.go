@@ -89,10 +89,10 @@ func resourceUser() *schema.Resource {
 			"language": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "EN",
+				Default:  "en",
 				ValidateFunc: validateStringValueFunc([]string{
-					"EN",
-					"DE",
+					"en",
+					"de",
 				}),
 			},
 			"role": {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 16.11.2020, Version 1.1.3
+
+- fix user language case
+
 ## 9.11.2020, Version 1.1.2
 
 - add integration url to alert source data source and resource

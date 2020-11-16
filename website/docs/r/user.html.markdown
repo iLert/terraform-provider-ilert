@@ -54,7 +54,7 @@ The following arguments are supported:
 - `timezone` - (Optional) The user's timezone. Allowed values are `Europe/Berlin`, `America/New_York`, `America/Los_Angeles`, `Asia/Istanbul`.
 - `position` - (Optional) The user's position.
 - `department` - (Optional) The user's department.
-- `language` - (Optional) The user's language. Allowed values are `EN`, `DE`.
+- `language` - (Optional) The user's language. Allowed values are `en`, `de`.
 - `role` - (Optional) The user's role. Allowed values are `ADMIN`, `USER`, `RESPONDER` or `STAKEHOLDER`. Default: `USER`
 - `high_priority_notification_preference` - (Optional) One or more [high priority notification preference](#high-priority-notification-preference-arguments) blocks.
 - `low_priority_notification_preference` - (Optional) One or more [low priority notification preference](#low-priority-notification-preference-arguments) blocks.
