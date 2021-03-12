@@ -46,6 +46,7 @@ The following arguments are supported:
 - `heartbeat` - (Optional) A [heartbeat](#heartbeat-arguments) block. This option is required if `integration_type` is `HEARTBEAT`.
 - `support_hours` - (Optional) A [support_hours](#support-hours-arguments) block. This option is allowed if `incident_priority_rule` is `HIGH_DURING_SUPPORT_HOURS` or `LOW_DURING_SUPPORT_HOURS`.
 - `autotask_metadata` - (Optional) An [autotask metadata](#autotask-metadata-arguments) block. This option is required if `integration_type` is `AUTOTASK`.
+- `teams` - (Optional) A list of related team ids.
 
 #### Heartbeat Arguments
 

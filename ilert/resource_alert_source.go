@@ -126,6 +126,13 @@ func resourceAlertSource() *schema.Resource {
 					"OR",
 				}),
 			},
+			"teams": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
+				},
+			},
 			"heartbeat": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -460,6 +467,16 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		resolveFilterOperator := val.(string)
 		alertSource.ResolveFilterOperator = resolveFilterOperator
 	}
+	if val, ok := d.GetOk("teams"); ok {
+		vL := val.([]interface{})
+		tms := make([]ilert.TeamShort, 0)
+
+		for _, m := range vL {
+			v := int64(m.(int))
+			tms = append(tms, ilert.TeamShort{ID: v})
+		}
+		alertSource.Teams = tms
+	}
 	if val, ok := d.GetOk("support_hours"); ok {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
@@ -679,6 +696,14 @@ func resourceAlertSourceRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("resolve_key_extractor", []interface{}{})
 	}
 
+	teams, err := flattenTeamsList(result.AlertSource.Teams)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("teams", teams); err != nil {
+		return fmt.Errorf("error setting teams: %s", err)
+	}
+
 	emailPredicates, err := flattenEmailPredicateList(result.AlertSource.EmailPredicates)
 	if err != nil {
 		return err
@@ -835,6 +860,18 @@ func flattenSupportHours(supportHours *ilert.SupportHours) ([]interface{}, error
 	result["support_days"] = supportDays
 
 	results = append(results, result)
+
+	return results, nil
+}
+
+func flattenTeamsList(list []ilert.TeamShort) ([]int64, error) {
+	if list == nil {
+		return make([]int64, 0), nil
+	}
+	results := make([]int64, 0)
+	for _, item := range list {
+		results = append(results, item.ID)
+	}
 
 	return results, nil
 }

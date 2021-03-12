@@ -52,6 +52,13 @@ func resourceEscalationPolicy() *schema.Resource {
 					},
 				},
 			},
+			"teams": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
+				},
+			},
 		},
 		Create: resourceEscalationPolicyCreate,
 		Read:   resourceEscalationPolicyRead,
@@ -105,6 +112,17 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 			nps = append(nps, ep)
 		}
 		escalationPolicy.EscalationRules = nps
+	}
+
+	if val, ok := d.GetOk("teams"); ok {
+		vL := val.([]interface{})
+		tms := make([]ilert.TeamShort, 0)
+
+		for _, m := range vL {
+			v := int64(m.(int))
+			tms = append(tms, ilert.TeamShort{ID: v})
+		}
+		escalationPolicy.Teams = tms
 	}
 
 	return escalationPolicy, nil
@@ -161,6 +179,14 @@ func resourceEscalationPolicyRead(d *schema.ResourceData, m interface{}) error {
 	}
 	if err := d.Set("escalation_rule", escalationRules); err != nil {
 		return fmt.Errorf("error setting escalation rules: %s", err)
+	}
+
+	teams, err := flattenTeamsList(result.EscalationPolicy.Teams)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("teams", teams); err != nil {
+		return fmt.Errorf("error setting teams: %s", err)
 	}
 
 	return nil

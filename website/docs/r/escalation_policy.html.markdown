@@ -46,6 +46,7 @@ The following arguments are supported:
 - `repeating` - (Optional) Indicates whether or not the escalation policy will repeat. Default: `true`.
 - `frequency` - (Optional) The number of times the escalation policy will repeat after reaching the end of its escalation. This option is allowed if `repeating` is `true`. Default: `1`.
 - `escalation_rule` - (Optional) One or more [escalation rule](#escalation-rule-arguments) blocks.
+- `teams` - (Optional) A list of related team ids.
 
 #### Escalation Rule Arguments
 

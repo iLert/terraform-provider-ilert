@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.03.2021, Version 1.2.0
+
+- add team data source and resource
+
 ## 16.11.2020, Version 1.1.3
 
 - fix user language case
