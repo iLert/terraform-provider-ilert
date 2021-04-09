@@ -1,5 +1,11 @@
 # Changelog
 
+## 09.04.2021, Version 1.3.0
+
+- add new alert source types
+- add new connection types
+- add new connector types
+
 ## 12.03.2021, Version 1.2.0
 
 - add team data source and resource

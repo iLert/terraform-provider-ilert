@@ -92,6 +92,9 @@ func resourceConnection() *schema.Resource {
 					"email",
 					"sysdig",
 					"zapier",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -138,6 +141,9 @@ func resourceConnection() *schema.Resource {
 					"email",
 					"sysdig",
 					"zapier",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -184,6 +190,9 @@ func resourceConnection() *schema.Resource {
 					"email",
 					"sysdig",
 					"zapier",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -222,6 +231,9 @@ func resourceConnection() *schema.Resource {
 					"email",
 					"sysdig",
 					"zapier",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -264,6 +276,9 @@ func resourceConnection() *schema.Resource {
 					"email",
 					"sysdig",
 					"zapier",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -298,6 +313,9 @@ func resourceConnection() *schema.Resource {
 					"email",
 					"sysdig",
 					"zapier",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -334,6 +352,9 @@ func resourceConnection() *schema.Resource {
 					"email",
 					"sysdig",
 					"zapier",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -375,6 +396,9 @@ func resourceConnection() *schema.Resource {
 					"email",
 					"sysdig",
 					"zapier",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -411,6 +435,9 @@ func resourceConnection() *schema.Resource {
 					"email",
 					"sysdig",
 					"zapier",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -445,6 +472,9 @@ func resourceConnection() *schema.Resource {
 					"email",
 					"sysdig",
 					"zapier",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -479,6 +509,9 @@ func resourceConnection() *schema.Resource {
 					"email",
 					"sysdig",
 					"zapier",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -513,6 +546,9 @@ func resourceConnection() *schema.Resource {
 					"google_faas",
 					"sysdig",
 					"zapier",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -554,6 +590,9 @@ func resourceConnection() *schema.Resource {
 					"google_faas",
 					"email",
 					"zapier",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -591,12 +630,129 @@ func resourceConnection() *schema.Resource {
 					"google_faas",
 					"email",
 					"sysdig",
+					"autotask",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
 							Type:     schema.TypeString,
 							Required: true,
+						},
+					},
+				},
+			},
+			"autotask": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
+				ConflictsWith: []string{
+					"datadog",
+					"jira",
+					"servicenow",
+					"slack",
+					"webhook",
+					"zendesk",
+					"github",
+					"topdesk",
+					"aws_lambda",
+					"azure_faas",
+					"google_faas",
+					"email",
+					"sysdig",
+					"zapier",
+					"status_page_io",
+				},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"queue_id": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"company_id": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"issue_type": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"ticket_category": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"ticket_type": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
+			"zammad": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
+				ConflictsWith: []string{
+					"datadog",
+					"jira",
+					"servicenow",
+					"slack",
+					"webhook",
+					"zendesk",
+					"github",
+					"topdesk",
+					"aws_lambda",
+					"azure_faas",
+					"google_faas",
+					"email",
+					"sysdig",
+					"zapier",
+					"autotask",
+					"status_page_io",
+				},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"email": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
+			"status_page_io": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
+				ConflictsWith: []string{
+					"datadog",
+					"jira",
+					"servicenow",
+					"slack",
+					"webhook",
+					"zendesk",
+					"github",
+					"topdesk",
+					"aws_lambda",
+					"azure_faas",
+					"google_faas",
+					"email",
+					"sysdig",
+					"zapier",
+					"autotask",
+					"zammad",
+				},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"page_id": {
+							Type:     schema.TypeString,
+							Optional: true,
 						},
 					},
 				},
@@ -852,6 +1008,40 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		}
 	}
 
+	if val, ok := d.GetOk("autotask"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			connection.Params = &ilert.ConnectionParamsAutotask{
+				CompanyID:      v["company_id"].(string),
+				IssueType:      v["issue_type"].(string),
+				QueueID:        int64(v["queue_id"].(int)),
+				TicketCategory: v["ticket_category"].(string),
+				TicketType:     v["ticket_type"].(string),
+			}
+		}
+	}
+
+	if val, ok := d.GetOk("zammad"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			connection.Params = &ilert.ConnectionParamsZammad{
+				Email: v["email"].(string),
+			}
+		}
+	}
+
+	if val, ok := d.GetOk("status_page_io"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			connection.Params = &ilert.ConnectionParamsStatusPageIO{
+				PageID: v["page_id"].(string),
+			}
+		}
+	}
+
 	return connection, nil
 }
 
@@ -1002,6 +1192,28 @@ func resourceConnectionRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("zapier", []interface{}{
 			map[string]interface{}{
 				"url": result.Connection.Params.WebhookURL,
+			},
+		})
+	case ilert.ConnectorTypes.Autotask:
+		d.Set("autotask", []interface{}{
+			map[string]interface{}{
+				"company_id":      result.Connection.Params.CompanyID,
+				"issue_type":      result.Connection.Params.IssueType,
+				"queue_id":        result.Connection.Params.QueueID,
+				"ticket_category": result.Connection.Params.TicketCategory,
+				"ticket_type":     result.Connection.Params.TicketType,
+			},
+		})
+	case ilert.ConnectorTypes.Zammad:
+		d.Set("zammad", []interface{}{
+			map[string]interface{}{
+				"email": result.Connection.Params.Email,
+			},
+		})
+	case ilert.ConnectorTypes.StatusPageIO:
+		d.Set("zammad", []interface{}{
+			map[string]interface{}{
+				"page_id": result.Connection.Params.PageID,
 			},
 		})
 	}

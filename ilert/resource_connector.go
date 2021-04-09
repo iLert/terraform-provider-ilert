@@ -43,6 +43,10 @@ func resourceConnector() *schema.Resource {
 					"azure_faas",
 					"google_faas",
 					"sysdig",
+					"autotask",
+					"mattermost",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -72,6 +76,10 @@ func resourceConnector() *schema.Resource {
 					"azure_faas",
 					"google_faas",
 					"sysdig",
+					"autotask",
+					"mattermost",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -109,6 +117,10 @@ func resourceConnector() *schema.Resource {
 					"azure_faas",
 					"google_faas",
 					"sysdig",
+					"autotask",
+					"mattermost",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -137,6 +149,10 @@ func resourceConnector() *schema.Resource {
 					"azure_faas",
 					"google_faas",
 					"sysdig",
+					"autotask",
+					"mattermost",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -173,6 +189,10 @@ func resourceConnector() *schema.Resource {
 					"azure_faas",
 					"google_faas",
 					"sysdig",
+					"autotask",
+					"mattermost",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -210,6 +230,10 @@ func resourceConnector() *schema.Resource {
 					"azure_faas",
 					"google_faas",
 					"sysdig",
+					"autotask",
+					"mattermost",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -237,6 +261,10 @@ func resourceConnector() *schema.Resource {
 					"azure_faas",
 					"google_faas",
 					"sysdig",
+					"autotask",
+					"mattermost",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -266,6 +294,10 @@ func resourceConnector() *schema.Resource {
 					"azure_faas",
 					"google_faas",
 					"sysdig",
+					"autotask",
+					"mattermost",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -303,6 +335,10 @@ func resourceConnector() *schema.Resource {
 					"azure_faas",
 					"google_faas",
 					"sysdig",
+					"autotask",
+					"mattermost",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -332,6 +368,10 @@ func resourceConnector() *schema.Resource {
 					"aws_lambda",
 					"google_faas",
 					"sysdig",
+					"autotask",
+					"mattermost",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -361,6 +401,10 @@ func resourceConnector() *schema.Resource {
 					"aws_lambda",
 					"azure_faas",
 					"sysdig",
+					"autotask",
+					"mattermost",
+					"zammad",
+					"status_page_io",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -390,6 +434,153 @@ func resourceConnector() *schema.Resource {
 					"aws_lambda",
 					"azure_faas",
 					"google_faas",
+					"autotask",
+					"mattermost",
+					"zammad",
+					"status_page_io",
+				},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api_key": {
+							Type:      schema.TypeString,
+							Required:  true,
+							Sensitive: true,
+						},
+					},
+				},
+			},
+			"autotask": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
+				ConflictsWith: []string{
+					"datadog",
+					"microsoft_teams",
+					"jira",
+					"servicenow",
+					"zendesk",
+					"discord",
+					"github",
+					"topdesk",
+					"aws_lambda",
+					"azure_faas",
+					"google_faas",
+					"sysdig",
+					"mattermost",
+					"zammad",
+					"status_page_io",
+				},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"email": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"password": {
+							Type:      schema.TypeString,
+							Required:  true,
+							Sensitive: true,
+						},
+					},
+				},
+			},
+			"mattermost": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
+				ConflictsWith: []string{
+					"datadog",
+					"microsoft_teams",
+					"jira",
+					"servicenow",
+					"zendesk",
+					"discord",
+					"github",
+					"topdesk",
+					"aws_lambda",
+					"azure_faas",
+					"google_faas",
+					"sysdig",
+					"autotask",
+					"zammad",
+					"status_page_io",
+				},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"zammad": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
+				ConflictsWith: []string{
+					"datadog",
+					"microsoft_teams",
+					"jira",
+					"servicenow",
+					"zendesk",
+					"discord",
+					"github",
+					"topdesk",
+					"aws_lambda",
+					"azure_faas",
+					"google_faas",
+					"sysdig",
+					"autotask",
+					"mattermost",
+					"status_page_io",
+				},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"api_key": {
+							Type:      schema.TypeString,
+							Required:  true,
+							Sensitive: true,
+						},
+					},
+				},
+			},
+			"status_page_io": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
+				ConflictsWith: []string{
+					"datadog",
+					"microsoft_teams",
+					"jira",
+					"servicenow",
+					"zendesk",
+					"discord",
+					"github",
+					"topdesk",
+					"aws_lambda",
+					"azure_faas",
+					"google_faas",
+					"sysdig",
+					"autotask",
+					"mattermost",
+					"zammad",
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -558,6 +749,49 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 		}
 	}
 
+	if val, ok := d.GetOk("autotask"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			connector.Params = &ilert.ConnectorParamsAutotask{
+				URL:      v["url"].(string),
+				Email:    v["email"].(string),
+				Password: v["password"].(string),
+			}
+		}
+	}
+
+	if val, ok := d.GetOk("mattermost"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			connector.Params = &ilert.ConnectorParamsMattermost{
+				URL: v["url"].(string),
+			}
+		}
+	}
+
+	if val, ok := d.GetOk("zammad"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			connector.Params = &ilert.ConnectorParamsZammad{
+				URL:    v["url"].(string),
+				APIKey: v["api_key"].(string),
+			}
+		}
+	}
+
+	if val, ok := d.GetOk("status_page_io"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			connector.Params = &ilert.ConnectorParamsStatusPageIO{
+				APIKey: v["api_key"].(string),
+			}
+		}
+	}
+
 	return connector, nil
 }
 
@@ -670,6 +904,33 @@ func resourceConnectorRead(d *schema.ResourceData, m interface{}) error {
 		})
 	case ilert.ConnectorTypes.Sysdig:
 		d.Set("sysdig", []interface{}{
+			map[string]interface{}{
+				"api_key": result.Connector.Params.APIKey,
+			},
+		})
+	case ilert.ConnectorTypes.Autotask:
+		d.Set("autotask", []interface{}{
+			map[string]interface{}{
+				"url":      result.Connector.Params.URL,
+				"email":    result.Connector.Params.Email,
+				"password": result.Connector.Params.Password,
+			},
+		})
+	case ilert.ConnectorTypes.Mattermost:
+		d.Set("mattermost", []interface{}{
+			map[string]interface{}{
+				"url": result.Connector.Params.URL,
+			},
+		})
+	case ilert.ConnectorTypes.Zammad:
+		d.Set("zammad", []interface{}{
+			map[string]interface{}{
+				"url":     result.Connector.Params.URL,
+				"api_key": result.Connector.Params.APIKey,
+			},
+		})
+	case ilert.ConnectorTypes.StatusPageIO:
+		d.Set("status_page_io", []interface{}{
 			map[string]interface{}{
 				"api_key": result.Connector.Params.APIKey,
 			},

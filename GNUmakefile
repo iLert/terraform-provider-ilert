@@ -3,7 +3,7 @@ GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=ilert
 local_service?=team
-local_version?=1.0.0
+local_version?=1.2.0
 
 default: build
 

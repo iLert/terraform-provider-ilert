@@ -73,6 +73,10 @@ The following arguments are supported:
 - `email` - (Optional) A [email](#email-arguments) block.
 - `sysdig` - (Optional) A [sysdig](#sysdig-arguments) block.
 - `zapier` - (Optional) A [zapier](#zapier-arguments) block.
+- `autotask` - (Optional) A [autotask](#autotask-arguments) block.
+- `mattermost` - (Optional) A [mattermost](#mattermost-arguments) block.
+- `zammad` - (Optional) A [zammad](#zammad-arguments) block.
+- `status_page_io` - (Optional) A [status_page_io](#statuspage-arguments) block.
 
 #### Alert Source Arguments
 
@@ -80,7 +84,7 @@ The following arguments are supported:
 
 #### Connector Arguments
 
-- `id` - (Optional) The connector id. Required if the connector `type` is one of values `aws_lambda`, `azure_faas`, `datadog`, `discord`, `github`, `google_faas`, `jira`, `microsoft_teams`, `servicenow`, `sysdig`, `topdesk`, `zendesk`.
+- `id` - (Optional) The connector id. Required if the connector `type` is one of values `aws_lambda`, `azure_faas`, `datadog`, `discord`, `github`, `google_faas`, `jira`, `microsoft_teams`, `servicenow`, `sysdig`, `topdesk`, `zendesk`, `autotask`, `mattermost`, `zammad`, `status_page_io`.
 - `type` - (Required) The connector type. Allowed values are `aws_lambda`, `azure_faas`, `datadog`, `discord`, `email`, `github`, `google_faas`, `jira`, `microsoft_teams`, `servicenow`, `slack`, `sysdig`, `topdesk`, `webhook`, `zapier`, `zendesk`.
 
 #### Datadog Arguments
@@ -185,6 +189,28 @@ The following arguments are supported:
 > See [the Zapier Outbound integration documentation](https://docs.ilert.com/integrations/zapier/outbound) for more details.
 
 - `url` - (Required) The Zapier trigger URL.
+
+#### Autotask Arguments
+
+> See [the Autotask outbound integration documentation](https://docs.ilert.com/integrations/autotask/outbound) for more details.
+
+- `queue_id` - (Required) The Autotask Queue ID.
+- `company_id` - (Optional) The Autotask Company ID.
+- `issue_type` - (Optional) The Autotask Issue Type.
+- `ticket_category` - (Optional) The Autotask Ticket Category.
+- `ticket_type` - (Optional) The Autotask Ticket Type.
+
+#### Zammad Arguments
+
+> See [the Zammad outbound integration documentation](https://docs.ilert.com/integrations/zammad/outbound) for more details.
+
+- `email` - (Required) The Zammad operator email.
+
+#### StatusPage Arguments
+
+> See [the StatusPage outbound integration documentation](https://docs.ilert.com/integrations/statuspage) for more details.
+
+- `page_id` - (Required) The StatusPage Page ID.
 
 ## Attributes Reference
 

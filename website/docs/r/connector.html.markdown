@@ -28,7 +28,7 @@ resource "ilert_connector" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the connector.
-- `type` - (Required) The type of the connector. Allowed values are `aws_lambda`, `azure_faas`, `datadog`, `discord`, `email`, `github`, `google_faas`, `jira`, `microsoft_teams`, `servicenow`, `slack`, `sysdig`, `topdesk`, `webhook`, `zapier`, `zendesk`.
+- `type` - (Required) The type of the connector. Allowed values are `aws_lambda`, `azure_faas`, `datadog`, `discord`, `email`, `github`, `google_faas`, `jira`, `microsoft_teams`, `servicenow`, `slack`, `sysdig`, `topdesk`, `webhook`, `zapier`, `zendesk`, `autotask`, `mattermost`, `zammad`, `status_page_io`.
 - `datadog` - (Optional) A [datadog](#datadog-arguments) block.
 - `jira` - (Optional) A [jira](#jira-arguments) block.
 - `microsoft_teams` - (Optional) A [microsoft_teams](#microsoft-teams-arguments) block.
@@ -41,6 +41,10 @@ The following arguments are supported:
 - `azure_faas` - (Optional) A [azure_faas](#azure-function-arguments) block.
 - `google_faas` - (Optional) A [google_faas](#google-cloud-function-arguments) block.
 - `sysdig` - (Optional) A [sysdig](#sysdig-arguments) block.
+- `autotask` - (Optional) A [autotask](#autotask-arguments) block.
+- `mattermost` - (Optional) A [mattermost](#mattermost-arguments) block.
+- `zammad` - (Optional) A [zammad](#zammad-arguments) block.
+- `status_page_io` - (Optional) A [status_page_io](#statuspage-arguments) block.
 
 #### Datadog Arguments
 
@@ -121,6 +125,33 @@ The following arguments are supported:
 > See [the Sysdig outbound integration documentation](https://docs.ilert.com/integrations/sysdig/outbound) for more details.
 
 - `api_key` - (Required) The Sysdig API key.
+
+#### Autotask Arguments
+
+> See [the Autotask outbound integration documentation](https://docs.ilert.com/integrations/autotask/outbound) for more details.
+
+- `url` - (Required) The Autotask server URL.
+- `email` - (Required) The Autotask email.
+- `password` - (Required) The Autotask user password.
+
+#### Mattermost Arguments
+
+> See [the Mattermost outbound integration documentation](https://docs.ilert.com/integrations/mattermost) for more details.
+
+- `url` - (Required) The Mattermost server URL.
+
+#### Zammad Arguments
+
+> See [the Zammad outbound integration documentation](https://docs.ilert.com/integrations/zammad/outbound) for more details.
+
+- `url` - (Required) The Zammad server URL.
+- `api_key` - (Required) The Zammad API key.
+
+#### StatusPage Arguments
+
+> See [the StatusPage outbound integration documentation](https://docs.ilert.com/integrations/statuspage) for more details.
+
+- `api_key` - (Required) The StatusPage API key.
 
 ## Attributes Reference
 
