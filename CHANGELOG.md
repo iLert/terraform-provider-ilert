@@ -1,5 +1,9 @@
 # Changelog
 
+## 14.04.2021, Version 1.3.1
+
+- add auto raise incidents prop to support hours
+
 ## 09.04.2021, Version 1.3.0
 
 - add new alert source types

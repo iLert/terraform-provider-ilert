@@ -183,6 +183,10 @@ func resourceAlertSource() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
+						"auto_raise_incidents": {
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
 						"support_days": {
 							Type:     schema.TypeList,
 							Optional: true,
@@ -482,7 +486,8 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
 			supportHours := &ilert.SupportHours{
-				Timezone: v["timezone"].(string),
+				Timezone:           v["timezone"].(string),
+				AutoRaiseIncidents: v["auto_raise_incidents"].(bool),
 			}
 			sdA := v["support_days"].([]interface{})
 			if len(vL) > 0 {
@@ -811,6 +816,7 @@ func flattenSupportHours(supportHours *ilert.SupportHours) ([]interface{}, error
 
 	result := make(map[string]interface{})
 	result["timezone"] = supportHours.Timezone
+	result["auto_raise_incidents"] = supportHours.AutoRaiseIncidents
 
 	supportDays := make([]interface{}, 0)
 	supportDaysItem := make(map[string]interface{})
