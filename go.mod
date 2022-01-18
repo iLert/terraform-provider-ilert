@@ -10,5 +10,4 @@ require (
 	github.com/iLert/ilert-go v1.6.1
 	github.com/stretchr/testify v1.6.1 // indirect
 	github.com/zclconf/go-cty v1.7.0 // indirect
-	golang.org/x/net v0.0.0-20220114011407-0dd24b26b47d // indirect
 )
