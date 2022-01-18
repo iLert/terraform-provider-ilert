@@ -172,8 +172,10 @@ func buildUptimeMonitor(d *schema.ResourceData) (*ilert.UptimeMonitor, error) {
 					checkParams.Port = v["port"].(int)
 				}
 			}
-			if v["response_keywords"].([]string) != nil {
-				checkParams.ResponseKeywords = v["response_keywords"].([]string)
+			if v["response_keywords"].([]interface{}) != nil {
+				for _, keyword := range v["response_keywords"].([]interface{}) {
+					checkParams.ResponseKeywords = append(checkParams.ResponseKeywords, keyword.(string))
+				}
 			}
 			if v["alert_before_sec"].(int) > 0 {
 				checkParams.AlertBeforeSec = v["alert_before_sec"].(int)

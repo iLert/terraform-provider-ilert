@@ -1,5 +1,9 @@
 # Changelog
 
+## 18.01.2022, Version 1.4.1
+
+- fix uptime monitor creation crash
+
 ## 18.01.2022, Version 1.4.0
 
 - add more uptime monitor check params
