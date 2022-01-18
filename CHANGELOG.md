@@ -1,5 +1,10 @@
 # Changelog
 
+## 18.01.2022, Version 1.4.0
+
+- add more uptime monitor check params
+- add new uptime monitor type: ssl
+
 ## 14.04.2021, Version 1.3.1
 
 - add auto raise incidents prop to support hours

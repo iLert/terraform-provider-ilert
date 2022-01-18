@@ -38,7 +38,7 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the uptime monitor.
 - `region` - (Optional) The region of the uptime monitor. Allowed values are `EU` and `US`. Default: `EU`.
-- `check_type` - (Required) The check type of the uptime monitor. Allowed values are `http`, `ping`, `tcp` and `udp`.
+- `check_type` - (Required) The check type of the uptime monitor. Allowed values are `http`, `ping`, `tcp`, `ssl` and `udp`.
 - `check_params` - (Required) A [check params](#check-params-arguments) block.
 - `interval_sec` - (Optional) The check interval in seconds of the uptime monitor. Allowed values are `60`, `300`, `600`, `900`, `1800` and `3600`. Default: `300`.
 - `timeout_ms` - (Optional) The check timeout in milliseconds of the uptime monitor. Allowed values are between `1000` to `60000`. Default: `30000`.
@@ -51,6 +51,9 @@ The following arguments are supported:
 - `host` - (Optional) The host name to check. This option is required if `check_type` is `ping`, `tcp` or `udp`.
 - `port` - (Optional) The host port to check. This option is required if `check_type` is `tcp` or `udp`.
 - `url` - (Optional) The url to check. This option is required if `check_type` is `http`.
+- `response_keywords` - (Optional) The response keywords to check in the response body. This option is only used for `http`.
+- `alert_before_sec` - (Optional) Time in seconds to alert before the certificate expires. This option is only used for `ssl`.
+- `alert_on_fingerprint_change` - (Optional) Enables alerts when the certificate fingerprint changes. This option is only used for `ssl`.
 
 ## Attributes Reference
 

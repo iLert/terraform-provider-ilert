@@ -38,6 +38,7 @@ func resourceUptimeMonitor() *schema.Resource {
 					"ping",
 					"tcp",
 					"udp",
+					"ssl",
 				}),
 			},
 			"check_params": {
@@ -62,6 +63,22 @@ func resourceUptimeMonitor() *schema.Resource {
 							Type:          schema.TypeString,
 							Optional:      true,
 							ConflictsWith: []string{"check_params.host"},
+						},
+						"response_keywords": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"alert_before_sec": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							ValidateFunc: validation.IntAtLeast(0),
+						},
+						"alert_on_fingerprint_change": {
+							Type:     schema.TypeBool,
+							Optional: true,
 						},
 					},
 				},
@@ -155,6 +172,15 @@ func buildUptimeMonitor(d *schema.ResourceData) (*ilert.UptimeMonitor, error) {
 					checkParams.Port = v["port"].(int)
 				}
 			}
+			if v["response_keywords"].([]string) != nil {
+				checkParams.ResponseKeywords = v["response_keywords"].([]string)
+			}
+			if v["alert_before_sec"].(int) > 0 {
+				checkParams.AlertBeforeSec = v["alert_before_sec"].(int)
+			}
+			if v["alert_on_fingerprint_change"].(bool) {
+				checkParams.AlertOnFingerprintChange = v["alert_on_fingerprint_change"].(bool)
+			}
 			uptimeMonitor.CheckParams = checkParams
 		}
 	}
@@ -235,6 +261,15 @@ func resourceUptimeMonitorRead(d *schema.ResourceData, m interface{}) error {
 		if result.UptimeMonitor.CheckParams.Port > 0 {
 			checkParams["port"] = result.UptimeMonitor.CheckParams.Port
 		}
+	}
+	if result.UptimeMonitor.CheckParams.ResponseKeywords != nil && len(result.UptimeMonitor.CheckParams.ResponseKeywords) > 0 {
+		checkParams["response_keywords"] = result.UptimeMonitor.CheckParams.ResponseKeywords
+	}
+	if result.UptimeMonitor.CheckParams.AlertBeforeSec > 0 {
+		checkParams["alert_before_sec"] = result.UptimeMonitor.CheckParams.AlertBeforeSec
+	}
+	if result.UptimeMonitor.CheckParams.AlertOnFingerprintChange {
+		checkParams["alert_on_fingerprint_change"] = result.UptimeMonitor.CheckParams.AlertOnFingerprintChange
 	}
 	d.Set("check_params", []interface{}{checkParams})
 
