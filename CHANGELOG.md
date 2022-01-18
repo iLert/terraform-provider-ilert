@@ -1,5 +1,9 @@
 # Changelog
 
+## 18.01.2022, Version 1.4.3
+
+- fix github actions
+
 ## 18.01.2022, Version 1.4.2
 
 - fix ssl uptime monitor updates
