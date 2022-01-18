@@ -1,5 +1,9 @@
 # Changelog
 
+## 18.01.2022, Version 1.4.2
+
+- fix ssl uptime monitor updates
+
 ## 18.01.2022, Version 1.4.1
 
 - fix uptime monitor creation crash
