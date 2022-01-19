@@ -1,5 +1,9 @@
 # Changelog
 
+## 19.01.2022, Version 1.4.5
+
+- upgrade dependencies for github actions
+
 ## 19.01.2022, Version 1.4.4
 
 - upgrade dependencies
