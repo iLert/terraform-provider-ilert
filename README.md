@@ -1,8 +1,6 @@
 # Terraform Provider
 
 - Website: https://registry.terraform.io/providers/iLert/ilert/latest/docs
-- [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.svg)](https://gitter.im/hashicorp-terraform/Lobby)
-- Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
 ## Requirements
 
