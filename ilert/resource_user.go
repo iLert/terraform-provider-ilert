@@ -71,12 +71,6 @@ func resourceUser() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "Europe/Berlin",
-				ValidateFunc: validateStringValueFunc([]string{
-					"Europe/Berlin",
-					"America/New_York",
-					"America/Los_Angeles",
-					"Asia/Istanbul",
-				}),
 			},
 			"position": {
 				Type:     schema.TypeString,
@@ -104,6 +98,7 @@ func resourceUser() *schema.Resource {
 					"USER",
 					"RESPONDER",
 					"STAKEHOLDER",
+					"GUEST",
 				}),
 			},
 			"high_priority_notification_preference": {
@@ -122,6 +117,7 @@ func resourceUser() *schema.Resource {
 								"IPHONE",
 								"VOICE_MOBILE",
 								"VOICE_LANDLINE",
+								"WHATSAPP",
 							}),
 						},
 						"delay": {
@@ -148,6 +144,7 @@ func resourceUser() *schema.Resource {
 								"IPHONE",
 								"VOICE_MOBILE",
 								"VOICE_LANDLINE",
+								"WHATSAPP",
 							}),
 						},
 						"delay": {
@@ -172,6 +169,7 @@ func resourceUser() *schema.Resource {
 								"SMS",
 								"ANDROID",
 								"IPHONE",
+								"WHATSAPP",
 							}),
 						},
 						"before_min": {
@@ -216,6 +214,7 @@ func resourceUser() *schema.Resource {
 						"SMS",
 						"VOICE_MOBILE",
 						"VOICE_LANDLINE",
+						"WHATSAPP",
 					}),
 				},
 			},

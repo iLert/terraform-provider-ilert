@@ -55,7 +55,7 @@ The following arguments are supported:
 
 #### Support Hours Arguments
 
-- `timezone` - The timezone of the support hours.
+- `timezone` - The timezone of the support hours (IANA tz database names) e.g. `America/Los_Angeles` or `Europe/Zurich`.
 - `auto_raise_incidents` - Raise priority of all pending incidents for this alert source to 'high' when support hours begin.
 - `support_days` - The [support days](#support-days-arguments) block of the support hours.
 
