@@ -246,7 +246,7 @@ func buildUser(d *schema.ResourceData) (*ilert.User, error) {
 
 	if val, ok := d.GetOk("mobile"); ok {
 		vL := val.([]interface{})
-		if len(vL) > 0 {
+		if len(vL) > 0 && vL[0] != nil {
 			v := vL[0].(map[string]interface{})
 			user.Mobile = &ilert.Phone{
 				RegionCode: v["region_code"].(string),
@@ -257,7 +257,7 @@ func buildUser(d *schema.ResourceData) (*ilert.User, error) {
 
 	if val, ok := d.GetOk("landline"); ok {
 		vL := val.([]interface{})
-		if len(vL) > 0 {
+		if len(vL) > 0 && vL[0] != nil {
 			v := vL[0].(map[string]interface{})
 			user.Landline = &ilert.Phone{
 				RegionCode: v["region_code"].(string),
