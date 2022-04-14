@@ -1,11 +1,15 @@
 package ilert
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/iLert/ilert-go"
@@ -60,13 +64,19 @@ func resourceEscalationPolicy() *schema.Resource {
 				},
 			},
 		},
-		Create: resourceEscalationPolicyCreate,
-		Read:   resourceEscalationPolicyRead,
-		Update: resourceEscalationPolicyUpdate,
-		Delete: resourceEscalationPolicyDelete,
-		Exists: resourceEscalationPolicyExists,
+		CreateContext: resourceEscalationPolicyCreate,
+		ReadContext:   resourceEscalationPolicyRead,
+		UpdateContext: resourceEscalationPolicyUpdate,
+		DeleteContext: resourceEscalationPolicyDelete,
+		Exists:        resourceEscalationPolicyExists,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 	}
 }
@@ -128,45 +138,80 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 	return escalationPolicy, nil
 }
 
-func resourceEscalationPolicyCreate(d *schema.ResourceData, m interface{}) error {
+func resourceEscalationPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	escalationPolicy, err := buildEscalationPolicy(d)
 	if err != nil {
 		log.Printf("[ERROR] Building escalation policy error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Creating escalation policy %s", escalationPolicy.Name)
 
-	result, err := client.CreateEscalationPolicy(&ilert.CreateEscalationPolicyInput{EscalationPolicy: escalationPolicy})
+	result := &ilert.CreateEscalationPolicyOutput{}
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		r, err := client.CreateEscalationPolicy(&ilert.CreateEscalationPolicyInput{EscalationPolicy: escalationPolicy})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with id '%s' to be created", d.Id()))
+			}
+			return resource.NonRetryableError(err)
+		}
+		result = r
+		return nil
+	})
 	if err != nil {
 		log.Printf("[ERROR] Creating iLert escalation policy error %s", err.Error())
-		return err
+		return diag.FromErr(err)
+	}
+	if result == nil || result.EscalationPolicy == nil {
+		log.Printf("[ERROR] Creating iLert escalation policy error: empty response ")
+		return diag.Errorf("escalation policy response is empty")
 	}
 
 	d.SetId(strconv.FormatInt(result.EscalationPolicy.ID, 10))
 
-	return resourceEscalationPolicyRead(d, m)
+	return resourceEscalationPolicyRead(ctx, d, m)
 }
 
-func resourceEscalationPolicyRead(d *schema.ResourceData, m interface{}) error {
+func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	escalationPolicyID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not parse escalation policy id %s", err.Error())
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Reading escalation policy: %s", d.Id())
-	result, err := client.GetEscalationPolicy(&ilert.GetEscalationPolicyInput{EscalationPolicyID: ilert.Int64(escalationPolicyID)})
-	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
-			log.Printf("[WARN] Removing escalation policy %s from state because it no longer exist", d.Id())
-			d.SetId("")
-			return nil
+
+	result := &ilert.GetEscalationPolicyOutput{}
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		r, err := client.GetEscalationPolicy(&ilert.GetEscalationPolicyInput{EscalationPolicyID: ilert.Int64(escalationPolicyID)})
+		if err != nil {
+			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+				log.Printf("[WARN] Removing escalation policy %s from state because it no longer exist", d.Id())
+				d.SetId("")
+				return nil
+			}
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with id '%s' to be read", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not read an escalation policy with ID %s", d.Id()))
 		}
-		return fmt.Errorf("Could not read an escalation policy with ID %s", d.Id())
+		result = r
+		return nil
+	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if result == nil || result.EscalationPolicy == nil {
+		log.Printf("[ERROR] Reading iLert escalation policy error: empty response ")
+		return diag.Errorf("escalation policy response is empty")
 	}
 
 	d.Set("name", result.EscalationPolicy.Name)
@@ -175,59 +220,85 @@ func resourceEscalationPolicyRead(d *schema.ResourceData, m interface{}) error {
 
 	escalationRules, err := flattenEscalationRulesList(result.EscalationPolicy.EscalationRules)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("escalation_rule", escalationRules); err != nil {
-		return fmt.Errorf("error setting escalation rules: %s", err)
+		return diag.Errorf("error setting escalation rules: %s", err)
 	}
 
 	teams, err := flattenTeamsList(result.EscalationPolicy.Teams)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("teams", teams); err != nil {
-		return fmt.Errorf("error setting teams: %s", err)
+		return diag.Errorf("error setting teams: %s", err)
 	}
 
 	return nil
 }
 
-func resourceEscalationPolicyUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceEscalationPolicyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	escalationPolicy, err := buildEscalationPolicy(d)
 	if err != nil {
 		log.Printf("[ERROR] Building escalation policy error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	escalationPolicyID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not parse escalation policy id %s", err.Error())
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Updating escalation policy: %s", d.Id())
-	_, err = client.UpdateEscalationPolicy(&ilert.UpdateEscalationPolicyInput{EscalationPolicy: escalationPolicy, EscalationPolicyID: ilert.Int64(escalationPolicyID)})
+
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+		_, err = client.UpdateEscalationPolicy(&ilert.UpdateEscalationPolicyInput{EscalationPolicy: escalationPolicy, EscalationPolicyID: ilert.Int64(escalationPolicyID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with id '%s' to be updated", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not update an escalation policy with ID %s", d.Id()))
+		}
+		return nil
+	})
+
 	if err != nil {
 		log.Printf("[ERROR] Updating iLert escalation policy error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceEscalationPolicyRead(d, m)
+
+	return resourceEscalationPolicyRead(ctx, d, m)
 }
 
-func resourceEscalationPolicyDelete(d *schema.ResourceData, m interface{}) error {
+func resourceEscalationPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	escalationPolicyID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not parse escalation policy id %s", err.Error())
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Deleting escalation policy: %s", d.Id())
-	_, err = client.DeleteEscalationPolicy(&ilert.DeleteEscalationPolicyInput{EscalationPolicyID: ilert.Int64(escalationPolicyID)})
+
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		_, err = client.DeleteEscalationPolicy(&ilert.DeleteEscalationPolicyInput{EscalationPolicyID: ilert.Int64(escalationPolicyID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with id '%s' to be deleted", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not delete an escalation policy with ID %s", d.Id()))
+		}
+		return nil
+	})
 	if err != nil {
-		return err
+		log.Printf("[ERROR] Deleting iLert escalation policy error %s", err.Error())
+		return diag.FromErr(err)
 	}
+
 	d.SetId("")
 	return nil
 }

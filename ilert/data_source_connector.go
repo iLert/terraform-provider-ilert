@@ -1,10 +1,12 @@
 package ilert
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/iLert/ilert-go"
@@ -12,7 +14,7 @@ import (
 
 func dataSourceConnector() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceConnectorRead,
+		ReadContext: dataSourceConnectorRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -27,18 +29,21 @@ func dataSourceConnector() *schema.Resource {
 	}
 }
 
-func dataSourceConnectorRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceConnectorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
 	log.Printf("[DEBUG] Reading iLert connector")
 
 	searchName := d.Get("name").(string)
 
-	return resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		resp, err := client.GetConnectors(&ilert.GetConnectorsInput{})
 		if err != nil {
-			time.Sleep(2 * time.Second)
-			return resource.RetryableError(err)
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for connector with id '%s' to be read", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not read a connector with ID %s", d.Id()))
 		}
 
 		var found *ilert.ConnectorOutput
@@ -52,7 +57,7 @@ func dataSourceConnectorRead(d *schema.ResourceData, meta interface{}) error {
 
 		if found == nil {
 			return resource.NonRetryableError(
-				fmt.Errorf("Unable to locate any connector with the name: %s", searchName),
+				fmt.Errorf("unable to locate any connector with the name: %s", searchName),
 			)
 		}
 
@@ -62,4 +67,10 @@ func dataSourceConnectorRead(d *schema.ResourceData, meta interface{}) error {
 
 		return nil
 	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
 }

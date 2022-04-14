@@ -1,11 +1,15 @@
 package ilert
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/iLert/ilert-go"
@@ -84,22 +88,22 @@ func resourceUser() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "en",
-				ValidateFunc: validateStringValueFunc([]string{
+				ValidateFunc: validation.StringInSlice([]string{
 					"en",
 					"de",
-				}),
+				}, false),
 			},
 			"role": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "USER",
-				ValidateFunc: validateStringValueFunc([]string{
+				ValidateFunc: validation.StringInSlice([]string{
 					"ADMIN",
 					"USER",
 					"RESPONDER",
 					"STAKEHOLDER",
 					"GUEST",
-				}),
+				}, false),
 			},
 			"high_priority_notification_preference": {
 				Type:     schema.TypeList,
@@ -110,7 +114,7 @@ func resourceUser() *schema.Resource {
 						"method": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateStringValueFunc([]string{
+							ValidateFunc: validation.StringInSlice([]string{
 								"EMAIL",
 								"SMS",
 								"ANDROID",
@@ -118,7 +122,7 @@ func resourceUser() *schema.Resource {
 								"VOICE_MOBILE",
 								"VOICE_LANDLINE",
 								"WHATSAPP",
-							}),
+							}, false),
 						},
 						"delay": {
 							Type:     schema.TypeInt,
@@ -137,7 +141,7 @@ func resourceUser() *schema.Resource {
 						"method": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateStringValueFunc([]string{
+							ValidateFunc: validation.StringInSlice([]string{
 								"EMAIL",
 								"SMS",
 								"ANDROID",
@@ -145,7 +149,7 @@ func resourceUser() *schema.Resource {
 								"VOICE_MOBILE",
 								"VOICE_LANDLINE",
 								"WHATSAPP",
-							}),
+							}, false),
 						},
 						"delay": {
 							Type:     schema.TypeInt,
@@ -164,19 +168,19 @@ func resourceUser() *schema.Resource {
 						"method": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateStringValueFunc([]string{
+							ValidateFunc: validation.StringInSlice([]string{
 								"EMAIL",
 								"SMS",
 								"ANDROID",
 								"IPHONE",
 								"WHATSAPP",
-							}),
+							}, false),
 						},
 						"before_min": {
 							Type:     schema.TypeInt,
 							Optional: true,
 							Default:  0,
-							ValidateFunc: validateIntValueFunc([]int{
+							ValidateFunc: validation.IntInSlice([]int{
 								0,
 								15,
 								30,
@@ -195,11 +199,11 @@ func resourceUser() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
-					ValidateFunc: validateStringValueFunc([]string{
+					ValidateFunc: validation.StringInSlice([]string{
 						"ACCEPTED",
 						"ESCALATED",
 						"RESOLVED",
-					}),
+					}, false),
 				},
 			},
 			"subscribed_incident_update_notification_types": {
@@ -207,7 +211,7 @@ func resourceUser() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
-					ValidateFunc: validateStringValueFunc([]string{
+					ValidateFunc: validation.StringInSlice([]string{
 						"EMAIL",
 						"ANDROID",
 						"IPHONE",
@@ -215,17 +219,23 @@ func resourceUser() *schema.Resource {
 						"VOICE_MOBILE",
 						"VOICE_LANDLINE",
 						"WHATSAPP",
-					}),
+					}, false),
 				},
 			},
 		},
-		Create: resourceUserCreate,
-		Read:   resourceUserRead,
-		Update: resourceUserUpdate,
-		Delete: resourceUserDelete,
-		Exists: resourceUserExists,
+		CreateContext: resourceUserCreate,
+		ReadContext:   resourceUserRead,
+		UpdateContext: resourceUserUpdate,
+		DeleteContext: resourceUserDelete,
+		Exists:        resourceUserExists,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 	}
 }
@@ -350,44 +360,79 @@ func buildUser(d *schema.ResourceData) (*ilert.User, error) {
 	return user, nil
 }
 
-func resourceUserCreate(d *schema.ResourceData, m interface{}) error {
+func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	user, err := buildUser(d)
 	if err != nil {
 		log.Printf("[ERROR] Building user error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Creating user %s", user.Username)
 
-	result, err := client.CreateUser(&ilert.CreateUserInput{User: user})
+	result := &ilert.CreateUserOutput{}
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		r, err := client.CreateUser(&ilert.CreateUserInput{User: user})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for user with id '%s' to be created", d.Id()))
+			}
+			return resource.NonRetryableError(err)
+		}
+		result = r
+		return nil
+	})
 	if err != nil {
 		log.Printf("[ERROR] Creating iLert user error %s", err.Error())
-		return err
+		return diag.FromErr(err)
+	}
+	if result == nil || result.User == nil {
+		log.Printf("[ERROR] Creating iLert user error: empty response ")
+		return diag.Errorf("user response is empty")
 	}
 
 	d.SetId(strconv.FormatInt(result.User.ID, 10))
 
-	return resourceUserRead(d, m)
+	return resourceUserRead(ctx, d, m)
 }
 
-func resourceUserRead(d *schema.ResourceData, m interface{}) error {
+func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	userID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Reading user: %s", d.Id())
-	result, err := client.GetUser(&ilert.GetUserInput{UserID: ilert.Int64(userID)})
-	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
-			log.Printf("[WARN] Removing user %s from state because it no longer exist", d.Id())
-			d.SetId("")
-			return nil
+
+	result := &ilert.GetUserOutput{}
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		r, err := client.GetUser(&ilert.GetUserInput{UserID: ilert.Int64(userID)})
+		if err != nil {
+			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+				log.Printf("[WARN] Removing user %s from state because it no longer exist", d.Id())
+				d.SetId("")
+				return nil
+			}
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for user with id '%s' to be read", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not read an user with ID %s", d.Id()))
 		}
-		return fmt.Errorf("Could not read an user with ID %s", d.Id())
+		result = r
+		return nil
+	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if result == nil || result.User == nil {
+		log.Printf("[ERROR] Reading iLert user error: empty response ")
+		return diag.Errorf("user response is empty")
 	}
 
 	d.Set("username", result.User.Username)
@@ -426,65 +471,91 @@ func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 
 	highPriorityNotificationPreferences, err := flattenNotificationPreferencesList(result.User.NotificationPreferences)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("high_priority_notification_preference", highPriorityNotificationPreferences); err != nil {
-		return fmt.Errorf("error setting high priority notification preferences: %s", err)
+		return diag.Errorf("error setting high priority notification preferences: %s", err)
 	}
 
 	lowPriorityNotificationPreferences, err := flattenNotificationPreferencesList(result.User.LowNotificationPreferences)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("low_priority_notification_preference", lowPriorityNotificationPreferences); err != nil {
-		return fmt.Errorf("error setting low priority notification preferences: %s", err)
+		return diag.Errorf("error setting low priority notification preferences: %s", err)
 	}
 
 	onCallNotificationPreferences, err := flattenOnCallNotificationPreferencesList(result.User.OnCallNotificationPreferences)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("on_call_notification_preference", onCallNotificationPreferences); err != nil {
-		return fmt.Errorf("error setting on-call notification preferences: %s", err)
+		return diag.Errorf("error setting on-call notification preferences: %s", err)
 	}
 
 	return nil
 }
 
-func resourceUserUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	user, err := buildUser(d)
 	if err != nil {
 		log.Printf("[ERROR] Building user error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	userID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Updating user: %s", d.Id())
-	_, err = client.UpdateUser(&ilert.UpdateUserInput{User: user, UserID: ilert.Int64(userID)})
+
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+		_, err = client.UpdateUser(&ilert.UpdateUserInput{User: user, UserID: ilert.Int64(userID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for user with id '%s' to be updated", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not update an user with ID %s", d.Id()))
+		}
+		return nil
+	})
+
 	if err != nil {
 		log.Printf("[ERROR] Updating iLert user error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceUserRead(d, m)
+
+	return resourceUserRead(ctx, d, m)
 }
 
-func resourceUserDelete(d *schema.ResourceData, m interface{}) error {
+func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	userID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Deleting user: %s", d.Id())
-	_, err = client.DeleteUser(&ilert.DeleteUserInput{UserID: ilert.Int64(userID)})
+
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		_, err = client.DeleteUser(&ilert.DeleteUserInput{UserID: ilert.Int64(userID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for user with id '%s' to be deleted", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not delete an user with ID %s", d.Id()))
+		}
+		return nil
+	})
 	if err != nil {
-		return err
+		log.Printf("[ERROR] Deleting iLert user error %s", err.Error())
+		return diag.FromErr(err)
 	}
+
 	d.SetId("")
 	return nil
 }

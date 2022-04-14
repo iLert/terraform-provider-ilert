@@ -1,11 +1,15 @@
 package ilert
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/iLert/ilert-go"
@@ -49,7 +53,7 @@ func resourceConnection() *schema.Resource {
 						"type": {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validateStringValueFunc(ilert.ConnectorTypesAll),
+							ValidateFunc: validation.StringInSlice(ilert.ConnectorTypesAll, false),
 						},
 					},
 				},
@@ -59,17 +63,18 @@ func resourceConnection() *schema.Resource {
 				Optional: true,
 				ForceNew: false,
 				Default:  ilert.ConnectionTriggerModes.Automatic,
-				ValidateFunc: validateStringValueFunc([]string{
+				ValidateFunc: validation.StringInSlice([]string{
 					ilert.ConnectionTriggerModes.Automatic,
 					ilert.ConnectionTriggerModes.Manual,
-				}),
+				}, false),
 			},
 			"trigger_types": {
 				Type:     schema.TypeList,
 				Optional: true,
+				MinItems: 1,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validateStringValueFunc(ilert.ConnectionTriggerTypesAll),
+					ValidateFunc: validation.StringInSlice(ilert.ConnectionTriggerTypesAll, false),
 				},
 			},
 			"datadog": {
@@ -106,10 +111,10 @@ func resourceConnection() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "EU",
-							ValidateFunc: validateStringValueFunc([]string{
+							ValidateFunc: validation.StringInSlice([]string{
 								"EU",
 								"US",
-							}),
+							}, false),
 						},
 						"tags": {
 							Type:     schema.TypeList,
@@ -155,13 +160,13 @@ func resourceConnection() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "Task",
-							ValidateFunc: validateStringValueFunc([]string{
+							ValidateFunc: validation.StringInSlice([]string{
 								"Bug",
 								"Epic",
 								"Subtask",
 								"Story",
 								"Task",
-							}),
+							}, false),
 						},
 						"body_template": {
 							Type:     schema.TypeString,
@@ -322,12 +327,12 @@ func resourceConnection() *schema.Resource {
 						"priority": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ValidateFunc: validateStringValueFunc([]string{
+							ValidateFunc: validation.StringInSlice([]string{
 								"urgent",
 								"high",
 								"normal",
 								"low",
-							}),
+							}, false),
 						},
 					},
 				},
@@ -406,11 +411,11 @@ func resourceConnection() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "firstLine",
-							ValidateFunc: validateStringValueFunc([]string{
+							ValidateFunc: validation.StringInSlice([]string{
 								"firstLine",
 								"secondLine",
 								"partial",
-							}),
+							}, false),
 						},
 					},
 				},
@@ -766,13 +771,19 @@ func resourceConnection() *schema.Resource {
 				Computed: true,
 			},
 		},
-		Create: resourceConnectionCreate,
-		Read:   resourceConnectionRead,
-		Update: resourceConnectionUpdate,
-		Delete: resourceConnectionDelete,
-		Exists: resourceConnectionExists,
+		CreateContext: resourceConnectionCreate,
+		ReadContext:   resourceConnectionRead,
+		UpdateContext: resourceConnectionUpdate,
+		DeleteContext: resourceConnectionDelete,
+		Exists:        resourceConnectionExists,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 	}
 }
@@ -962,21 +973,26 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("email"); ok {
-		vL := val.([]interface{})
-		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
-			params := &ilert.ConnectionParamsEmail{
-				Subject:      v["url"].(string),
-				BodyTemplate: v["body_template"].(string),
+		if vL, ok := val.([]interface{}); ok && len(vL) > 0 {
+			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
+				params := &ilert.ConnectionParamsEmail{}
+				if p, ok := v["url"].(string); ok && p != "" {
+					params.Subject = p
+				}
+				if p, ok := v["body_template"].(string); ok && p != "" {
+					params.BodyTemplate = p
+				}
+				if vL, ok := v["recipients"].([]interface{}); ok && len(vL) > 0 {
+					sL := make([]string, 0)
+					for _, m := range vL {
+						if v, ok := m.(string); ok && v != "" {
+							sL = append(sL, v)
+						}
+					}
+					params.Recipients = sL
+				}
+				connection.Params = params
 			}
-			vL := v["recipients"].([]interface{})
-			sL := make([]string, 0)
-			for _, m := range vL {
-				v := m.(string)
-				sL = append(sL, v)
-			}
-			params.Recipients = sL
-			connection.Params = params
 		}
 	}
 
@@ -1045,51 +1061,92 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	return connection, nil
 }
 
-func resourceConnectionCreate(d *schema.ResourceData, m interface{}) error {
+func resourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connection, err := buildConnection(d)
 	if err != nil {
 		log.Printf("[ERROR] Building connection error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Creating connection %s", connection.Name)
 
-	result, err := client.CreateConnection(&ilert.CreateConnectionInput{Connection: connection})
+	result := &ilert.CreateConnectionOutput{}
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		r, err := client.CreateConnection(&ilert.CreateConnectionInput{Connection: connection})
+		if err != nil {
+			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+				log.Printf("[WARN] Removing connection %s from state because it no longer exist", d.Id())
+				d.SetId("")
+				return nil
+			}
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for connection with id '%s' to be read", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not read an connection with ID %s", d.Id()))
+		}
+		result = r
+		return nil
+	})
+
 	if err != nil {
-		log.Printf("[ERROR] Creating iLert connection error %s", err.Error())
-		return err
+		return diag.FromErr(err)
+	}
+
+	if result == nil || result.Connection == nil {
+		log.Printf("[ERROR] Creating iLert connection error: empty response ")
+		return diag.FromErr(fmt.Errorf("connection response is empty"))
 	}
 
 	d.SetId(result.Connection.ID)
 
-	return resourceConnectionRead(d, m)
+	return resourceConnectionRead(ctx, d, m)
 }
 
-func resourceConnectionRead(d *schema.ResourceData, m interface{}) error {
+func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connectionID := d.Id()
 	log.Printf("[DEBUG] Reading connection: %s", d.Id())
-	result, err := client.GetConnection(&ilert.GetConnectionInput{ConnectionID: ilert.String(connectionID)})
-	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
-			log.Printf("[WARN] Removing connection %s from state because it no longer exist", d.Id())
-			d.SetId("")
-			return nil
+
+	result := &ilert.GetConnectionOutput{}
+	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		r, err := client.GetConnection(&ilert.GetConnectionInput{ConnectionID: ilert.String(connectionID)})
+		if err != nil {
+			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+				log.Printf("[WARN] Removing connection %s from state because it no longer exist", d.Id())
+				d.SetId("")
+				return nil
+			}
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for connection with id '%s' to be read", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not read an connection with ID %s", d.Id()))
 		}
-		return fmt.Errorf("Could not read an connection with ID %s", d.Id())
+		result = r
+		return nil
+	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if result == nil || result.Connection == nil {
+		log.Printf("[ERROR] Reading iLert connection error: empty response ")
+		return diag.Errorf("connection response is empty")
 	}
 
 	d.Set("name", result.Connection.Name)
 
 	alertSources, err := flattenConnectionAlertSourceIDList(result.Connection.AlertSourceIDs)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("alert_source", alertSources); err != nil {
-		return fmt.Errorf("error setting alert sources: %s", err)
+		return diag.Errorf("error setting alert sources: %s", err)
 	}
 
 	connector := map[string]interface{}{}
@@ -1221,34 +1278,60 @@ func resourceConnectionRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceConnectionUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceConnectionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connection, err := buildConnection(d)
 	if err != nil {
 		log.Printf("[ERROR] Building connection error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	connectionID := d.Id()
 	log.Printf("[DEBUG] Updating connection: %s", d.Id())
-	_, err = client.UpdateConnection(&ilert.UpdateConnectionInput{Connection: connection, ConnectionID: ilert.String(connectionID)})
+
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+		_, err = client.UpdateConnection(&ilert.UpdateConnectionInput{Connection: connection, ConnectionID: ilert.String(connectionID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for connection with id '%s' to be updated", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not update an connection with ID %s", d.Id()))
+		}
+		return nil
+	})
+
 	if err != nil {
 		log.Printf("[ERROR] Updating iLert connection error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceConnectionRead(d, m)
+
+	return resourceConnectionRead(ctx, d, m)
 }
 
-func resourceConnectionDelete(d *schema.ResourceData, m interface{}) error {
+func resourceConnectionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connectionID := d.Id()
 	log.Printf("[DEBUG] Deleting connection: %s", d.Id())
-	_, err := client.DeleteConnection(&ilert.DeleteConnectionInput{ConnectionID: ilert.String(connectionID)})
+
+	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		_, err := client.DeleteConnection(&ilert.DeleteConnectionInput{ConnectionID: ilert.String(connectionID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for connection with id '%s' to be deleted", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not delete an connection with ID %s", d.Id()))
+		}
+		return nil
+	})
 	if err != nil {
-		return err
+		log.Printf("[ERROR] Deleting iLert connection error %s", err.Error())
+		return diag.FromErr(err)
 	}
+
 	d.SetId("")
 	return nil
 }

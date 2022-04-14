@@ -1,11 +1,13 @@
 package ilert
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/iLert/ilert-go"
@@ -13,7 +15,7 @@ import (
 
 func dataSourceUser() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceUserRead,
+		ReadContext: dataSourceUserRead,
 
 		Schema: map[string]*schema.Schema{
 			"email": {
@@ -28,18 +30,21 @@ func dataSourceUser() *schema.Resource {
 	}
 }
 
-func dataSourceUserRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
 	log.Printf("[DEBUG] Reading iLert user")
 
 	searchEmail := d.Get("email").(string)
 
-	return resource.Retry(2*time.Minute, func() *resource.RetryError {
+	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		resp, err := client.GetUsers(&ilert.GetUsersInput{})
 		if err != nil {
-			time.Sleep(2 * time.Second)
-			return resource.RetryableError(err)
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for user with id '%s' to be read", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not read an user with ID %s", d.Id()))
 		}
 
 		var found *ilert.User
@@ -53,7 +58,7 @@ func dataSourceUserRead(d *schema.ResourceData, meta interface{}) error {
 
 		if found == nil {
 			return resource.NonRetryableError(
-				fmt.Errorf("Unable to locate any user with the email: %s", searchEmail),
+				fmt.Errorf("unable to locate any user with the email: %s", searchEmail),
 			)
 		}
 
@@ -63,4 +68,10 @@ func dataSourceUserRead(d *schema.ResourceData, meta interface{}) error {
 
 		return nil
 	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
 }

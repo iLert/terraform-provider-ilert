@@ -1,12 +1,16 @@
 package ilert
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/iLert/ilert-go"
@@ -42,7 +46,7 @@ func resourceAlertSource() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validateStringValueFunc(ilert.AlertSourceIntegrationTypesAll),
+				ValidateFunc: validation.StringInSlice(ilert.AlertSourceIntegrationTypesAll, false),
 			},
 			"escalation_policy": {
 				Type:        schema.TypeString,
@@ -54,13 +58,13 @@ func resourceAlertSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "ONE_INCIDENT_PER_EMAIL",
-				ValidateFunc: validateStringValueFunc([]string{
+				ValidateFunc: validation.StringInSlice([]string{
 					"ONE_INCIDENT_PER_EMAIL",
 					"ONE_INCIDENT_PER_EMAIL_SUBJECT",
 					"ONE_PENDING_INCIDENT_ALLOWED",
 					"ONE_OPEN_INCIDENT_ALLOWED",
 					"OPEN_RESOLVE_ON_EXTRACTION",
-				}),
+				}, false),
 			},
 			"active": {
 				Type:     schema.TypeBool,
@@ -71,17 +75,17 @@ func resourceAlertSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "HIGH",
-				ValidateFunc: validateStringValueFunc([]string{
+				ValidateFunc: validation.StringInSlice([]string{
 					"HIGH",
 					"LOW",
 					"HIGH_DURING_SUPPORT_HOURS",
 					"LOW_DURING_SUPPORT_HOURS",
-				}),
+				}, false),
 			},
 			"auto_resolution_timeout": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ValidateFunc: validateStringValueFunc([]string{
+				ValidateFunc: validation.StringInSlice([]string{
 					"PT10M",
 					"PT20M",
 					"PT30M",
@@ -96,7 +100,7 @@ func resourceAlertSource() *schema.Resource {
 					"PT6H",
 					"PT12H",
 					"PT24H",
-				}),
+				}, false),
 			},
 			"email_filtered": {
 				Type:     schema.TypeBool,
@@ -112,19 +116,19 @@ func resourceAlertSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "AND",
-				ValidateFunc: validateStringValueFunc([]string{
+				ValidateFunc: validation.StringInSlice([]string{
 					"AND",
 					"OR",
-				}),
+				}, false),
 			},
 			"resolve_filter_operator": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "AND",
-				ValidateFunc: validateStringValueFunc([]string{
+				ValidateFunc: validation.StringInSlice([]string{
 					"AND",
 					"OR",
-				}),
+				}, false),
 			},
 			"teams": {
 				Type:     schema.TypeList,
@@ -151,7 +155,7 @@ func resourceAlertSource() *schema.Resource {
 							Type:     schema.TypeInt,
 							Optional: true,
 							Default:  900,
-							ValidateFunc: validateIntValueFunc([]int{
+							ValidateFunc: validation.IntInSlice([]int{
 								1 * 60,
 								5 * 60,
 								10 * 60,
@@ -288,19 +292,19 @@ func resourceAlertSource() *schema.Resource {
 						"field": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateStringValueFunc([]string{
+							ValidateFunc: validation.StringInSlice([]string{
 								"EMAIL_SUBJECT",
 								"EMAIL_BODY",
-							}),
+							}, false),
 						},
 						"criteria": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateStringValueFunc([]string{
+							ValidateFunc: validation.StringInSlice([]string{
 								"ALL_TEXT_BEFORE",
 								"ALL_TEXT_AFTER",
 								"MATCHES_REGEX",
-							}),
+							}, false),
 						},
 						"value": {
 							Type:     schema.TypeString,
@@ -318,16 +322,16 @@ func resourceAlertSource() *schema.Resource {
 						"field": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateStringValueFunc([]string{
+							ValidateFunc: validation.StringInSlice([]string{
 								"EMAIL_FROM",
 								"EMAIL_SUBJECT",
 								"EMAIL_BODY",
-							}),
+							}, false),
 						},
 						"criteria": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateStringValueFunc([]string{
+							ValidateFunc: validation.StringInSlice([]string{
 								"CONTAINS_ANY_WORDS",
 								"CONTAINS_NOT_WORDS",
 								"CONTAINS_STRING",
@@ -336,7 +340,7 @@ func resourceAlertSource() *schema.Resource {
 								"IS_NOT_STRING",
 								"MATCHES_REGEX",
 								"MATCHES_NOT_REGEX",
-							}),
+							}, false),
 						},
 						"value": {
 							Type:     schema.TypeString,
@@ -354,16 +358,16 @@ func resourceAlertSource() *schema.Resource {
 						"field": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateStringValueFunc([]string{
+							ValidateFunc: validation.StringInSlice([]string{
 								"EMAIL_FROM",
 								"EMAIL_SUBJECT",
 								"EMAIL_BODY",
-							}),
+							}, false),
 						},
 						"criteria": {
 							Type:     schema.TypeString,
 							Required: true,
-							ValidateFunc: validateStringValueFunc([]string{
+							ValidateFunc: validation.StringInSlice([]string{
 								"CONTAINS_ANY_WORDS",
 								"CONTAINS_NOT_WORDS",
 								"CONTAINS_STRING",
@@ -372,7 +376,7 @@ func resourceAlertSource() *schema.Resource {
 								"IS_NOT_STRING",
 								"MATCHES_REGEX",
 								"MATCHES_NOT_REGEX",
-							}),
+							}, false),
 						},
 						"value": {
 							Type:     schema.TypeString,
@@ -396,13 +400,19 @@ func resourceAlertSource() *schema.Resource {
 				Sensitive: true,
 			},
 		},
-		Create: resourceAlertSourceCreate,
-		Read:   resourceAlertSourceRead,
-		Update: resourceAlertSourceUpdate,
-		Delete: resourceAlertSourceDelete,
-		Exists: resourceAlertSourceExists,
+		CreateContext: resourceAlertSourceCreate,
+		ReadContext:   resourceAlertSourceRead,
+		UpdateContext: resourceAlertSourceUpdate,
+		DeleteContext: resourceAlertSourceDelete,
+		Exists:        resourceAlertSourceExists,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 	}
 }
@@ -608,43 +618,75 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 	return alertSource, nil
 }
 
-func resourceAlertSourceCreate(d *schema.ResourceData, m interface{}) error {
+func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	alertSource, err := buildAlertSource(d)
 	if err != nil {
 		log.Printf("[ERROR] Building alert source error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[DEBUG] Creating iLert alert source %s\n", alertSource.Name)
-	result, err := client.CreateAlertSource(&ilert.CreateAlertSourceInput{
-		AlertSource: alertSource,
+	result := &ilert.CreateAlertSourceOutput{}
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		r, err := client.CreateAlertSource(&ilert.CreateAlertSourceInput{AlertSource: alertSource})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be created", d.Id()))
+			}
+			return resource.NonRetryableError(err)
+		}
+		result = r
+		return nil
 	})
 	if err != nil {
 		log.Printf("[ERROR] Creating iLert alert source error %s", err.Error())
-		return err
+		return diag.FromErr(err)
+	}
+	if result == nil || result.AlertSource == nil {
+		log.Printf("[ERROR] Creating iLert alert source error: empty response ")
+		return diag.Errorf("alert source response is empty")
 	}
 	d.SetId(strconv.FormatInt(result.AlertSource.ID, 10))
-	return resourceAlertSourceRead(d, m)
+	return resourceAlertSourceRead(ctx, d, m)
 }
 
-func resourceAlertSourceRead(d *schema.ResourceData, m interface{}) error {
+func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	alertSourceID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Reading alert source: %s", d.Id())
-	result, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
-	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
-			log.Printf("[WARN] Removing alert source %s from state because it no longer exist", d.Id())
-			d.SetId("")
-			return nil
+	result := &ilert.GetAlertSourceOutput{}
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		r, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
+		if err != nil {
+			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+				log.Printf("[WARN] Removing alert source %s from state because it no longer exist", d.Id())
+				d.SetId("")
+				return nil
+			}
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be read", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s", d.Id()))
 		}
-		return fmt.Errorf("Could not read an alert source with ID %s", d.Id())
+		result = r
+		return nil
+	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if result == nil || result.AlertSource == nil {
+		log.Printf("[ERROR] Reading iLert alert source error: empty response ")
+		return diag.Errorf("alert source response is empty")
 	}
 
 	d.Set("name", result.AlertSource.Name)
@@ -703,72 +745,94 @@ func resourceAlertSourceRead(d *schema.ResourceData, m interface{}) error {
 
 	teams, err := flattenTeamsList(result.AlertSource.Teams)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("teams", teams); err != nil {
-		return fmt.Errorf("error setting teams: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting teams: %s", err))
 	}
 
 	emailPredicates, err := flattenEmailPredicateList(result.AlertSource.EmailPredicates)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("email_predicate", emailPredicates); err != nil {
-		return fmt.Errorf("error setting email predicates: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting email predicates: %s", err))
 	}
 
 	emailResolvePredicates, err := flattenEmailPredicateList(result.AlertSource.EmailResolvePredicates)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("email_resolve_predicate", emailResolvePredicates); err != nil {
-		return fmt.Errorf("error setting email resolve predicates: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting email resolve predicates: %s", err))
 	}
 
 	supportHours, err := flattenSupportHours(result.AlertSource.SupportHours)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("support_hours", supportHours); err != nil {
-		return fmt.Errorf("error setting support hours: %s", err)
+		return diag.FromErr(fmt.Errorf("error setting support hours: %s", err))
 	}
 
 	return nil
 }
 
-func resourceAlertSourceUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceAlertSourceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	alertSource, err := buildAlertSource(d)
 	if err != nil {
 		log.Printf("[ERROR] Building alert source error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	alertSourceID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Updating alert source: %s", d.Id())
-	_, err = client.UpdateAlertSource(&ilert.UpdateAlertSourceInput{AlertSource: alertSource, AlertSourceID: ilert.Int64(alertSourceID)})
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+		_, err = client.UpdateAlertSource(&ilert.UpdateAlertSourceInput{AlertSource: alertSource, AlertSourceID: ilert.Int64(alertSourceID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be updated", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not update an alert source with ID %s", d.Id()))
+		}
+		return nil
+	})
+
 	if err != nil {
 		log.Printf("[ERROR] Updating iLert alert source error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceAlertSourceRead(d, m)
+	return resourceAlertSourceRead(ctx, d, m)
 }
 
-func resourceAlertSourceDelete(d *schema.ResourceData, m interface{}) error {
+func resourceAlertSourceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	alertSourceID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Deleting alert source: %s", d.Id())
-	_, err = client.DeleteAlertSource(&ilert.DeleteAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		_, err = client.DeleteAlertSource(&ilert.DeleteAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be deleted", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not delete an alert source with ID %s", d.Id()))
+		}
+		return nil
+	})
 	if err != nil {
-		return err
+		log.Printf("[ERROR] Deleting iLert alert source error %s", err.Error())
+		return diag.FromErr(err)
 	}
 	d.SetId("")
 	return nil

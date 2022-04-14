@@ -1,10 +1,11 @@
 package ilert
 
 import (
-	"errors"
+	"context"
 	"fmt"
 	"runtime"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/iLert/ilert-go"
 )
@@ -59,17 +60,18 @@ func Provider() *schema.Provider {
 			"ilert_team":              resourceTeam(),
 		},
 	}
-	p.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+	p.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		terraformVersion := p.TerraformVersion
 		if terraformVersion == "" {
 			terraformVersion = "0.11+compatible"
 		}
-		return providerConfigure(d, terraformVersion)
+		return providerConfigure(ctx, d, terraformVersion)
 	}
 	return p
 }
 
-func providerConfigure(d *schema.ResourceData, terraformVersion string) (interface{}, error) {
+func providerConfigure(ctx context.Context, d *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	endpoint := d.Get("endpoint").(string)
 	apiToken := d.Get("api_token").(string)
 	organization := d.Get("organization").(string)
@@ -87,7 +89,12 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 	} else if organization != "" && username != "" && password != "" {
 		ilert.WithBasicAuth(organization, username, password)(client)
 	} else {
-		return nil, errors.New("Api token or basic credentials are required")
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Api token or basic credentials are required",
+			Detail:   "Unable to create iLert client with the given token or basic credentials, either the token or basic credentials are empty or invalid",
+		})
+		return nil, diags
 	}
 	return client, nil
 }

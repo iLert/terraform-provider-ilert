@@ -1,11 +1,15 @@
 package ilert
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/iLert/ilert-go"
@@ -24,22 +28,22 @@ func resourceUptimeMonitor() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				Default:  "EU",
-				ValidateFunc: validateStringValueFunc([]string{
+				ValidateFunc: validation.StringInSlice([]string{
 					"EU",
 					"US",
-				}),
+				}, false),
 			},
 			"check_type": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
-				ValidateFunc: validateStringValueFunc([]string{
+				ValidateFunc: validation.StringInSlice([]string{
 					"http",
 					"ping",
 					"tcp",
 					"udp",
 					"ssl",
-				}),
+				}, false),
 			},
 			"check_params": {
 				Type:     schema.TypeList,
@@ -87,7 +91,7 @@ func resourceUptimeMonitor() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 				Default:  300,
-				ValidateFunc: validateIntValueFunc([]int{
+				ValidateFunc: validation.IntInSlice([]int{
 					1 * 60,
 					5 * 60,
 					10 * 60,
@@ -130,13 +134,19 @@ func resourceUptimeMonitor() *schema.Resource {
 				Computed: true,
 			},
 		},
-		Create: resourceUptimeMonitorCreate,
-		Read:   resourceUptimeMonitorRead,
-		Update: resourceUptimeMonitorUpdate,
-		Delete: resourceUptimeMonitorDelete,
-		Exists: resourceUptimeMonitorExists,
+		CreateContext: resourceUptimeMonitorCreate,
+		ReadContext:   resourceUptimeMonitorRead,
+		UpdateContext: resourceUptimeMonitorUpdate,
+		DeleteContext: resourceUptimeMonitorDelete,
+		Exists:        resourceUptimeMonitorExists,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 	}
 }
@@ -210,45 +220,80 @@ func buildUptimeMonitor(d *schema.ResourceData) (*ilert.UptimeMonitor, error) {
 	return uptimeMonitor, nil
 }
 
-func resourceUptimeMonitorCreate(d *schema.ResourceData, m interface{}) error {
+func resourceUptimeMonitorCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	uptimeMonitor, err := buildUptimeMonitor(d)
 	if err != nil {
 		log.Printf("[ERROR] Building uptime monitor error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Creating uptime monitor %s", uptimeMonitor.Name)
 
-	result, err := client.CreateUptimeMonitor(&ilert.CreateUptimeMonitorInput{UptimeMonitor: uptimeMonitor})
+	result := &ilert.CreateUptimeMonitorOutput{}
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		r, err := client.CreateUptimeMonitor(&ilert.CreateUptimeMonitorInput{UptimeMonitor: uptimeMonitor})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor with id '%s' to be created", d.Id()))
+			}
+			return resource.NonRetryableError(err)
+		}
+		result = r
+		return nil
+	})
 	if err != nil {
 		log.Printf("[ERROR] Creating iLert uptime monitor error %s", err.Error())
-		return err
+		return diag.FromErr(err)
+	}
+	if result == nil || result.UptimeMonitor == nil {
+		log.Printf("[ERROR] Creating iLert uptime monitor error: empty response ")
+		return diag.Errorf("alert source response is empty")
 	}
 
 	d.SetId(strconv.FormatInt(result.UptimeMonitor.ID, 10))
 
-	return resourceUptimeMonitorRead(d, m)
+	return resourceUptimeMonitorRead(ctx, d, m)
 }
 
-func resourceUptimeMonitorRead(d *schema.ResourceData, m interface{}) error {
+func resourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	uptimeMonitorID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not parse uptime monitor id %s", err.Error())
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Reading uptime monitor: %s", d.Id())
-	result, err := client.GetUptimeMonitor(&ilert.GetUptimeMonitorInput{UptimeMonitorID: ilert.Int64(uptimeMonitorID)})
-	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
-			log.Printf("[WARN] Removing uptime monitor %s from state because it no longer exist", d.Id())
-			d.SetId("")
-			return nil
+
+	result := &ilert.GetUptimeMonitorOutput{}
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		r, err := client.GetUptimeMonitor(&ilert.GetUptimeMonitorInput{UptimeMonitorID: ilert.Int64(uptimeMonitorID)})
+		if err != nil {
+			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+				log.Printf("[WARN] Removing uptime monitor %s from state because it no longer exist", d.Id())
+				d.SetId("")
+				return nil
+			}
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor with id '%s' to be read", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not read an uptime monitor with ID %s", d.Id()))
 		}
-		return fmt.Errorf("Could not read an uptime monitor with ID %s", d.Id())
+		result = r
+		return nil
+	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if result == nil || result.UptimeMonitor == nil {
+		log.Printf("[ERROR] Reading iLert uptime monitor error: empty response ")
+		return diag.Errorf("uptime monitor response is empty")
 	}
 
 	d.Set("name", result.UptimeMonitor.Name)
@@ -287,42 +332,68 @@ func resourceUptimeMonitorRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceUptimeMonitorUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceUptimeMonitorUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	uptimeMonitor, err := buildUptimeMonitor(d)
 	if err != nil {
 		log.Printf("[ERROR] Building uptime monitor error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	uptimeMonitorID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not parse uptime monitor id %s", err.Error())
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Updating uptime monitor: %s", d.Id())
-	_, err = client.UpdateUptimeMonitor(&ilert.UpdateUptimeMonitorInput{UptimeMonitor: uptimeMonitor, UptimeMonitorID: ilert.Int64(uptimeMonitorID)})
+
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+		_, err = client.UpdateUptimeMonitor(&ilert.UpdateUptimeMonitorInput{UptimeMonitor: uptimeMonitor, UptimeMonitorID: ilert.Int64(uptimeMonitorID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor with id '%s' to be updated", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not update an uptime monitor with ID %s", d.Id()))
+		}
+		return nil
+	})
+
 	if err != nil {
 		log.Printf("[ERROR] Updating iLert uptime monitor error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceUptimeMonitorRead(d, m)
+
+	return resourceUptimeMonitorRead(ctx, d, m)
 }
 
-func resourceUptimeMonitorDelete(d *schema.ResourceData, m interface{}) error {
+func resourceUptimeMonitorDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	uptimeMonitorID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not parse uptime monitor id %s", err.Error())
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Deleting uptime monitor: %s", d.Id())
-	_, err = client.DeleteUptimeMonitor(&ilert.DeleteUptimeMonitorInput{UptimeMonitorID: ilert.Int64(uptimeMonitorID)})
+
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		_, err = client.DeleteUptimeMonitor(&ilert.DeleteUptimeMonitorInput{UptimeMonitorID: ilert.Int64(uptimeMonitorID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor with id '%s' to be deleted", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not delete an uptime monitor with ID %s", d.Id()))
+		}
+		return nil
+	})
 	if err != nil {
-		return err
+		log.Printf("[ERROR] Deleting iLert uptime monitor error %s", err.Error())
+		return diag.FromErr(err)
 	}
+
 	d.SetId("")
 	return nil
 }

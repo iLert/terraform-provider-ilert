@@ -1,11 +1,14 @@
 package ilert
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/iLert/ilert-go"
@@ -23,7 +26,7 @@ func resourceConnector() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validateStringValueFunc(ilert.ConnectorTypesAll),
+				ValidateFunc: validation.StringInSlice(ilert.ConnectorTypesAll, false),
 			},
 			"datadog": {
 				Type:     schema.TypeList,
@@ -601,13 +604,19 @@ func resourceConnector() *schema.Resource {
 				Computed: true,
 			},
 		},
-		Create: resourceConnectorCreate,
-		Read:   resourceConnectorRead,
-		Update: resourceConnectorUpdate,
-		Delete: resourceConnectorDelete,
-		Exists: resourceConnectorExists,
+		CreateContext: resourceConnectorCreate,
+		ReadContext:   resourceConnectorRead,
+		UpdateContext: resourceConnectorUpdate,
+		DeleteContext: resourceConnectorDelete,
+		Exists:        resourceConnectorExists,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 	}
 }
@@ -795,41 +804,81 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	return connector, nil
 }
 
-func resourceConnectorCreate(d *schema.ResourceData, m interface{}) error {
+func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connector, err := buildConnector(d)
 	if err != nil {
 		log.Printf("[ERROR] Building connector error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Creating connector %s", connector.Name)
 
-	result, err := client.CreateConnector(&ilert.CreateConnectorInput{Connector: connector})
+	result := &ilert.CreateConnectorOutput{}
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		r, err := client.CreateConnector(&ilert.CreateConnectorInput{Connector: connector})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for connector with id '%s' to be created", d.Id()))
+			}
+			return resource.NonRetryableError(err)
+		}
+		result = r
+		return nil
+	})
 	if err != nil {
 		log.Printf("[ERROR] Creating iLert connector error %s", err.Error())
-		return err
+		return diag.FromErr(err)
+	}
+	if result == nil {
+		log.Printf("[ERROR] Creating iLert connector error: empty response ")
+		return diag.Errorf("connector response is empty")
+	}
+
+	if result == nil || result.Connector == nil {
+		log.Printf("[ERROR] Reading iLert connector error: empty response ")
+		return diag.Errorf("connector response is empty")
 	}
 
 	d.SetId(result.Connector.ID)
 
-	return resourceConnectorRead(d, m)
+	return resourceConnectorRead(ctx, d, m)
 }
 
-func resourceConnectorRead(d *schema.ResourceData, m interface{}) error {
+func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connectorID := d.Id()
 	log.Printf("[DEBUG] Reading connector: %s", d.Id())
-	result, err := client.GetConnector(&ilert.GetConnectorInput{ConnectorID: ilert.String(connectorID)})
-	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
-			log.Printf("[WARN] Removing connector %s from state because it no longer exist", d.Id())
-			d.SetId("")
-			return nil
+
+	result := &ilert.GetConnectorOutput{}
+	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		r, err := client.GetConnector(&ilert.GetConnectorInput{ConnectorID: ilert.String(connectorID)})
+		if err != nil {
+			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+				log.Printf("[WARN] Removing connector %s from state because it no longer exist", d.Id())
+				d.SetId("")
+				return nil
+			}
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for connector with id '%s' to be read", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not read an connector with ID %s", d.Id()))
 		}
-		return fmt.Errorf("Could not read an connector with ID %s", d.Id())
+		result = r
+		return nil
+	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if result == nil || result.Connector == nil {
+		log.Printf("[ERROR] Reading iLert connector error: empty response ")
+		return diag.Errorf("connector response is empty")
 	}
 
 	d.Set("name", result.Connector.Name)
@@ -940,33 +989,57 @@ func resourceConnectorRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceConnectorUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connector, err := buildConnector(d)
 	if err != nil {
 		log.Printf("[ERROR] Building connector error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	connectorID := d.Id()
 	log.Printf("[DEBUG] Updating connector: %s", d.Id())
-	_, err = client.UpdateConnector(&ilert.UpdateConnectorInput{Connector: connector, ConnectorID: ilert.String(connectorID)})
+
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+		_, err = client.UpdateConnector(&ilert.UpdateConnectorInput{Connector: connector, ConnectorID: ilert.String(connectorID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for connector with id '%s' to be updated", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not update an connector with ID %s", d.Id()))
+		}
+		return nil
+	})
+
 	if err != nil {
 		log.Printf("[ERROR] Updating iLert connector error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceConnectorRead(d, m)
+
+	return resourceConnectorRead(ctx, d, m)
 }
 
-func resourceConnectorDelete(d *schema.ResourceData, m interface{}) error {
+func resourceConnectorDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connectorID := d.Id()
 	log.Printf("[DEBUG] Deleting connector: %s", d.Id())
-	_, err := client.DeleteConnector(&ilert.DeleteConnectorInput{ConnectorID: ilert.String(connectorID)})
+	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		_, err := client.DeleteConnector(&ilert.DeleteConnectorInput{ConnectorID: ilert.String(connectorID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for connector with id '%s' to be deleted", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not delete an connector with ID %s", d.Id()))
+		}
+		return nil
+	})
 	if err != nil {
-		return err
+		log.Printf("[ERROR] Deleting iLert connector error %s", err.Error())
+		return diag.FromErr(err)
 	}
 	d.SetId("")
 	return nil
@@ -985,18 +1058,4 @@ func resourceConnectorExists(d *schema.ResourceData, m interface{}) (bool, error
 		return false, err
 	}
 	return true, nil
-}
-
-func flattenConnectorAlertSourceIDList(list []int64) ([]interface{}, error) {
-	if list == nil {
-		return make([]interface{}, 0), nil
-	}
-	results := make([]interface{}, 0)
-	for _, item := range list {
-		result := make(map[string]interface{})
-		result["id"] = strconv.FormatInt(item, 10)
-		results = append(results, result)
-	}
-
-	return results, nil
 }

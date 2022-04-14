@@ -1,5 +1,11 @@
 # Changelog
 
+## 14.04.2022, Version 1.5.0
+
+- add timeout context to all resources
+- replace custom validation functions
+- minor bug fixes
+
 ## 19.01.2022, Version 1.4.5
 
 - upgrade dependencies for github actions

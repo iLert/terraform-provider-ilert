@@ -1,11 +1,15 @@
 package ilert
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/iLert/ilert-go"
@@ -23,7 +27,7 @@ func resourceTeam() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      ilert.TeamVisibility.Public,
-				ValidateFunc: validateStringValueFunc(ilert.TeamVisibilityAll),
+				ValidateFunc: validation.StringInSlice(ilert.TeamVisibilityAll, false),
 			},
 			"member": {
 				Type:     schema.TypeList,
@@ -39,19 +43,25 @@ func resourceTeam() *schema.Resource {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Default:      ilert.TeamMemberRoles.Responder,
-							ValidateFunc: validateStringValueFunc(ilert.TeamMemberRolesAll),
+							ValidateFunc: validation.StringInSlice(ilert.TeamMemberRolesAll, false),
 						},
 					},
 				},
 			},
 		},
-		Create: resourceTeamCreate,
-		Read:   resourceTeamRead,
-		Update: resourceTeamUpdate,
-		Delete: resourceTeamDelete,
-		Exists: resourceTeamExists,
+		CreateContext: resourceTeamCreate,
+		ReadContext:   resourceTeamRead,
+		UpdateContext: resourceTeamUpdate,
+		DeleteContext: resourceTeamDelete,
+		Exists:        resourceTeamExists,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Read:   schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 	}
 }
@@ -91,45 +101,79 @@ func buildTeam(d *schema.ResourceData) (*ilert.Team, error) {
 	return team, nil
 }
 
-func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
+func resourceTeamCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	team, err := buildTeam(d)
 	if err != nil {
 		log.Printf("[ERROR] Building team error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	log.Printf("[INFO] Creating team %s", team.Name)
 
-	result, err := client.CreateTeam(&ilert.CreateTeamInput{Team: team})
+	result := &ilert.CreateTeamOutput{}
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		r, err := client.CreateTeam(&ilert.CreateTeamInput{Team: team})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for team with id '%s' to be created", d.Id()))
+			}
+			return resource.NonRetryableError(err)
+		}
+		result = r
+		return nil
+	})
 	if err != nil {
 		log.Printf("[ERROR] Creating iLert team error %s", err.Error())
-		return err
+		return diag.FromErr(err)
+	}
+	if result == nil || result.Team == nil {
+		log.Printf("[ERROR] Creating iLert team error: empty response ")
+		return diag.Errorf("team response is empty")
 	}
 
 	d.SetId(strconv.FormatInt(result.Team.ID, 10))
 
-	return resourceTeamRead(d, m)
+	return resourceTeamRead(ctx, d, m)
 }
 
-func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
+func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	teamID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not parse team id %s", err.Error())
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Reading team: %s", d.Id())
-	result, err := client.GetTeam(&ilert.GetTeamInput{TeamID: ilert.Int64(teamID)})
-	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
-			log.Printf("[WARN] Removing team %s from state because it no longer exist", d.Id())
-			d.SetId("")
-			return nil
+	result := &ilert.GetTeamOutput{}
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
+		r, err := client.GetTeam(&ilert.GetTeamInput{TeamID: ilert.Int64(teamID)})
+		if err != nil {
+			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+				log.Printf("[WARN] Removing team %s from state because it no longer exist", d.Id())
+				d.SetId("")
+				return nil
+			}
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for team with id '%s' to be read", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not read an team with ID %s", d.Id()))
 		}
-		return fmt.Errorf("Could not read an team with ID %s", d.Id())
+		result = r
+		return nil
+	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if result == nil || result.Team == nil {
+		log.Printf("[ERROR] Reading iLert team error: empty response ")
+		return diag.Errorf("team response is empty")
 	}
 
 	d.Set("name", result.Team.Name)
@@ -137,51 +181,76 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 
 	members, err := flattenMembersList(result.Team.Members)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("member", members); err != nil {
-		return fmt.Errorf("error setting members: %s", err)
+		return diag.Errorf("error setting members: %s", err)
 	}
 
 	return nil
 }
 
-func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceTeamUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	team, err := buildTeam(d)
 	if err != nil {
 		log.Printf("[ERROR] Building team error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
 
 	teamID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not parse team id %s", err.Error())
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Updating team: %s", d.Id())
-	_, err = client.UpdateTeam(&ilert.UpdateTeamInput{Team: team, TeamID: ilert.Int64(teamID)})
+
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+		_, err = client.UpdateTeam(&ilert.UpdateTeamInput{Team: team, TeamID: ilert.Int64(teamID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for team with id '%s' to be updated", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not update an team with ID %s", d.Id()))
+		}
+		return nil
+	})
+
 	if err != nil {
 		log.Printf("[ERROR] Updating iLert team error %s", err.Error())
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceTeamRead(d, m)
+
+	return resourceTeamRead(ctx, d, m)
 }
 
-func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
+func resourceTeamDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	teamID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not parse team id %s", err.Error())
-		return unconvertibleIDErr(d.Id(), err)
+		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	log.Printf("[DEBUG] Deleting team: %s", d.Id())
-	_, err = client.DeleteTeam(&ilert.DeleteTeamInput{TeamID: ilert.Int64(teamID)})
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		_, err = client.DeleteTeam(&ilert.DeleteTeamInput{TeamID: ilert.Int64(teamID)})
+		if err != nil {
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for team with id '%s' to be deleted", d.Id()))
+			}
+			return resource.NonRetryableError(fmt.Errorf("could not delete an team with ID %s", d.Id()))
+		}
+		return nil
+	})
 	if err != nil {
-		return err
+		log.Printf("[ERROR] Deleting iLert team error %s", err.Error())
+		return diag.FromErr(err)
 	}
+
 	d.SetId("")
 	return nil
 }
