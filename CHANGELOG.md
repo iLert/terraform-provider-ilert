@@ -1,5 +1,13 @@
 # Changelog
 
+## 16.04.2022, Version 1.5.1
+
+- fix connection resource trigger_types validation
+- fix connection resource trigger_types docs
+- fix email subject param in the connection resource
+- fix user resource mobile and landline blocks
+- fix all resources exists checks
+
 ## 14.04.2022, Version 1.5.0
 
 - add timeout context to all resources

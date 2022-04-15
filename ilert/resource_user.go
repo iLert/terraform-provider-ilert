@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -254,23 +253,39 @@ func buildUser(d *schema.ResourceData) (*ilert.User, error) {
 	}
 
 	if val, ok := d.GetOk("mobile"); ok {
-		vL := val.([]interface{})
-		if len(vL) > 0 && vL[0] != nil {
-			v := vL[0].(map[string]interface{})
-			user.Mobile = &ilert.Phone{
-				RegionCode: v["region_code"].(string),
-				Number:     v["number"].(string),
+		if vL, ok := val.([]interface{}); ok && len(vL) > 0 && vL[0] != nil {
+			mobile := &ilert.Phone{}
+			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
+				if code, ok := v["region_code"].(string); ok && code != "" {
+					mobile.RegionCode = code
+				}
+				if number, ok := v["number"].(string); ok && number != "" {
+					mobile.Number = number
+				}
+			}
+			if mobile.RegionCode != "" && mobile.Number != "" {
+				user.Mobile = mobile
+			} else {
+				user.Mobile = nil
 			}
 		}
 	}
 
 	if val, ok := d.GetOk("landline"); ok {
-		vL := val.([]interface{})
-		if len(vL) > 0 && vL[0] != nil {
-			v := vL[0].(map[string]interface{})
-			user.Landline = &ilert.Phone{
-				RegionCode: v["region_code"].(string),
-				Number:     v["number"].(string),
+		if vL, ok := val.([]interface{}); ok && len(vL) > 0 && vL[0] != nil {
+			landline := &ilert.Phone{}
+			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
+				if code, ok := v["region_code"].(string); ok && code != "" {
+					landline.RegionCode = code
+				}
+				if number, ok := v["number"].(string); ok && number != "" {
+					landline.Number = number
+				}
+			}
+			if landline.RegionCode != "" && landline.Number != "" {
+				user.Landline = landline
+			} else {
+				user.Landline = nil
 			}
 		}
 	}
@@ -411,7 +426,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		r, err := client.GetUser(&ilert.GetUserInput{UserID: ilert.Int64(userID)})
 		if err != nil {
-			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing user %s from state because it no longer exist", d.Id())
 				d.SetId("")
 				return nil
@@ -455,7 +470,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 			},
 		})
 	} else {
-		d.Set("mobile", []interface{}{})
+		d.Set("mobile", nil)
 	}
 
 	if result.User.Landline != nil {
@@ -466,7 +481,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 			},
 		})
 	} else {
-		d.Set("landline", []interface{}{})
+		d.Set("landline", nil)
 	}
 
 	highPriorityNotificationPreferences, err := flattenNotificationPreferencesList(result.User.NotificationPreferences)
@@ -570,7 +585,7 @@ func resourceUserExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	log.Printf("[DEBUG] Reading user: %s", d.Id())
 	_, err = client.GetUser(&ilert.GetUserInput{UserID: ilert.Int64(userID)})
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+		if _, ok := err.(*ilert.NotFoundAPIError); ok {
 			return false, nil
 		}
 		return false, err

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -976,7 +975,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		if vL, ok := val.([]interface{}); ok && len(vL) > 0 {
 			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
 				params := &ilert.ConnectionParamsEmail{}
-				if p, ok := v["url"].(string); ok && p != "" {
+				if p, ok := v["subject"].(string); ok && p != "" {
 					params.Subject = p
 				}
 				if p, ok := v["body_template"].(string); ok && p != "" {
@@ -1076,7 +1075,7 @@ func resourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m int
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		r, err := client.CreateConnection(&ilert.CreateConnectionInput{Connection: connection})
 		if err != nil {
-			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing connection %s from state because it no longer exist", d.Id())
 				d.SetId("")
 				return nil
@@ -1115,7 +1114,7 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		r, err := client.GetConnection(&ilert.GetConnectionInput{ConnectionID: ilert.String(connectionID)})
 		if err != nil {
-			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing connection %s from state because it no longer exist", d.Id())
 				d.SetId("")
 				return nil
@@ -1150,6 +1149,7 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	connector := map[string]interface{}{}
+	log.Printf("[DEBUG] Reading iLert connection: %s , connector id: %s", d.Id(), result.Connection.ConnectorID)
 	if result.Connection.ConnectorID != "" {
 		connector["id"] = result.Connection.ConnectorID
 		connector["type"] = result.Connection.ConnectorType
@@ -1343,7 +1343,7 @@ func resourceConnectionExists(d *schema.ResourceData, m interface{}) (bool, erro
 	log.Printf("[DEBUG] Reading connection: %s", d.Id())
 	_, err := client.GetConnection(&ilert.GetConnectionInput{ConnectionID: ilert.String(connectionID)})
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+		if _, ok := err.(*ilert.NotFoundAPIError); ok {
 			return false, nil
 		}
 		return false, err

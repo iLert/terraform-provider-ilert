@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -190,7 +189,7 @@ func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		r, err := client.GetEscalationPolicy(&ilert.GetEscalationPolicyInput{EscalationPolicyID: ilert.Int64(escalationPolicyID)})
 		if err != nil {
-			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing escalation policy %s from state because it no longer exist", d.Id())
 				d.SetId("")
 				return nil
@@ -314,7 +313,7 @@ func resourceEscalationPolicyExists(d *schema.ResourceData, m interface{}) (bool
 	log.Printf("[DEBUG] Reading escalation policy: %s", d.Id())
 	_, err = client.GetEscalationPolicy(&ilert.GetEscalationPolicyInput{EscalationPolicyID: ilert.Int64(escalationPolicyID)})
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+		if _, ok := err.(*ilert.NotFoundAPIError); ok {
 			return false, nil
 		}
 		return false, err

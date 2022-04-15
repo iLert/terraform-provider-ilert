@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -272,7 +271,7 @@ func resourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, m in
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		r, err := client.GetUptimeMonitor(&ilert.GetUptimeMonitorInput{UptimeMonitorID: ilert.Int64(uptimeMonitorID)})
 		if err != nil {
-			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing uptime monitor %s from state because it no longer exist", d.Id())
 				d.SetId("")
 				return nil
@@ -409,7 +408,7 @@ func resourceUptimeMonitorExists(d *schema.ResourceData, m interface{}) (bool, e
 	log.Printf("[DEBUG] Reading uptime monitor: %s", d.Id())
 	_, err = client.GetUptimeMonitor(&ilert.GetUptimeMonitorInput{UptimeMonitorID: ilert.Int64(uptimeMonitorID)})
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+		if _, ok := err.(*ilert.NotFoundAPIError); ok {
 			return false, nil
 		}
 		return false, err

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -857,7 +856,7 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		r, err := client.GetConnector(&ilert.GetConnectorInput{ConnectorID: ilert.String(connectorID)})
 		if err != nil {
-			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing connector %s from state because it no longer exist", d.Id())
 				d.SetId("")
 				return nil
@@ -1052,7 +1051,7 @@ func resourceConnectorExists(d *schema.ResourceData, m interface{}) (bool, error
 	log.Printf("[DEBUG] Reading connector: %s", d.Id())
 	_, err := client.GetConnector(&ilert.GetConnectorInput{ConnectorID: ilert.String(connectorID)})
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+		if _, ok := err.(*ilert.NotFoundAPIError); ok {
 			return false, nil
 		}
 		return false, err

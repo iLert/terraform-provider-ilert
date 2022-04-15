@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -152,7 +151,7 @@ func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		r, err := client.GetTeam(&ilert.GetTeamInput{TeamID: ilert.Int64(teamID)})
 		if err != nil {
-			if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing team %s from state because it no longer exist", d.Id())
 				d.SetId("")
 				return nil
@@ -266,7 +265,7 @@ func resourceTeamExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	log.Printf("[DEBUG] Reading team: %s", d.Id())
 	_, err = client.GetTeam(&ilert.GetTeamInput{TeamID: ilert.Int64(teamID)})
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not find") {
+		if _, ok := err.(*ilert.NotFoundAPIError); ok {
 			return false, nil
 		}
 		return false, err
