@@ -12,10 +12,9 @@ import (
 	"github.com/iLert/ilert-go/v2"
 )
 
-// Legacy API - please use alert-actions - for more information see https://docs.ilert.com/rest-api/api-version-history#renaming-connections-to-alert-actions
-func dataSourceConnection() *schema.Resource {
+func dataSourceAlertAction() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceConnectionRead,
+		ReadContext: dataSourceAlertActionRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -30,35 +29,35 @@ func dataSourceConnection() *schema.Resource {
 	}
 }
 
-func dataSourceConnectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceAlertActionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert connection")
+	log.Printf("[DEBUG] Reading iLert alert action")
 
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.GetConnections(&ilert.GetConnectionsInput{})
+		resp, err := client.GetAlertActions(&ilert.GetAlertActionsInput{})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for connection with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be read", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read a connection with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read a alert action with ID %s", d.Id()))
 		}
 
-		var found *ilert.ConnectionOutput
+		var found *ilert.AlertActionOutput
 
-		for _, connection := range resp.Connections {
-			if connection.Name == searchName {
-				found = connection
+		for _, alertAction := range resp.AlertActions {
+			if alertAction.Name == searchName {
+				found = alertAction
 				break
 			}
 		}
 
 		if found == nil {
 			return resource.NonRetryableError(
-				fmt.Errorf("unable to locate any connection with the name: %s", searchName),
+				fmt.Errorf("unable to locate any alert action with the name: %s", searchName),
 			)
 		}
 

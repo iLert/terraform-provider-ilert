@@ -41,6 +41,7 @@ func Provider() *schema.Provider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
+			"ilert_alert_action":      dataSourceAlertAction(),
 			"ilert_alert_source":      dataSourceAlertSource(),
 			"ilert_escalation_policy": dataSourceEscalationPolicy(),
 			"ilert_user":              dataSourceUser(),
@@ -51,6 +52,7 @@ func Provider() *schema.Provider {
 			"ilert_team":              dataSourceTeam(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
+			"ilert_alert_action":      resourceAlertAction(),
 			"ilert_alert_source":      resourceAlertSource(),
 			"ilert_user":              resourceUser(),
 			"ilert_escalation_policy": resourceEscalationPolicy(),

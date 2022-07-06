@@ -53,7 +53,7 @@ func resourceAlertSource() *schema.Resource {
 				ForceNew:    false,
 				Description: "The escalation policy specifies who will be notified when an incident is created by this alert source",
 			},
-			"incident_creation": {
+			"incident_creation": { // @deprecated
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "ONE_INCIDENT_PER_EMAIL",
@@ -65,12 +65,35 @@ func resourceAlertSource() *schema.Resource {
 					"OPEN_RESOLVE_ON_EXTRACTION",
 				}, false),
 			},
+			"alert_creation": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "ONE_ALERT_PER_EMAIL",
+				ValidateFunc: validation.StringInSlice([]string{
+					"ONE_ALERT_PER_EMAIL",
+					"ONE_ALERT_PER_EMAIL_SUBJECT",
+					"ONE_PENDING_ALERT_ALLOWED",
+					"ONE_OPEN_ALERT_ALLOWED",
+					"OPEN_RESOLVE_ON_EXTRACTION",
+				}, false),
+			},
 			"active": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
 			"incident_priority_rule": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "HIGH",
+				ValidateFunc: validation.StringInSlice([]string{
+					"HIGH",
+					"LOW",
+					"HIGH_DURING_SUPPORT_HOURS",
+					"LOW_DURING_SUPPORT_HOURS",
+				}, false),
+			},
+			"alert_priority_rule": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "HIGH",
@@ -186,7 +209,11 @@ func resourceAlertSource() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"auto_raise_incidents": {
+						"auto_raise_incidents": { // @deprecated
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+						"auto_raise_alerts": {
 							Type:     schema.TypeBool,
 							Optional: true,
 						},
@@ -444,6 +471,10 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		incidentCreation := val.(string)
 		alertSource.IncidentCreation = incidentCreation
 	}
+	if val, ok := d.GetOk("alert_creation"); ok {
+		alertCreation := val.(string)
+		alertSource.AlertCreation = alertCreation
+	}
 	if val, ok := d.GetOk("integration_key"); ok {
 		integrationKey := val.(string)
 		alertSource.IntegrationKey = integrationKey
@@ -459,6 +490,10 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 	if val, ok := d.GetOk("incident_priority_rule"); ok {
 		incidentPriorityRule := val.(string)
 		alertSource.IncidentPriorityRule = incidentPriorityRule
+	}
+	if val, ok := d.GetOk("alert_priority_rule"); ok {
+		alertPriorityRule := val.(string)
+		alertSource.AlertPriorityRule = alertPriorityRule
 	}
 	if val, ok := d.GetOk("auto_resolution_timeout"); ok {
 		autoResolutionTimeout := val.(string)
@@ -497,6 +532,7 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 			supportHours := &ilert.SupportHours{
 				Timezone:           v["timezone"].(string),
 				AutoRaiseIncidents: v["auto_raise_incidents"].(bool),
+				AutoRaiseAlerts:    v["auto_raise_alerts"].(bool),
 			}
 			sdA := v["support_days"].([]interface{})
 			if len(vL) > 0 {
@@ -692,8 +728,10 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	d.Set("integration_type", result.AlertSource.IntegrationType)
 	d.Set("escalation_policy", strconv.FormatInt(result.AlertSource.EscalationPolicy.ID, 10))
 	d.Set("incident_creation", result.AlertSource.IncidentCreation)
+	d.Set("alert_creation", result.AlertSource.AlertCreation)
 	d.Set("active", result.AlertSource.Active)
 	d.Set("incident_priority_rule", result.AlertSource.IncidentPriorityRule)
+	d.Set("alert_priority_rule", result.AlertSource.AlertPriorityRule)
 	d.Set("auto_resolution_timeout", result.AlertSource.AutoResolutionTimeout)
 	d.Set("email_filtered", result.AlertSource.EmailFiltered)
 	d.Set("email_resolve_filtered", result.AlertSource.EmailResolveFiltered)
@@ -880,6 +918,7 @@ func flattenSupportHours(supportHours *ilert.SupportHours) ([]interface{}, error
 	result := make(map[string]interface{})
 	result["timezone"] = supportHours.Timezone
 	result["auto_raise_incidents"] = supportHours.AutoRaiseIncidents
+	result["auto_raise_alerts"] = supportHours.AutoRaiseAlerts
 
 	supportDays := make([]interface{}, 0)
 	supportDaysItem := make(map[string]interface{})

@@ -15,7 +15,7 @@ import (
 )
 
 // Legacy API - please use alert-actions - for more information see https://docs.ilert.com/rest-api/api-version-history#renaming-connections-to-alert-actions
-func resourceConnection() *schema.Resource {
+func resourceAlertAction() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -62,10 +62,10 @@ func resourceConnection() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: false,
-				Default:  ilert.ConnectionTriggerModes.Automatic,
+				Default:  ilert.AlertActionTriggerModes.Automatic,
 				ValidateFunc: validation.StringInSlice([]string{
-					ilert.ConnectionTriggerModes.Automatic,
-					ilert.ConnectionTriggerModes.Manual,
+					ilert.AlertActionTriggerModes.Automatic,
+					ilert.AlertActionTriggerModes.Manual,
 				}, false),
 			},
 			"trigger_types": {
@@ -74,7 +74,7 @@ func resourceConnection() *schema.Resource {
 				MinItems: 1,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(ilert.ConnectionTriggerTypesAll, false),
+					ValidateFunc: validation.StringInSlice(ilert.AlertActionTriggerTypesAll, false),
 				},
 			},
 			"datadog": {
@@ -771,11 +771,11 @@ func resourceConnection() *schema.Resource {
 				Computed: true,
 			},
 		},
-		CreateContext: resourceConnectionCreate,
-		ReadContext:   resourceConnectionRead,
-		UpdateContext: resourceConnectionUpdate,
-		DeleteContext: resourceConnectionDelete,
-		Exists:        resourceConnectionExists,
+		CreateContext: resourceAlertActionCreate,
+		ReadContext:   resourceAlertActionRead,
+		UpdateContext: resourceAlertActionUpdate,
+		DeleteContext: resourceAlertActionDelete,
+		Exists:        resourceAlertActionExists,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -788,10 +788,10 @@ func resourceConnection() *schema.Resource {
 	}
 }
 
-func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
+func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	name := d.Get("name").(string)
 
-	connection := &ilert.Connection{
+	alertAction := &ilert.AlertAction{
 		Name: name,
 	}
 
@@ -806,21 +806,21 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 			}
 			aids = append(aids, aid)
 		}
-		connection.AlertSourceIDs = aids
+		alertAction.AlertSourceIDs = aids
 	}
 
 	if val, ok := d.GetOk("connector"); ok {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.ConnectorID = v["id"].(string)
-			connection.ConnectorType = v["type"].(string)
+			alertAction.ConnectorID = v["id"].(string)
+			alertAction.ConnectorType = v["type"].(string)
 		}
 	}
 
 	if val, ok := d.GetOk("trigger_mode"); ok {
 		triggerMode := val.(string)
-		connection.TriggerMode = triggerMode
+		alertAction.TriggerMode = triggerMode
 	}
 
 	if val, ok := d.GetOk("trigger_types"); ok {
@@ -830,14 +830,14 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 			v := m.(string)
 			sL = append(sL, v)
 		}
-		connection.TriggerTypes = sL
+		alertAction.TriggerTypes = sL
 	}
 
 	if val, ok := d.GetOk("datadog"); ok {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			params := &ilert.ConnectionParamsDatadog{
+			params := &ilert.AlertActionParamsDatadog{
 				Site:     v["site"].(string),
 				Priority: v["priority"].(string),
 			}
@@ -848,7 +848,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 				sL = append(sL, v)
 			}
 			params.Tags = sL
-			connection.Params = params
+			alertAction.Params = params
 		}
 	}
 
@@ -856,7 +856,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsJira{
+			alertAction.Params = &ilert.AlertActionParamsJira{
 				Project:      v["project"].(string),
 				IssueType:    v["issue_type"].(string),
 				BodyTemplate: v["body_template"].(string),
@@ -868,7 +868,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsServiceNow{
+			alertAction.Params = &ilert.AlertActionParamsServiceNow{
 				CallerID: v["caller_id"].(string),
 				Impact:   v["impact"].(string),
 				Urgency:  v["urgency"].(string),
@@ -880,7 +880,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsSlack{
+			alertAction.Params = &ilert.AlertActionParamsSlack{
 				ChannelID:   v["channel_id"].(string),
 				ChannelName: v["channel_name"].(string),
 				TeamID:      v["team_id"].(string),
@@ -893,7 +893,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsWebhook{
+			alertAction.Params = &ilert.AlertActionParamsWebhook{
 				WebhookURL:   v["url"].(string),
 				BodyTemplate: v["body_template"].(string),
 			}
@@ -904,7 +904,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsZendesk{
+			alertAction.Params = &ilert.AlertActionParamsZendesk{
 				Priority: v["priority"].(string),
 			}
 		}
@@ -914,7 +914,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			params := &ilert.ConnectionParamsGithub{
+			params := &ilert.AlertActionParamsGithub{
 				Owner:      v["owner"].(string),
 				Repository: v["repository"].(string),
 			}
@@ -925,7 +925,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 				sL = append(sL, v)
 			}
 			params.Labels = sL
-			connection.Params = params
+			alertAction.Params = params
 		}
 	}
 
@@ -933,7 +933,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsTopdesk{
+			alertAction.Params = &ilert.AlertActionParamsTopdesk{
 				Status: v["status"].(string),
 			}
 		}
@@ -943,7 +943,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsAWSLambda{
+			alertAction.Params = &ilert.AlertActionParamsAWSLambda{
 				WebhookURL:   v["url"].(string),
 				BodyTemplate: v["body_template"].(string),
 			}
@@ -954,7 +954,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsAzureFunction{
+			alertAction.Params = &ilert.AlertActionParamsAzureFunction{
 				WebhookURL:   v["url"].(string),
 				BodyTemplate: v["body_template"].(string),
 			}
@@ -965,7 +965,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsGoogleFunction{
+			alertAction.Params = &ilert.AlertActionParamsGoogleFunction{
 				WebhookURL:   v["url"].(string),
 				BodyTemplate: v["body_template"].(string),
 			}
@@ -975,7 +975,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	if val, ok := d.GetOk("email"); ok {
 		if vL, ok := val.([]interface{}); ok && len(vL) > 0 {
 			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
-				params := &ilert.ConnectionParamsEmail{}
+				params := &ilert.AlertActionParamsEmail{}
 				if p, ok := v["subject"].(string); ok && p != "" {
 					params.Subject = p
 				}
@@ -991,7 +991,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 					}
 					params.Recipients = sL
 				}
-				connection.Params = params
+				alertAction.Params = params
 			}
 		}
 	}
@@ -1000,7 +1000,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			params := &ilert.ConnectionParamsSysdig{
+			params := &ilert.AlertActionParamsSysdig{
 				EventFilter: v["event_filter"].(string),
 			}
 			vL := v["tags"].([]interface{})
@@ -1010,7 +1010,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 				sL = append(sL, v)
 			}
 			params.Tags = sL
-			connection.Params = params
+			alertAction.Params = params
 		}
 	}
 
@@ -1018,7 +1018,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsZapier{
+			alertAction.Params = &ilert.AlertActionParamsZapier{
 				WebhookURL: v["url"].(string),
 			}
 		}
@@ -1028,7 +1028,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsAutotask{
+			alertAction.Params = &ilert.AlertActionParamsAutotask{
 				CompanyID:      v["company_id"].(string),
 				IssueType:      v["issue_type"].(string),
 				QueueID:        int64(v["queue_id"].(int)),
@@ -1042,7 +1042,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsZammad{
+			alertAction.Params = &ilert.AlertActionParamsZammad{
 				Email: v["email"].(string),
 			}
 		}
@@ -1052,40 +1052,40 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			connection.Params = &ilert.ConnectionParamsStatusPageIO{
+			alertAction.Params = &ilert.AlertActionParamsStatusPageIO{
 				PageID: v["page_id"].(string),
 			}
 		}
 	}
 
-	return connection, nil
+	return alertAction, nil
 }
 
-func resourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAlertActionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
-	connection, err := buildConnection(d)
+	alertAction, err := buildAlertAction(d)
 	if err != nil {
-		log.Printf("[ERROR] Building connection error %s", err.Error())
+		log.Printf("[ERROR] Building alert action error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[INFO] Creating connection %s", connection.Name)
+	log.Printf("[INFO] Creating alert action %s", alertAction.Name)
 
-	result := &ilert.CreateConnectionOutput{}
+	result := &ilert.CreateAlertActionOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		r, err := client.CreateConnection(&ilert.CreateConnectionInput{Connection: connection})
+		r, err := client.CreateAlertAction(&ilert.CreateAlertActionInput{AlertAction: alertAction})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
-				log.Printf("[WARN] Removing connection %s from state because it no longer exist", d.Id())
+				log.Printf("[WARN] Removing alert action %s from state because it no longer exist", d.Id())
 				d.SetId("")
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for connection with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be read", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an connection with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an alert action with ID %s", d.Id()))
 		}
 		result = r
 		return nil
@@ -1095,36 +1095,36 @@ func resourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	if result == nil || result.Connection == nil {
-		log.Printf("[ERROR] Creating iLert connection error: empty response ")
-		return diag.FromErr(fmt.Errorf("connection response is empty"))
+	if result == nil || result.AlertAction == nil {
+		log.Printf("[ERROR] Creating iLert alert action error: empty response ")
+		return diag.FromErr(fmt.Errorf("alert action response is empty"))
 	}
 
-	d.SetId(result.Connection.ID)
+	d.SetId(result.AlertAction.ID)
 
-	return resourceConnectionRead(ctx, d, m)
+	return resourceAlertActionRead(ctx, d, m)
 }
 
-func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
-	connectionID := d.Id()
-	log.Printf("[DEBUG] Reading connection: %s", d.Id())
+	alertActionID := d.Id()
+	log.Printf("[DEBUG] Reading alert action: %s", d.Id())
 
-	result := &ilert.GetConnectionOutput{}
+	result := &ilert.GetAlertActionOutput{}
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		r, err := client.GetConnection(&ilert.GetConnectionInput{ConnectionID: ilert.String(connectionID)})
+		r, err := client.GetAlertAction(&ilert.GetAlertActionInput{AlertActionID: ilert.String(alertActionID)})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
-				log.Printf("[WARN] Removing connection %s from state because it no longer exist", d.Id())
+				log.Printf("[WARN] Removing alert action %s from state because it no longer exist", d.Id())
 				d.SetId("")
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for connection with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be read", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an connection with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an alert action with ID %s", d.Id()))
 		}
 		result = r
 		return nil
@@ -1134,14 +1134,14 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	if result == nil || result.Connection == nil {
-		log.Printf("[ERROR] Reading iLert connection error: empty response ")
-		return diag.Errorf("connection response is empty")
+	if result == nil || result.AlertAction == nil {
+		log.Printf("[ERROR] Reading iLert alert action error: empty response ")
+		return diag.Errorf("alert action response is empty")
 	}
 
-	d.Set("name", result.Connection.Name)
+	d.Set("name", result.AlertAction.Name)
 
-	alertSources, err := flattenConnectionAlertSourceIDList(result.Connection.AlertSourceIDs)
+	alertSources, err := flattenAlertActionAlertSourceIDList(result.AlertAction.AlertSourceIDs)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1150,76 +1150,76 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	connector := map[string]interface{}{}
-	log.Printf("[DEBUG] Reading iLert connection: %s , connector id: %s", d.Id(), result.Connection.ConnectorID)
-	if result.Connection.ConnectorID != "" {
-		connector["id"] = result.Connection.ConnectorID
-		connector["type"] = result.Connection.ConnectorType
+	log.Printf("[DEBUG] Reading iLert alert action: %s , connector id: %s", d.Id(), result.AlertAction.ConnectorID)
+	if result.AlertAction.ConnectorID != "" {
+		connector["id"] = result.AlertAction.ConnectorID
+		connector["type"] = result.AlertAction.ConnectorType
 	}
 	d.Set("connector", []interface{}{connector})
-	d.Set("trigger_mode", result.Connection.TriggerMode)
-	d.Set("trigger_types", result.Connection.TriggerTypes)
-	d.Set("created_at", result.Connection.CreatedAt)
-	d.Set("updated_at", result.Connection.UpdatedAt)
+	d.Set("trigger_mode", result.AlertAction.TriggerMode)
+	d.Set("trigger_types", result.AlertAction.TriggerTypes)
+	d.Set("created_at", result.AlertAction.CreatedAt)
+	d.Set("updated_at", result.AlertAction.UpdatedAt)
 
-	switch result.Connection.ConnectorType {
+	switch result.AlertAction.ConnectorType {
 	case ilert.ConnectorTypes.Datadog:
 		d.Set("datadog", []interface{}{
 			map[string]interface{}{
-				"priority": result.Connection.Params.Priority,
-				"site":     result.Connection.Params.Site,
-				"tags":     result.Connection.Params.Tags,
+				"priority": result.AlertAction.Params.Priority,
+				"site":     result.AlertAction.Params.Site,
+				"tags":     result.AlertAction.Params.Tags,
 			},
 		})
 	case ilert.ConnectorTypes.Jira:
 		d.Set("jira", []interface{}{
 			map[string]interface{}{
-				"project":       result.Connection.Params.Project,
-				"issue_type":    result.Connection.Params.IssueType,
-				"body_template": result.Connection.Params.BodyTemplate,
+				"project":       result.AlertAction.Params.Project,
+				"issue_type":    result.AlertAction.Params.IssueType,
+				"body_template": result.AlertAction.Params.BodyTemplate,
 			},
 		})
 	case ilert.ConnectorTypes.ServiceNow:
 		d.Set("servicenow", []interface{}{
 			map[string]interface{}{
-				"caller_id": result.Connection.Params.CallerID,
-				"impact":    result.Connection.Params.Impact,
-				"urgency":   result.Connection.Params.Urgency,
+				"caller_id": result.AlertAction.Params.CallerID,
+				"impact":    result.AlertAction.Params.Impact,
+				"urgency":   result.AlertAction.Params.Urgency,
 			},
 		})
 	case ilert.ConnectorTypes.Slack:
 		d.Set("slack", []interface{}{
 			map[string]interface{}{
-				"channel_id":   result.Connection.Params.ChannelID,
-				"channel_name": result.Connection.Params.ChannelName,
-				"team_id":      result.Connection.Params.TeamID,
-				"team_domain":  result.Connection.Params.TeamDomain,
+				"channel_id":   result.AlertAction.Params.ChannelID,
+				"channel_name": result.AlertAction.Params.ChannelName,
+				"team_id":      result.AlertAction.Params.TeamID,
+				"team_domain":  result.AlertAction.Params.TeamDomain,
 			},
 		})
 	case ilert.ConnectorTypes.Webhook:
 		d.Set("webhook", []interface{}{
 			map[string]interface{}{
-				"url":           result.Connection.Params.WebhookURL,
-				"body_template": result.Connection.Params.BodyTemplate,
+				"url":           result.AlertAction.Params.WebhookURL,
+				"body_template": result.AlertAction.Params.BodyTemplate,
 			},
 		})
 	case ilert.ConnectorTypes.Zendesk:
 		d.Set("zendesk", []interface{}{
 			map[string]interface{}{
-				"priority": result.Connection.Params.Priority,
+				"priority": result.AlertAction.Params.Priority,
 			},
 		})
 	case ilert.ConnectorTypes.Github:
 		d.Set("github", []interface{}{
 			map[string]interface{}{
-				"owner":      result.Connection.Params.Owner,
-				"repository": result.Connection.Params.Repository,
-				"labels":     result.Connection.Params.Labels,
+				"owner":      result.AlertAction.Params.Owner,
+				"repository": result.AlertAction.Params.Repository,
+				"labels":     result.AlertAction.Params.Labels,
 			},
 		})
 	case ilert.ConnectorTypes.Topdesk:
 		d.Set("topdesk", []interface{}{
 			map[string]interface{}{
-				"status": result.Connection.Params.Status,
+				"status": result.AlertAction.Params.Status,
 			},
 		})
 	case ilert.ConnectorTypes.AWSLambda,
@@ -1227,51 +1227,51 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 		ilert.ConnectorTypes.GoogleFAAS:
 		d.Set("aws_lambda", []interface{}{
 			map[string]interface{}{
-				"url":           result.Connection.Params.WebhookURL,
-				"body_template": result.Connection.Params.BodyTemplate,
+				"url":           result.AlertAction.Params.WebhookURL,
+				"body_template": result.AlertAction.Params.BodyTemplate,
 			},
 		})
 	case ilert.ConnectorTypes.Email:
 		d.Set("email", []interface{}{
 			map[string]interface{}{
-				"recipients":    result.Connection.Params.Recipients,
-				"subject":       result.Connection.Params.Subject,
-				"body_template": result.Connection.Params.BodyTemplate,
+				"recipients":    result.AlertAction.Params.Recipients,
+				"subject":       result.AlertAction.Params.Subject,
+				"body_template": result.AlertAction.Params.BodyTemplate,
 			},
 		})
 	case ilert.ConnectorTypes.Sysdig:
 		d.Set("sysdig", []interface{}{
 			map[string]interface{}{
-				"tags":         result.Connection.Params.Tags,
-				"event_filter": result.Connection.Params.EventFilter,
+				"tags":         result.AlertAction.Params.Tags,
+				"event_filter": result.AlertAction.Params.EventFilter,
 			},
 		})
 	case ilert.ConnectorTypes.Zapier:
 		d.Set("zapier", []interface{}{
 			map[string]interface{}{
-				"url": result.Connection.Params.WebhookURL,
+				"url": result.AlertAction.Params.WebhookURL,
 			},
 		})
 	case ilert.ConnectorTypes.Autotask:
 		d.Set("autotask", []interface{}{
 			map[string]interface{}{
-				"company_id":      result.Connection.Params.CompanyID,
-				"issue_type":      result.Connection.Params.IssueType,
-				"queue_id":        result.Connection.Params.QueueID,
-				"ticket_category": result.Connection.Params.TicketCategory,
-				"ticket_type":     result.Connection.Params.TicketType,
+				"company_id":      result.AlertAction.Params.CompanyID,
+				"issue_type":      result.AlertAction.Params.IssueType,
+				"queue_id":        result.AlertAction.Params.QueueID,
+				"ticket_category": result.AlertAction.Params.TicketCategory,
+				"ticket_type":     result.AlertAction.Params.TicketType,
 			},
 		})
 	case ilert.ConnectorTypes.Zammad:
 		d.Set("zammad", []interface{}{
 			map[string]interface{}{
-				"email": result.Connection.Params.Email,
+				"email": result.AlertAction.Params.Email,
 			},
 		})
 	case ilert.ConnectorTypes.StatusPageIO:
 		d.Set("zammad", []interface{}{
 			map[string]interface{}{
-				"page_id": result.Connection.Params.PageID,
+				"page_id": result.AlertAction.Params.PageID,
 			},
 		})
 	}
@@ -1279,57 +1279,57 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func resourceConnectionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAlertActionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
-	connection, err := buildConnection(d)
+	alertAction, err := buildAlertAction(d)
 	if err != nil {
-		log.Printf("[ERROR] Building connection error %s", err.Error())
+		log.Printf("[ERROR] Building alert action error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
-	connectionID := d.Id()
-	log.Printf("[DEBUG] Updating connection: %s", d.Id())
+	alertActionID := d.Id()
+	log.Printf("[DEBUG] Updating alert action: %s", d.Id())
 
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
-		_, err = client.UpdateConnection(&ilert.UpdateConnectionInput{Connection: connection, ConnectionID: ilert.String(connectionID)})
+		_, err = client.UpdateAlertAction(&ilert.UpdateAlertActionInput{AlertAction: alertAction, AlertActionID: ilert.String(alertActionID)})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for connection with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be updated", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an connection with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an alert action with ID %s", d.Id()))
 		}
 		return nil
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating iLert connection error %s", err.Error())
+		log.Printf("[ERROR] Updating iLert alert action error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
-	return resourceConnectionRead(ctx, d, m)
+	return resourceAlertActionRead(ctx, d, m)
 }
 
-func resourceConnectionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAlertActionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
-	connectionID := d.Id()
-	log.Printf("[DEBUG] Deleting connection: %s", d.Id())
+	alertActionID := d.Id()
+	log.Printf("[DEBUG] Deleting alert action: %s", d.Id())
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
-		_, err := client.DeleteConnection(&ilert.DeleteConnectionInput{ConnectionID: ilert.String(connectionID)})
+		_, err := client.DeleteAlertAction(&ilert.DeleteAlertActionInput{AlertActionID: ilert.String(alertActionID)})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for connection with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be deleted", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an connection with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete an alert action with ID %s", d.Id()))
 		}
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting iLert connection error %s", err.Error())
+		log.Printf("[ERROR] Deleting iLert alert action error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -1337,12 +1337,12 @@ func resourceConnectionDelete(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func resourceConnectionExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceAlertActionExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	client := m.(*ilert.Client)
 
-	connectionID := d.Id()
-	log.Printf("[DEBUG] Reading connection: %s", d.Id())
-	_, err := client.GetConnection(&ilert.GetConnectionInput{ConnectionID: ilert.String(connectionID)})
+	alertActionID := d.Id()
+	log.Printf("[DEBUG] Reading alert action: %s", d.Id())
+	_, err := client.GetAlertAction(&ilert.GetAlertActionInput{AlertActionID: ilert.String(alertActionID)})
 	if err != nil {
 		if _, ok := err.(*ilert.NotFoundAPIError); ok {
 			return false, nil
@@ -1352,7 +1352,7 @@ func resourceConnectionExists(d *schema.ResourceData, m interface{}) (bool, erro
 	return true, nil
 }
 
-func flattenConnectionAlertSourceIDList(list []int64) ([]interface{}, error) {
+func flattenAlertActionAlertSourceIDList(list []int64) ([]interface{}, error) {
 	if list == nil {
 		return make([]interface{}, 0), nil
 	}
