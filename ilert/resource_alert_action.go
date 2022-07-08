@@ -14,7 +14,6 @@ import (
 	"github.com/iLert/ilert-go/v2"
 )
 
-// Legacy API - please use alert-actions - for more information see https://docs.ilert.com/rest-api/api-version-history#renaming-connections-to-alert-actions
 func resourceAlertAction() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
