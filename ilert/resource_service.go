@@ -304,7 +304,9 @@ func flattenTeamShortList(list []ilert.TeamShort) ([]interface{}, error) {
 	for _, item := range list {
 		result := make(map[string]interface{})
 		result["id"] = item.ID
-		result["name"] = item.Name
+		if item.Name != "" {
+			result["name"] = item.Name
+		}
 		results = append(results, result)
 	}
 
