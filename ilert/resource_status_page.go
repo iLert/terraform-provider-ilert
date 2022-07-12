@@ -28,7 +28,7 @@ func resourceStatusPage() *schema.Resource {
 			},
 			"subdomain": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 			"timezone": {
 				Type:     schema.TypeString,
@@ -55,7 +55,7 @@ func resourceStatusPage() *schema.Resource {
 			},
 			"visibility": {
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: validation.StringInSlice(ilert.StatusPageVisibilityAll, false),
 			},
 			"hidden_from_search": {
@@ -147,17 +147,17 @@ func resourceStatusPage() *schema.Resource {
 
 func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 	name := d.Get("name").(string)
+	visibility := d.Get("visibility").(string)
+	subdomain := d.Get("subdomain").(string)
 
 	statusPage := &ilert.StatusPage{
-		Name: name,
+		Name:       name,
+		Visibility: visibility,
+		Subdomain:  subdomain,
 	}
 
 	if val, ok := d.GetOk("domain"); ok {
 		statusPage.Domain = val.(string)
-	}
-
-	if val, ok := d.GetOk("subdomain"); ok {
-		statusPage.Subdomain = val.(string)
 	}
 
 	if val, ok := d.GetOk("timezone"); ok {
@@ -174,10 +174,6 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 
 	if val, ok := d.GetOk("logo_url"); ok {
 		statusPage.LogoUrl = val.(string)
-	}
-
-	if val, ok := d.GetOk("visibility"); ok {
-		statusPage.Visibility = val.(string)
 	}
 
 	if val, ok := d.GetOk("hidden_from_search"); ok {
