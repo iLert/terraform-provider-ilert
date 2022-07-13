@@ -19,7 +19,11 @@ data "ilert_service" "example" {
 
 resource "ilert_status_page" "example" {
   name = "example"
-  service = data.ilert_service.example.id
+  subdomain = "example.ilerthq.com"
+  visibility = "PUBLIC"
+  service {
+    id = data.ilert_service.example.id
+  }
 }
 ```
 
@@ -29,8 +33,8 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the status page.
 - `subdomain` - (Required) The iLert domain of the status page. Format: `[your status page].ilerthq.com`
-- `visibility` - (Optional) The visibility of the status page.
-- `services` - (Required) One or more [service](#service-arguments) blocks.
+- `visibility` - (Required) The visibility of the status page.
+- `service` - (Required) One or more [service](#service-arguments) blocks.
 - `domain` - (Optional) The custom domain of the status page. Allowed values are `PUBLIC` and `PRIVATE`.
 - `timezone` - (Optional) The timezone of the status page. Allowed values are `Europe/Berlin`, `America/New_York`, `America/Los_Angeles`, `Asia/Istanbul`.
 - `custom_css` - (Optional) Custom CSS Styles for the status page.
@@ -44,7 +48,7 @@ The following arguments are supported:
 - `logo_redirect_url` - (Optional) The redirect url for the status page logo.
 - `activated` - (Optional) Indicates whether or not the status page is activated.
 - `status` - (Optional) The status of the status page. Allowed values are `OPERATIONAL`, `UNDER_MAINTENANCE`, `DEGRADED`, `PARTIAL_OUTAGE`, `MAJOR_OUTAGE`.
-- `teams` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks.
 
 #### Service Arguments
 

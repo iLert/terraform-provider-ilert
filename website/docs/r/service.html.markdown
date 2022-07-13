@@ -8,13 +8,22 @@ description: |-
 
 # ilert_service
 
-An [service](https://api.ilert.com/api-docs/#tag/Services) serves as a starting point when manually creating incidents. It is also used in alert source automation rules for automatically creating incidents.
+A [service](https://api.ilert.com/api-docs/#tag/Services) serves as a starting point when manually creating incidents. It is also used in alert source automation rules for automatically creating incidents.
 
 ## Example Usage
 
 ```hcl
+resource "ilert_team" "example"{
+  name = "example"
+}
+
 resource "ilert_service" "example" {
   name = "example"
+  status = "OPERATIONAL"
+  description = "example iLert service"
+  team {
+    id = ilert_team.example.id
+  }
 }
 ```
 
@@ -27,7 +36,7 @@ The following arguments are supported:
 - `description` - (Optional) The description of the service.
 - `one_open_incident_only` - (Optional) Indicates whether or not only one incident should be opened. Default: `false`
 - `show_uptime_history` - (Optional) Indicates whether or not the uptime history should be shown. Default: `true`
-- `teams` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks.
 
 #### Team Arguments
 
