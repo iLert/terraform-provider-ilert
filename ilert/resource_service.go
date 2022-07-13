@@ -42,7 +42,7 @@ func resourceService() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
-			"teams": {
+			"team": {
 				Type:     schema.TypeList,
 				Optional: true,
 				MinItems: 1,
@@ -101,13 +101,13 @@ func buildService(d *schema.ResourceData) (*ilert.Service, error) {
 		service.ShowUptimeHistory = val.(bool)
 	}
 
-	if val, ok := d.GetOk("teams"); ok {
+	if val, ok := d.GetOk("team"); ok {
 		vL := val.([]interface{})
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
 			v := m.(map[string]interface{})
 			tm := ilert.TeamShort{
-				ID: v["id"].(int64),
+				ID: int64(v["id"].(int)),
 			}
 			if v["name"] != nil && v["name"].(string) != "" {
 				tm.Name = v["name"].(string)
@@ -205,7 +205,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("teams", teams); err != nil {
+	if err := d.Set("team", teams); err != nil {
 		return diag.Errorf("error setting teams: %s", err)
 	}
 

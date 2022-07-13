@@ -669,7 +669,7 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m in
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be created", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert source, %s", err.Error()))
 			}
 			return resource.NonRetryableError(err)
 		}

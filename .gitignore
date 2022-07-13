@@ -4,3 +4,5 @@ bin/
 terraform.tfstate*
 crash.log
 *.tfvars
+*.tfrc
+test/

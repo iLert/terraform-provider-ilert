@@ -91,7 +91,7 @@ func resourceStatusPage() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice(ilert.ServiceStatusAll, false),
 			},
-			"teams": {
+			"team": {
 				Type:     schema.TypeList,
 				Optional: true,
 				MinItems: 1,
@@ -109,7 +109,7 @@ func resourceStatusPage() *schema.Resource {
 					},
 				},
 			},
-			"services": {
+			"service": {
 				Type:     schema.TypeList,
 				Required: true,
 				MinItems: 1,
@@ -208,13 +208,13 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 		statusPage.Status = val.(string)
 	}
 
-	if val, ok := d.GetOk("teams"); ok {
+	if val, ok := d.GetOk("team"); ok {
 		vL := val.([]interface{})
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
 			v := m.(map[string]interface{})
 			tm := ilert.TeamShort{
-				ID: v["id"].(int64),
+				ID: int64(v["id"].(int)),
 			}
 			if v["name"] != nil && v["name"].(string) != "" {
 				tm.Name = v["name"].(string)
@@ -230,7 +230,7 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 		for _, m := range vL {
 			v := m.(map[string]interface{})
 			sv := ilert.Service{
-				ID: v["id"].(int64),
+				ID: int64(v["id"].(int)),
 			}
 			if v["name"] != nil && v["name"].(string) != "" {
 				sv.Name = v["name"].(string)
@@ -258,9 +258,10 @@ func resourceStatusPageCreate(ctx context.Context, d *schema.ResourceData, m int
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		r, err := client.CreateStatusPage(&ilert.CreateStatusPageInput{StatusPage: statusPage})
 		if err != nil {
+			log.Printf("[DEBUG] Creating status page error occurred: %s", err.Error())
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for status page with id '%s' to be created", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for status page to be created: %s", err.Error()))
 			}
 			return resource.NonRetryableError(err)
 		}
@@ -339,7 +340,7 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("teams", teams); err != nil {
+	if err := d.Set("team", teams); err != nil {
 		return diag.Errorf("error setting teams: %s", err)
 	}
 
@@ -347,7 +348,7 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("member", services); err != nil {
+	if err := d.Set("service", services); err != nil {
 		return diag.Errorf("error setting services: %s", err)
 	}
 

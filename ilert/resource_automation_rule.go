@@ -34,7 +34,6 @@ func resourceAutomationRule() *schema.Resource {
 			"service_status": {
 				Type:         schema.TypeString,
 				Required:     true,
-				Default:      ilert.ServiceStatus.Operational,
 				ValidateFunc: validation.StringInSlice(ilert.ServiceStatusAll, false),
 			},
 			"template": {
@@ -138,7 +137,7 @@ func buildAutomationRule(d *schema.ResourceData) (*ilert.AutomationRule, error) 
 		if vL, ok := val.([]interface{}); ok && len(vL) > 0 && vL[0] != nil {
 			tmp := &ilert.IncidentTemplate{}
 			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
-				tmp.ID = v["id"].(int64)
+				tmp.ID = int64(v["id"].(int))
 				if name, ok := v["name"].(string); ok && name != "" {
 					tmp.Name = name
 				}
@@ -153,7 +152,7 @@ func buildAutomationRule(d *schema.ResourceData) (*ilert.AutomationRule, error) 
 		if vL, ok := val.([]interface{}); ok && len(vL) > 0 && vL[0] != nil {
 			svc := &ilert.Service{}
 			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
-				svc.ID = v["id"].(int64)
+				svc.ID = int64(v["id"].(int))
 				if name, ok := v["name"].(string); ok && name != "" {
 					svc.Name = name
 				}
@@ -168,7 +167,7 @@ func buildAutomationRule(d *schema.ResourceData) (*ilert.AutomationRule, error) 
 		if vL, ok := val.([]interface{}); ok && len(vL) > 0 && vL[0] != nil {
 			asc := &ilert.AlertSource{}
 			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
-				asc.ID = v["id"].(int64)
+				asc.ID = int64(v["id"].(int))
 				if name, ok := v["name"].(string); ok && name != "" {
 					asc.Name = name
 				}
@@ -263,10 +262,16 @@ func resourceAutomationRuleRead(ctx context.Context, d *schema.ResourceData, m i
 	d.Set("service_status", result.AutomationRule.ServiceStatus)
 	d.Set("send_notification", result.AutomationRule.SendNotification)
 
-	template := make(map[string]interface{})
-	template["id"] = result.AutomationRule.Template.ID
-	template["name"] = result.AutomationRule.Template.Name
-	d.Set("template", template)
+	if result.AutomationRule.Template != nil {
+		d.Set("template", []interface{}{
+			map[string]interface{}{
+				"id":   result.AutomationRule.Template.ID,
+				"name": result.AutomationRule.Template.Name,
+			},
+		})
+	} else {
+		d.Set("template", []interface{}{})
+	}
 
 	service := make(map[string]interface{})
 	service["id"] = result.AutomationRule.Service.ID
