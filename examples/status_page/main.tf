@@ -4,5 +4,9 @@ data "ilert_service" "example" {
 
 resource "ilert_status_page" "example" {
   name = "example"
-  service = data.ilert_service.example.id
+  subdomain = "example.ilerthq.com"
+  visibility = "PUBLIC"
+  service {
+    id = data.ilert_service.example.id
+  }
 }

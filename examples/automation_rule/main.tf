@@ -1,15 +1,24 @@
+data "ilert_escalation_policy" "default" {
+  name = "Default"
+}
+
 data "ilert_service" "example" {
   name = "example"
 }
 
-data "ilert_alert_source" "example" {
-  name = "example"
+resource "ilert_alert_source" "example" {
+  name              = "My Grafana Integration from terraform"
+  integration_type  = "GRAFANA"
+  escalation_policy = data.ilert_escalation_policy.default.id
 }
 
 resource "ilert_automation_rule" "example" {
-  name = "example"
   alert_type = "CREATED"
   service_status = "OPERATIONAL"
-  service = data.ilert_service.example.id
-  alert_source = data.ilert_alert_source.example.id
+  service {
+    id = data.ilert_service.example.id
+  } 
+  alert_source {
+    id = ilert_alert_source.example.id
+  }
 }
