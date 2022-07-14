@@ -106,6 +106,7 @@ func resourceUptimeMonitor() *schema.Resource {
 				ValidateFunc: validation.IntBetween(1000, 60000),
 			},
 			"create_incident_after_failed_checks": { // @deprecated
+				Deprecated:   "The field create_incident_after_failed_checks is deprecated! Please use create_alert_after_failed_checks instead.",
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      1,

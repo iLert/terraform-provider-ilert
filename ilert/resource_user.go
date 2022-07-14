@@ -194,15 +194,12 @@ func resourceUser() *schema.Resource {
 				},
 			},
 			"subscribed_incident_update_states": { // @deprecated
-				Type:     schema.TypeList,
-				Optional: true,
+				Deprecated: "The field subscribed_incident_update_states is deprecated! Please use subscribed_alert_update_states instead.",
+				Type:       schema.TypeList,
+				Optional:   true,
 				Elem: &schema.Schema{
-					Type: schema.TypeString,
-					ValidateFunc: validation.StringInSlice([]string{
-						"ACCEPTED",
-						"ESCALATED",
-						"RESOLVED",
-					}, false),
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringInSlice(ilert.UserAlertUpdateStatesAll, false),
 				},
 			},
 			"subscribed_alert_update_states": {
@@ -218,8 +215,9 @@ func resourceUser() *schema.Resource {
 				},
 			},
 			"subscribed_incident_update_notification_types": { // @deprecated
-				Type:     schema.TypeList,
-				Optional: true,
+				Deprecated: "The field subscribed_incident_update_notification_types is deprecated! Please use subscribed_alert_update_notification_types instead.",
+				Type:       schema.TypeList,
+				Optional:   true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 					ValidateFunc: validation.StringInSlice([]string{

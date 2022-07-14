@@ -24,7 +24,7 @@ func resourceAutomationRule() *schema.Resource {
 			"resolve_incident": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  true,
+				Default:  false,
 			},
 			"resolve_service": {
 				Type:     schema.TypeBool,

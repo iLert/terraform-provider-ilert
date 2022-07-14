@@ -15,7 +15,8 @@ import (
 // Legacy API - please use alert-actions - for more information see https://docs.ilert.com/rest-api/api-version-history#renaming-connections-to-alert-actions
 func dataSourceConnection() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceConnectionRead,
+		DeprecationMessage: "The data source connection is deprecated! Please use data source alert action instead.",
+		ReadContext:        dataSourceConnectionRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {

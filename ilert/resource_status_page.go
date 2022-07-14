@@ -33,13 +33,6 @@ func resourceStatusPage() *schema.Resource {
 			"timezone": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "Europe/Berlin",
-				ValidateFunc: validation.StringInSlice([]string{
-					"Europe/Berlin",
-					"America/New_York",
-					"America/Los_Angeles",
-					"Asia/Istanbul",
-				}, false),
 			},
 			"custom_css": {
 				Type:     schema.TypeString,

@@ -17,7 +17,8 @@ resource "ilert_automation_rule" "example" {
   service_status = "OPERATIONAL"
   service {
     id = data.ilert_service.example.id
-  } 
+  }
+   
   alert_source {
     id = ilert_alert_source.example.id
   }

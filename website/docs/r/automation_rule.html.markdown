@@ -47,7 +47,7 @@ The following arguments are supported:
 - `service_status` - (Required) The status in which the service is currently in. Allowed values are `OPERATIONAL`, `UNDER_MAINTENANCE`, `DEGRADED`, `PARTIAL_OUTAGE`, `MAJOR_OUTAGE`.
 - `service` - (Required) The [service](#service-arguments) block.
 - `alert_source` - (Required) The [alert source](#alert-source-arguments) block.
-- `resolve_incident` - (Optional) Indicates whether or not the incident will be resolved automatically. Default: `true`
+- `resolve_incident` - (Optional) Indicates whether or not the incident will be resolved automatically. Default: `false`
 - `resolve_service` - (Optional) Indicates whether or not the service will be resolved automatically. Default: `true`
 - `template` - (Optional) The [incident template](#incident-template-arguments) block.
 

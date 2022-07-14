@@ -26,6 +26,14 @@ func dataSourceIncidentTemplate() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"summary": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"message": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -65,6 +73,8 @@ func dataSourceIncidentTemplateRead(ctx context.Context, d *schema.ResourceData,
 		d.SetId(strconv.FormatInt(found.ID, 10))
 		d.Set("name", found.Name)
 		d.Set("status", found.Status)
+		d.Set("summary", found.Summary)
+		d.Set("message", found.Message)
 
 		return nil
 	})

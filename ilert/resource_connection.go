@@ -17,6 +17,7 @@ import (
 // Legacy API - please use alert-actions - for more information see https://docs.ilert.com/rest-api/api-version-history#renaming-connections-to-alert-actions
 func resourceConnection() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: "The resource connection is deprecated! Please use alert action instead.",
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,

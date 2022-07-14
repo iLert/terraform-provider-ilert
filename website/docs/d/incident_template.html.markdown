@@ -29,5 +29,7 @@ The following arguments are supported:
 - `id` - The ID of the found incident template.
 - `name` - The name of the found incident template.
 - `status` - The status of the found incident template.
+- `summary` - The summary of the found incident template.
+- `message` - The message of the found incident template.
 
 [1]: https://api.ilert.com/api-docs/#tag/Incident-Templates

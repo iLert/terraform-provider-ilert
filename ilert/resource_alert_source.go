@@ -54,9 +54,10 @@ func resourceAlertSource() *schema.Resource {
 				Description: "The escalation policy specifies who will be notified when an incident is created by this alert source",
 			},
 			"incident_creation": { // @deprecated
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "ONE_INCIDENT_PER_EMAIL",
+				Deprecated: "The field incident_creation is deprecated! Please use alert_creation instead.",
+				Type:       schema.TypeString,
+				Optional:   true,
+				Default:    "ONE_INCIDENT_PER_EMAIL",
 				ValidateFunc: validation.StringInSlice([]string{
 					"ONE_INCIDENT_PER_EMAIL",
 					"ONE_INCIDENT_PER_EMAIL_SUBJECT",
@@ -82,10 +83,11 @@ func resourceAlertSource() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
-			"incident_priority_rule": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "HIGH",
+			"incident_priority_rule": { // @deprecated
+				Deprecated: "The field incident_priority_rule is deprecated! Please use alert_priority_rule instead.",
+				Type:       schema.TypeString,
+				Optional:   true,
+				Default:    "HIGH",
 				ValidateFunc: validation.StringInSlice([]string{
 					"HIGH",
 					"LOW",
@@ -210,8 +212,9 @@ func resourceAlertSource() *schema.Resource {
 							Optional: true,
 						},
 						"auto_raise_incidents": { // @deprecated
-							Type:     schema.TypeBool,
-							Optional: true,
+							Deprecated: "The field auto_raise_incidents is deprecated! Please use auto_raise_alerts instead.",
+							Type:       schema.TypeBool,
+							Optional:   true,
 						},
 						"auto_raise_alerts": {
 							Type:     schema.TypeBool,
