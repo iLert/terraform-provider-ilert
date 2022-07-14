@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/iLert/ilert-go"
+	"github.com/iLert/ilert-go/v2"
 )
 
 // Provider represents the provider interface
@@ -41,6 +41,7 @@ func Provider() *schema.Provider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
+			"ilert_alert_action":      dataSourceAlertAction(),
 			"ilert_alert_source":      dataSourceAlertSource(),
 			"ilert_escalation_policy": dataSourceEscalationPolicy(),
 			"ilert_user":              dataSourceUser(),
@@ -49,8 +50,12 @@ func Provider() *schema.Provider {
 			"ilert_connection":        dataSourceConnection(),
 			"ilert_connector":         dataSourceConnector(),
 			"ilert_team":              dataSourceTeam(),
+			"ilert_incident_template": dataSourceIncidentTemplate(),
+			"ilert_service":           dataSourceService(),
+			"ilert_status_page":       dataSourceStatusPage(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
+			"ilert_alert_action":      resourceAlertAction(),
 			"ilert_alert_source":      resourceAlertSource(),
 			"ilert_user":              resourceUser(),
 			"ilert_escalation_policy": resourceEscalationPolicy(),
@@ -58,6 +63,10 @@ func Provider() *schema.Provider {
 			"ilert_connection":        resourceConnection(),
 			"ilert_connector":         resourceConnector(),
 			"ilert_team":              resourceTeam(),
+			"ilert_automation_rule":   resourceAutomationRule(),
+			"ilert_incident_template": resourceIncidentTemplate(),
+			"ilert_service":           resourceService(),
+			"ilert_status_page":       resourceStatusPage(),
 		},
 	}
 	p.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {

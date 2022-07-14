@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/iLert/ilert-go"
+	"github.com/iLert/ilert-go/v2"
 )
 
 func resourceConnector() *schema.Resource {
@@ -28,28 +28,12 @@ func resourceConnector() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(ilert.ConnectorTypesAll, false),
 			},
 			"datadog": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"jira",
-					"microsoft_teams",
-					"servicenow",
-					"zendesk",
-					"discord",
-					"github",
-					"topdesk",
-					"aws_lambda",
-					"azure_faas",
-					"google_faas",
-					"sysdig",
-					"autotask",
-					"mattermost",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "datadog"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_key": {
@@ -61,28 +45,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"jira": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"microsoft_teams",
-					"servicenow",
-					"zendesk",
-					"discord",
-					"github",
-					"topdesk",
-					"aws_lambda",
-					"azure_faas",
-					"google_faas",
-					"sysdig",
-					"autotask",
-					"mattermost",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "jira"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -102,28 +70,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"microsoft_teams": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"jira",
-					"servicenow",
-					"zendesk",
-					"discord",
-					"github",
-					"topdesk",
-					"aws_lambda",
-					"azure_faas",
-					"google_faas",
-					"sysdig",
-					"autotask",
-					"mattermost",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "microsoft_teams"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -134,28 +86,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"servicenow": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"microsoft_teams",
-					"jira",
-					"zendesk",
-					"discord",
-					"github",
-					"topdesk",
-					"aws_lambda",
-					"azure_faas",
-					"google_faas",
-					"sysdig",
-					"autotask",
-					"mattermost",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "servicenow"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -175,27 +111,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"zendesk": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"microsoft_teams",
-					"jira",
-					"servicenow",
-					"github",
-					"topdesk",
-					"aws_lambda",
-					"azure_faas",
-					"google_faas",
-					"sysdig",
-					"autotask",
-					"mattermost",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "zendesk"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -215,28 +136,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"discord": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"jira",
-					"microsoft_teams",
-					"servicenow",
-					"zendesk",
-					"github",
-					"topdesk",
-					"aws_lambda",
-					"azure_faas",
-					"google_faas",
-					"sysdig",
-					"autotask",
-					"mattermost",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "discord"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -247,27 +152,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"github": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"microsoft_teams",
-					"jira",
-					"servicenow",
-					"zendesk",
-					"topdesk",
-					"aws_lambda",
-					"azure_faas",
-					"google_faas",
-					"sysdig",
-					"autotask",
-					"mattermost",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "github"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_key": {
@@ -279,28 +169,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"topdesk": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"microsoft_teams",
-					"jira",
-					"servicenow",
-					"zendesk",
-					"discord",
-					"github",
-					"aws_lambda",
-					"azure_faas",
-					"google_faas",
-					"sysdig",
-					"autotask",
-					"mattermost",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "topdesk"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -320,28 +194,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"aws_lambda": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"microsoft_teams",
-					"jira",
-					"servicenow",
-					"zendesk",
-					"discord",
-					"github",
-					"topdesk",
-					"azure_faas",
-					"google_faas",
-					"sysdig",
-					"autotask",
-					"mattermost",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "aws_lambda"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"authorization": {
@@ -353,28 +211,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"azure_faas": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"microsoft_teams",
-					"jira",
-					"servicenow",
-					"zendesk",
-					"discord",
-					"github",
-					"topdesk",
-					"aws_lambda",
-					"google_faas",
-					"sysdig",
-					"autotask",
-					"mattermost",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "azure_faas"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"authorization": {
@@ -386,28 +228,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"google_faas": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"microsoft_teams",
-					"jira",
-					"servicenow",
-					"zendesk",
-					"discord",
-					"github",
-					"topdesk",
-					"aws_lambda",
-					"azure_faas",
-					"sysdig",
-					"autotask",
-					"mattermost",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "google_faas"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"authorization": {
@@ -419,28 +245,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"sysdig": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"microsoft_teams",
-					"jira",
-					"servicenow",
-					"zendesk",
-					"discord",
-					"github",
-					"topdesk",
-					"aws_lambda",
-					"azure_faas",
-					"google_faas",
-					"autotask",
-					"mattermost",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "sysdig"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_key": {
@@ -452,28 +262,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"autotask": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"microsoft_teams",
-					"jira",
-					"servicenow",
-					"zendesk",
-					"discord",
-					"github",
-					"topdesk",
-					"aws_lambda",
-					"azure_faas",
-					"google_faas",
-					"sysdig",
-					"mattermost",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "autotask"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -493,28 +287,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"mattermost": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"microsoft_teams",
-					"jira",
-					"servicenow",
-					"zendesk",
-					"discord",
-					"github",
-					"topdesk",
-					"aws_lambda",
-					"azure_faas",
-					"google_faas",
-					"sysdig",
-					"autotask",
-					"zammad",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "mattermost"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -525,28 +303,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"zammad": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"microsoft_teams",
-					"jira",
-					"servicenow",
-					"zendesk",
-					"discord",
-					"github",
-					"topdesk",
-					"aws_lambda",
-					"azure_faas",
-					"google_faas",
-					"sysdig",
-					"autotask",
-					"mattermost",
-					"status_page_io",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "zammad"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -562,28 +324,12 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"status_page_io": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
-				ConflictsWith: []string{
-					"datadog",
-					"microsoft_teams",
-					"jira",
-					"servicenow",
-					"zendesk",
-					"discord",
-					"github",
-					"topdesk",
-					"aws_lambda",
-					"azure_faas",
-					"google_faas",
-					"sysdig",
-					"autotask",
-					"mattermost",
-					"zammad",
-				},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "status_page_io"),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_key": {
@@ -1057,4 +803,13 @@ func resourceConnectorExists(d *schema.ResourceData, m interface{}) (bool, error
 		return false, err
 	}
 	return true, nil
+}
+
+func removeFromConnectorTypes(l []string, s string) []string {
+	for i, v := range l {
+		if v == s {
+			return append(l[:i], l[i+1:]...)
+		}
+	}
+	return l
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/iLert/ilert-go"
+	"github.com/iLert/ilert-go/v2"
 )
 
 func resourceUser() *schema.Resource {
@@ -193,7 +193,16 @@ func resourceUser() *schema.Resource {
 					},
 				},
 			},
-			"subscribed_incident_update_states": {
+			"subscribed_incident_update_states": { // @deprecated
+				Deprecated: "The field subscribed_incident_update_states is deprecated! Please use subscribed_alert_update_states instead.",
+				Type:       schema.TypeList,
+				Optional:   true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringInSlice(ilert.UserAlertUpdateStatesAll, false),
+				},
+			},
+			"subscribed_alert_update_states": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
@@ -205,7 +214,24 @@ func resourceUser() *schema.Resource {
 					}, false),
 				},
 			},
-			"subscribed_incident_update_notification_types": {
+			"subscribed_incident_update_notification_types": { // @deprecated
+				Deprecated: "The field subscribed_incident_update_notification_types is deprecated! Please use subscribed_alert_update_notification_types instead.",
+				Type:       schema.TypeList,
+				Optional:   true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+					ValidateFunc: validation.StringInSlice([]string{
+						"EMAIL",
+						"ANDROID",
+						"IPHONE",
+						"SMS",
+						"VOICE_MOBILE",
+						"VOICE_LANDLINE",
+						"WHATSAPP",
+					}, false),
+				},
+			},
+			"subscribed_alert_update_notification_types": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
@@ -362,6 +388,16 @@ func buildUser(d *schema.ResourceData) (*ilert.User, error) {
 		user.SubscribedIncidentUpdateStates = sL
 	}
 
+	if val, ok := d.GetOk("subscribed_alert_update_states"); ok {
+		vL := val.([]interface{})
+		sL := make([]string, 0)
+		for _, m := range vL {
+			v := m.(string)
+			sL = append(sL, v)
+		}
+		user.SubscribedAlertUpdateStates = sL
+	}
+
 	if val, ok := d.GetOk("subscribed_incident_update_notification_types"); ok {
 		vL := val.([]interface{})
 		sL := make([]string, 0)
@@ -370,6 +406,16 @@ func buildUser(d *schema.ResourceData) (*ilert.User, error) {
 			sL = append(sL, v)
 		}
 		user.SubscribedIncidentUpdateNotificationTypes = sL
+	}
+
+	if val, ok := d.GetOk("subscribed_alert_update_notification_types"); ok {
+		vL := val.([]interface{})
+		sL := make([]string, 0)
+		for _, m := range vL {
+			v := m.(string)
+			sL = append(sL, v)
+		}
+		user.SubscribedAlertUpdateNotificationTypes = sL
 	}
 
 	return user, nil
@@ -460,7 +506,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	d.Set("language", result.User.Language)
 	d.Set("role", result.User.Role)
 	d.Set("subscribed_incident_update_states", result.User.SubscribedIncidentUpdateStates)
+	d.Set("subscribed_alert_update_states", result.User.SubscribedAlertUpdateStates)
 	d.Set("subscribed_incident_update_notification_types", result.User.SubscribedIncidentUpdateNotificationTypes)
+	d.Set("subscribed_alert_update_notification_types", result.User.SubscribedAlertUpdateNotificationTypes)
 
 	if result.User.Mobile != nil {
 		d.Set("mobile", []interface{}{

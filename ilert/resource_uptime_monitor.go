@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/iLert/ilert-go"
+	"github.com/iLert/ilert-go/v2"
 )
 
 func resourceUptimeMonitor() *schema.Resource {
@@ -105,7 +105,14 @@ func resourceUptimeMonitor() *schema.Resource {
 				Default:      30000,
 				ValidateFunc: validation.IntBetween(1000, 60000),
 			},
-			"create_incident_after_failed_checks": {
+			"create_incident_after_failed_checks": { // @deprecated
+				Deprecated:   "The field create_incident_after_failed_checks is deprecated! Please use create_alert_after_failed_checks instead.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      1,
+				ValidateFunc: validation.IntBetween(1, 12),
+			},
+			"create_alert_after_failed_checks": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      1,
@@ -209,6 +216,11 @@ func buildUptimeMonitor(d *schema.ResourceData) (*ilert.UptimeMonitor, error) {
 	if val, ok := d.GetOk("create_incident_after_failed_checks"); ok {
 		createIncidentAfterFailedChecks := val.(int)
 		uptimeMonitor.CreateIncidentAfterFailedChecks = createIncidentAfterFailedChecks
+	}
+
+	if val, ok := d.GetOk("create_alert_after_failed_checks"); ok {
+		createAlertAfterFailedChecks := val.(int)
+		uptimeMonitor.CreateAlertAfterFailedChecks = createAlertAfterFailedChecks
 	}
 
 	if val, ok := d.GetOk("paused"); ok {
@@ -322,6 +334,7 @@ func resourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, m in
 	d.Set("interval_sec", result.UptimeMonitor.IntervalSec)
 	d.Set("timeout_ms", result.UptimeMonitor.TimeoutMs)
 	d.Set("create_incident_after_failed_checks", result.UptimeMonitor.CreateIncidentAfterFailedChecks)
+	d.Set("create_alert_after_failed_checks", result.UptimeMonitor.CreateAlertAfterFailedChecks)
 	d.Set("escalation_policy", strconv.FormatInt(result.UptimeMonitor.EscalationPolicy.ID, 10))
 	d.Set("paused", result.UptimeMonitor.Paused)
 	d.Set("status", result.UptimeMonitor.Status)

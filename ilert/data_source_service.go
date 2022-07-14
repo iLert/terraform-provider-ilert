@@ -13,53 +13,58 @@ import (
 	"github.com/iLert/ilert-go/v2"
 )
 
-func dataSourceEscalationPolicy() *schema.Resource {
+func dataSourceService() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceEscalationPolicyRead,
+		ReadContext: dataSourceServiceRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"status": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
-func dataSourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceServiceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert escalation policy")
+	log.Printf("[DEBUG] Reading iLert service")
 
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.GetEscalationPolicies(&ilert.GetEscalationPoliciesInput{})
+		resp, err := client.GetServices(&ilert.GetServicesInput{})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for service with id '%s' to be read", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an escalation policy with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read a service with ID %s", d.Id()))
 		}
 
-		var found *ilert.EscalationPolicy
+		var found *ilert.Service
 
-		for _, escalationPolicy := range resp.EscalationPolicies {
-			if escalationPolicy.Name == searchName {
-				found = escalationPolicy
+		for _, service := range resp.Services {
+			if service.Name == searchName {
+				found = service
 				break
 			}
 		}
 
 		if found == nil {
 			return resource.NonRetryableError(
-				fmt.Errorf("unable to locate any escalation policy with the name: %s", searchName),
+				fmt.Errorf("unable to locate any service with the name: %s", searchName),
 			)
 		}
 
 		d.SetId(strconv.FormatInt(found.ID, 10))
 		d.Set("name", found.Name)
+		d.Set("status", found.Status)
 
 		return nil
 	})

@@ -13,9 +13,9 @@ import (
 	"github.com/iLert/ilert-go/v2"
 )
 
-func dataSourceAlertSource() *schema.Resource {
+func dataSourceIncidentTemplate() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceAlertSourceRead,
+		ReadContext: dataSourceIncidentTemplateRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -26,57 +26,55 @@ func dataSourceAlertSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"integration_key": {
-				Type:      schema.TypeString,
-				Computed:  true,
-				Sensitive: true,
+			"summary": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
-			"integration_url": {
-				Type:      schema.TypeString,
-				Computed:  true,
-				Sensitive: true,
+			"message": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
 }
 
-func dataSourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIncidentTemplateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert alert source")
+	log.Printf("[DEBUG] Reading iLert incident template")
 
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.GetAlertSources(&ilert.GetAlertSourcesInput{})
+		resp, err := client.GetIncidentTemplates(&ilert.GetIncidentTemplatesInput{})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for incident template with id '%s' to be read", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read a incident template with ID %s", d.Id()))
 		}
 
-		var found *ilert.AlertSource
+		var found *ilert.IncidentTemplate
 
-		for _, alertSource := range resp.AlertSources {
-			if alertSource.Name == searchName {
-				found = alertSource
+		for _, incidentTemplate := range resp.IncidentTemplates {
+			if incidentTemplate.Name == searchName {
+				found = incidentTemplate
 				break
 			}
 		}
 
 		if found == nil {
 			return resource.NonRetryableError(
-				fmt.Errorf("unable to locate any alert source with the name: %s", searchName),
+				fmt.Errorf("unable to locate any incident template with the name: %s", searchName),
 			)
 		}
 
 		d.SetId(strconv.FormatInt(found.ID, 10))
 		d.Set("name", found.Name)
 		d.Set("status", found.Status)
-		d.Set("integration_key", found.IntegrationKey)
-		d.Set("integration_url", found.IntegrationURL)
+		d.Set("summary", found.Summary)
+		d.Set("message", found.Message)
 
 		return nil
 	})

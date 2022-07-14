@@ -160,8 +160,8 @@ The following attributes are exported:
 - `id` - The ID of the connector.
 - `name` - The name of the connector.
 - `type` - The type of the connector.
-- `created_at` - The creation date time of the connector in in ISO 8601 format.
-- `updated_at` - The creation date time of the connector in in ISO 8601 format.
+- `created_at` - The creation date time of the connector in ISO 8601 format.
+- `updated_at` - The creation date time of the connector in ISO 8601 format.
 
 ## Import
 
