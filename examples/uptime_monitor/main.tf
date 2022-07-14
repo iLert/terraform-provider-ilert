@@ -15,4 +15,3 @@ resource "ilert_uptime_monitor" "terraform" {
     url = "https://www.terraform.io"
   }
 }
-

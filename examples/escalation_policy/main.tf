@@ -19,4 +19,3 @@ resource "ilert_escalation_policy" "example" {
     user               = data.ilert_user.example.id
   }
 }
-
