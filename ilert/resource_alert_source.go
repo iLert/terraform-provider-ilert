@@ -57,7 +57,6 @@ func resourceAlertSource() *schema.Resource {
 				Deprecated: "The field incident_creation is deprecated! Please use alert_creation instead.",
 				Type:       schema.TypeString,
 				Optional:   true,
-				Default:    "ONE_INCIDENT_PER_EMAIL",
 				ValidateFunc: validation.StringInSlice([]string{
 					"ONE_INCIDENT_PER_EMAIL",
 					"ONE_INCIDENT_PER_EMAIL_SUBJECT",
@@ -87,7 +86,6 @@ func resourceAlertSource() *schema.Resource {
 				Deprecated: "The field incident_priority_rule is deprecated! Please use alert_priority_rule instead.",
 				Type:       schema.TypeString,
 				Optional:   true,
-				Default:    "HIGH",
 				ValidateFunc: validation.StringInSlice([]string{
 					"HIGH",
 					"LOW",

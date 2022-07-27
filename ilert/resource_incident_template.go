@@ -38,7 +38,7 @@ func resourceIncidentTemplate() *schema.Resource {
 			"send_notification": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  true,
+				Default:  false,
 			},
 			"team": {
 				Type:     schema.TypeList,
