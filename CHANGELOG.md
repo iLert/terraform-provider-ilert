@@ -1,5 +1,18 @@
 # Changelog
 
+## 27.07.2022, Version 1.6.1
+
+- fix [#19](https://github.com/iLert/terraform-provider-ilert/issues/19)
+
+## 14.07.2022, Version 1.6.0
+
+- add alert action data source and resource
+- add service data source and resource
+- add status page data source and resource
+- add incident template data source and resource
+- deprecate connection data source and resource
+- deprecate some legacy fields in resources
+
 ## 16.04.2022, Version 1.5.1
 
 - fix connection resource trigger_types validation
