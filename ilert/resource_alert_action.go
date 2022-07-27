@@ -15,6 +15,8 @@ import (
 )
 
 func resourceAlertAction() *schema.Resource {
+	// include only type that schema supports
+	alertActionTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Discord, ilert.ConnectorTypes.Mattermost, ilert.ConnectorTypes.MicrosoftTeams, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.ZoomChat, ilert.ConnectorTypes.ZoomMeeting, ilert.ConnectorTypes.Webex)
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -79,7 +81,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "datadog"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Datadog),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"priority": {
@@ -108,7 +110,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "jira"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Jira),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"project": {
@@ -140,7 +142,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "servicenow"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.ServiceNow),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"caller_id": {
@@ -164,7 +166,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "slack"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Slack),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"channel_id": {
@@ -192,7 +194,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "webhook"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Webhook),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -212,7 +214,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "zendesk"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Zendesk),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"priority": {
@@ -234,7 +236,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "github"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Github),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"owner": {
@@ -261,7 +263,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "topdesk"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Topdesk),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"status": {
@@ -283,7 +285,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "aws_lambda"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.AWSLambda),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -303,7 +305,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "azure_faas"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.AzureFAAS),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -323,7 +325,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "google_faas"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.GoogleFAAS),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -343,7 +345,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "email"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Email),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"recipients": {
@@ -370,7 +372,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "sysdig"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Sysdig),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"tags": {
@@ -393,7 +395,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "zapier"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Zapier),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -409,7 +411,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "autotask"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Autotask),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"queue_id": {
@@ -441,7 +443,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "zammad"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Zammad),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"email": {
@@ -457,7 +459,7 @@ func resourceAlertAction() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "status_page_io"),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.StatusPageIO),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"page_id": {

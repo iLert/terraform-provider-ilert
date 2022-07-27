@@ -14,6 +14,8 @@ import (
 )
 
 func resourceConnector() *schema.Resource {
+	// include only type that schema supports
+	connectorTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Email, ilert.ConnectorTypes.MicrosoftTeams, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.ZoomChat, ilert.ConnectorTypes.ZoomMeeting, ilert.ConnectorTypes.Webex, ilert.ConnectorTypes.Slack, ilert.ConnectorTypes.Webhook, ilert.ConnectorTypes.Zapier)
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -33,7 +35,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "datadog"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Datadog),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_key": {
@@ -50,7 +52,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "jira"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Jira),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -75,7 +77,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "microsoft_teams"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.MicrosoftTeams),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -91,7 +93,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "servicenow"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.ServiceNow),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -116,7 +118,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "zendesk"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Zendesk),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -141,7 +143,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "discord"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Discord),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -157,7 +159,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "github"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Github),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_key": {
@@ -174,7 +176,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "topdesk"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Topdesk),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -199,7 +201,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "aws_lambda"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.AWSLambda),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"authorization": {
@@ -216,7 +218,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "azure_faas"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.AzureFAAS),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"authorization": {
@@ -233,7 +235,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "google_faas"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.GoogleFAAS),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"authorization": {
@@ -250,7 +252,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "sysdig"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Sysdig),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_key": {
@@ -267,7 +269,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "autotask"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Autotask),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -292,7 +294,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "mattermost"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Mattermost),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -308,7 +310,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "zammad"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Zammad),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -329,7 +331,7 @@ func resourceConnector() *schema.Resource {
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeFromConnectorTypes(ilert.ConnectorTypesAll, "status_page_io"),
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.StatusPageIO),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_key": {
@@ -803,13 +805,4 @@ func resourceConnectorExists(d *schema.ResourceData, m interface{}) (bool, error
 		return false, err
 	}
 	return true, nil
-}
-
-func removeFromConnectorTypes(l []string, s string) []string {
-	for i, v := range l {
-		if v == s {
-			return append(l[:i], l[i+1:]...)
-		}
-	}
-	return l
 }

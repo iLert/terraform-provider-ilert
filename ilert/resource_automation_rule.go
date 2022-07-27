@@ -37,10 +37,11 @@ func resourceAutomationRule() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(ilert.ServiceStatusAll, false),
 			},
 			"template": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MinItems: 1,
-				MaxItems: 1,
+				Type:         schema.TypeList,
+				Optional:     true,
+				MinItems:     1,
+				MaxItems:     1,
+				RequiredWith: []string{"send_notification"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -96,7 +97,7 @@ func resourceAutomationRule() *schema.Resource {
 			"send_notification": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  true,
+				Default:  false,
 			},
 		},
 		CreateContext: resourceAutomationRuleCreate,
@@ -179,7 +180,7 @@ func buildAutomationRule(d *schema.ResourceData) (*ilert.AutomationRule, error) 
 	}
 
 	if val, ok := d.GetOk("send_notification"); ok {
-		automationRule.ResolveService = val.(bool)
+		automationRule.SendNotification = val.(bool)
 	}
 
 	return automationRule, nil
@@ -201,8 +202,9 @@ func resourceAutomationRuleCreate(ctx context.Context, d *schema.ResourceData, m
 		r, err := client.CreateAutomationRule(&ilert.CreateAutomationRuleInput{AutomationRule: automationRule})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Creating iLert automation rule error %s, so retry again", err.Error())
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for automation rule with id '%s' to be created", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for automation rule to be created"))
 			}
 			return resource.NonRetryableError(err)
 		}

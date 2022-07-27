@@ -2,7 +2,7 @@ data "ilert_escalation_policy" "default" {
   name = "Default"
 }
 
-data "ilert_service" "example" {
+resource "ilert_service" "example" {
   name = "example"
 }
 
@@ -13,12 +13,14 @@ resource "ilert_alert_source" "example" {
 }
 
 resource "ilert_automation_rule" "example" {
-  alert_type = "CREATED"
-  service_status = "OPERATIONAL"
+  alert_type       = "CREATED"
+  service_status   = "DEGRADED"
+  resolve_incident = true
+
   service {
-    id = data.ilert_service.example.id
+    id = ilert_service.example.id
   }
-   
+
   alert_source {
     id = ilert_alert_source.example.id
   }
