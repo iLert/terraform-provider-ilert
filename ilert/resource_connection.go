@@ -1083,8 +1083,9 @@ func resourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m int
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Creating iLert connection error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for connection with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for connection to be created, error: %s", err.Error()))
 			}
 			return resource.NonRetryableError(fmt.Errorf("could not read an connection with ID %s", d.Id()))
 		}

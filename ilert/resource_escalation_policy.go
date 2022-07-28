@@ -153,8 +153,9 @@ func resourceEscalationPolicyCreate(ctx context.Context, d *schema.ResourceData,
 		r, err := client.CreateEscalationPolicy(&ilert.CreateEscalationPolicyInput{EscalationPolicy: escalationPolicy})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Creating iLert escalation policy error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with id '%s' to be created", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for escalation policy to be created, error: %s", err.Error()))
 			}
 			return resource.NonRetryableError(err)
 		}

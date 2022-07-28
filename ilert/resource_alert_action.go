@@ -789,8 +789,9 @@ func resourceAlertActionCreate(ctx context.Context, d *schema.ResourceData, m in
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Creating iLert alert action rule error %s, so retry again", err.Error())
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert action to be created, error: %s", err.Error()))
 			}
 			return resource.NonRetryableError(fmt.Errorf("could not read an alert action with ID %s", d.Id()))
 		}

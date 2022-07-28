@@ -247,8 +247,9 @@ func resourceUptimeMonitorCreate(ctx context.Context, d *schema.ResourceData, m 
 		r, err := client.CreateUptimeMonitor(&ilert.CreateUptimeMonitorInput{UptimeMonitor: uptimeMonitor})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Creating iLert uptime monitor error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor with id '%s' to be created", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor to be created, error: %s", err.Error()))
 			}
 			return resource.NonRetryableError(err)
 		}

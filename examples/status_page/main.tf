@@ -4,7 +4,7 @@ resource "ilert_service" "example" {
 
 resource "ilert_status_page" "example" {
   name       = "example"
-  subdomain  = "example.ilerthq.com"
+  subdomain  = "example.ilert.io"
   visibility = "PUBLIC"
 
   service {

@@ -669,6 +669,7 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m in
 		r, err := client.CreateAlertSource(&ilert.CreateAlertSourceInput{AlertSource: alertSource})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Creating iLert alert source error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert source, %s", err.Error()))
 			}

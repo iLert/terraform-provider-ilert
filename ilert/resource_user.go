@@ -437,9 +437,9 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 		r, err := client.CreateUser(&ilert.CreateUserInput{User: user})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating iLert user error %s, so retry again", err.Error())
+				log.Printf("[ERROR] Creating iLert user error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user to be created"))
+				return resource.RetryableError(fmt.Errorf("waiting for user to be created, error: %s", err.Error()))
 			}
 			return resource.NonRetryableError(err)
 		}

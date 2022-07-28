@@ -117,7 +117,7 @@ func resourceTeamCreate(ctx context.Context, d *schema.ResourceData, m interface
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for team with id '%s' to be created", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for team to be created, error: %s", err.Error()))
 			}
 			return resource.NonRetryableError(err)
 		}
@@ -157,8 +157,9 @@ func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Creating iLert team error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for team with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for team to be read, error: %s", err.Error()))
 			}
 			return resource.NonRetryableError(fmt.Errorf("could not read an team with ID %s", d.Id()))
 		}

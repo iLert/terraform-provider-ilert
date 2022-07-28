@@ -132,6 +132,7 @@ func resourceIncidentTemplateCreate(ctx context.Context, d *schema.ResourceData,
 		r, err := client.CreateIncidentTemplate(&ilert.CreateIncidentTemplateInput{IncidentTemplate: incidentTemplate})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Creating iLert incident template error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for incident template to be created, error: %s", err.Error()))
 			}

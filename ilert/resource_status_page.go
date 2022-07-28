@@ -253,8 +253,9 @@ func resourceStatusPageCreate(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			log.Printf("[DEBUG] Creating status page error occurred: %s", err.Error())
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Creating iLert status page error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for status page to be created: %s", err.Error()))
+				return resource.RetryableError(fmt.Errorf("waiting for status page to be created, error: %s", err.Error()))
 			}
 			return resource.NonRetryableError(err)
 		}

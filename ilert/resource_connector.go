@@ -567,8 +567,9 @@ func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m inte
 		r, err := client.CreateConnector(&ilert.CreateConnectorInput{Connector: connector})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Creating iLert connector error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for connector with id '%s' to be created", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for connector to be created, error: %s", err.Error()))
 			}
 			return resource.NonRetryableError(err)
 		}

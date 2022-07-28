@@ -136,8 +136,9 @@ func resourceServiceCreate(ctx context.Context, d *schema.ResourceData, m interf
 		r, err := client.CreateService(&ilert.CreateServiceInput{Service: service})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Creating iLert service error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for service with id '%s' to be created", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for service to be created, error: %s", err.Error()))
 			}
 			return resource.NonRetryableError(err)
 		}
