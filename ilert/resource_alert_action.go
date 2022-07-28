@@ -1050,14 +1050,30 @@ func resourceAlertActionExists(d *schema.ResourceData, m interface{}) (bool, err
 
 	alertActionID := d.Id()
 	log.Printf("[DEBUG] Reading alert action: %s", d.Id())
-	_, err := client.GetAlertAction(&ilert.GetAlertActionInput{AlertActionID: ilert.String(alertActionID)})
-	if err != nil {
-		if _, ok := err.(*ilert.NotFoundAPIError); ok {
-			return false, nil
+	ctx := context.Background()
+	result := false
+	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		_, err := client.GetAlertAction(&ilert.GetAlertActionInput{AlertActionID: ilert.String(alertActionID)})
+		if err != nil {
+			if _, ok := err.(*ilert.NotFoundAPIError); ok {
+				result = false
+				return nil
+			}
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Reading iLert alert action error '%s', so retry again", err.Error())
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for alert action to be read, error: %s", err.Error()))
+			}
+			return resource.NonRetryableError(err)
 		}
+		result = true
+		return nil
+	})
+
+	if err != nil {
 		return false, err
 	}
-	return true, nil
+	return result, nil
 }
 
 func flattenAlertActionAlertSourceIDList(list []int64) ([]interface{}, error) {

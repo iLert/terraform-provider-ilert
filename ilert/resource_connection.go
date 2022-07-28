@@ -1344,14 +1344,30 @@ func resourceConnectionExists(d *schema.ResourceData, m interface{}) (bool, erro
 
 	connectionID := d.Id()
 	log.Printf("[DEBUG] Reading connection: %s", d.Id())
-	_, err := client.GetConnection(&ilert.GetConnectionInput{ConnectionID: ilert.String(connectionID)})
-	if err != nil {
-		if _, ok := err.(*ilert.NotFoundAPIError); ok {
-			return false, nil
+	ctx := context.Background()
+	result := false
+	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		_, err := client.GetConnection(&ilert.GetConnectionInput{ConnectionID: ilert.String(connectionID)})
+		if err != nil {
+			if _, ok := err.(*ilert.NotFoundAPIError); ok {
+				result = false
+				return nil
+			}
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Reading iLert connection error '%s', so retry again", err.Error())
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for connection to be read, error: %s", err.Error()))
+			}
+			return resource.NonRetryableError(err)
 		}
+		result = true
+		return nil
+	})
+
+	if err != nil {
 		return false, err
 	}
-	return true, nil
+	return result, nil
 }
 
 func flattenConnectionAlertSourceIDList(list []int64) ([]interface{}, error) {

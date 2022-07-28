@@ -264,14 +264,30 @@ func resourceTeamExists(d *schema.ResourceData, m interface{}) (bool, error) {
 		return false, unconvertibleIDErr(d.Id(), err)
 	}
 	log.Printf("[DEBUG] Reading team: %s", d.Id())
-	_, err = client.GetTeam(&ilert.GetTeamInput{TeamID: ilert.Int64(teamID)})
-	if err != nil {
-		if _, ok := err.(*ilert.NotFoundAPIError); ok {
-			return false, nil
+	ctx := context.Background()
+	result := false
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		_, err := client.GetTeam(&ilert.GetTeamInput{TeamID: ilert.Int64(teamID)})
+		if err != nil {
+			if _, ok := err.(*ilert.NotFoundAPIError); ok {
+				result = false
+				return nil
+			}
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Reading iLert team error '%s', so retry again", err.Error())
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for team to be read, error: %s", err.Error()))
+			}
+			return resource.NonRetryableError(err)
 		}
+		result = true
+		return nil
+	})
+
+	if err != nil {
 		return false, err
 	}
-	return true, nil
+	return result, nil
 }
 
 func flattenMembersList(list []ilert.TeamMember) ([]interface{}, error) {

@@ -798,12 +798,28 @@ func resourceConnectorExists(d *schema.ResourceData, m interface{}) (bool, error
 
 	connectorID := d.Id()
 	log.Printf("[DEBUG] Reading connector: %s", d.Id())
-	_, err := client.GetConnector(&ilert.GetConnectorInput{ConnectorID: ilert.String(connectorID)})
-	if err != nil {
-		if _, ok := err.(*ilert.NotFoundAPIError); ok {
-			return false, nil
+	ctx := context.Background()
+	result := false
+	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		_, err := client.GetConnector(&ilert.GetConnectorInput{ConnectorID: ilert.String(connectorID)})
+		if err != nil {
+			if _, ok := err.(*ilert.NotFoundAPIError); ok {
+				result = false
+				return nil
+			}
+			if _, ok := err.(*ilert.RetryableAPIError); ok {
+				log.Printf("[ERROR] Reading iLert connector error '%s', so retry again", err.Error())
+				time.Sleep(2 * time.Second)
+				return resource.RetryableError(fmt.Errorf("waiting for connector to be read, error: %s", err.Error()))
+			}
+			return resource.NonRetryableError(err)
 		}
+		result = true
+		return nil
+	})
+
+	if err != nil {
 		return false, err
 	}
-	return true, nil
+	return result, nil
 }
