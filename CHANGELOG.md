@@ -1,5 +1,9 @@
 # Changelog
 
+## 28.07.2022, Version 1.6.2
+
+- fix 429 error code problem if a lot of resources are applied
+
 ## 27.07.2022, Version 1.6.1
 
 - fix [#19](https://github.com/iLert/terraform-provider-ilert/issues/19)
