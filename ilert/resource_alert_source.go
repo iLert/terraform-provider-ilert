@@ -816,12 +816,43 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 		d.Set("resolve_key_extractor", []interface{}{})
 	}
 
-	teams, err := flattenTeamsList(result.AlertSource.Teams)
-	if err != nil {
-		return diag.FromErr(err)
+	if val, ok := d.GetOk("team"); ok {
+		if val != nil {
+			vL := val.([]interface{})
+			teams := make([]interface{}, 0)
+			for i, item := range result.AlertSource.Teams {
+				team := make(map[string]interface{})
+				v := vL[i].(map[string]interface{})
+				team["id"] = item.ID
+
+				// Means: if server response has a name set, and the user typed in a name too,
+				// only then team name is stored in the terraform state
+				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+					team["name"] = item.Name
+				}
+				teams = append(teams, team)
+			}
+
+			if err := d.Set("team", teams); err != nil {
+				return diag.Errorf("error setting teams: %s", err)
+			}
+		}
 	}
-	if err := d.Set("teams", teams); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting teams: %s", err))
+
+	if val, ok := d.GetOk("teams"); ok {
+		if val != nil {
+			teams := make([]interface{}, 0)
+			for _, item := range result.AlertSource.Teams {
+				team := make(map[string]interface{})
+				team["id"] = item.ID
+				teams = append(teams, team)
+			}
+			if err := d.Set("team", teams); err != nil {
+				return diag.Errorf("error setting teams: %s", err)
+			}
+
+			d.Set("teams", nil)
+		}
 	}
 
 	emailPredicates, err := flattenEmailPredicateList(result.AlertSource.EmailPredicates)
@@ -1024,14 +1055,14 @@ func flattenSupportHours(supportHours *ilert.SupportHours) ([]interface{}, error
 	return results, nil
 }
 
-func flattenTeamsList(list []ilert.TeamShort) ([]int64, error) {
-	if list == nil {
-		return make([]int64, 0), nil
-	}
-	results := make([]int64, 0)
-	for _, item := range list {
-		results = append(results, item.ID)
-	}
+// func flattenTeamsList(list []ilert.TeamShort) ([]int64, error) {
+// 	if list == nil {
+// 		return make([]int64, 0), nil
+// 	}
+// 	results := make([]int64, 0)
+// 	for _, item := range list {
+// 		results = append(results, item.ID)
+// 	}
 
-	return results, nil
-}
+// 	return results, nil
+// }
