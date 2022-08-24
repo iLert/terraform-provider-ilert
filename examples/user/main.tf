@@ -6,7 +6,7 @@ resource "ilert_user" "example" {
 
   mobile {
     region_code = "DE"
-    number      = "+491234567890"
+    number      = "+491758250853"
   }
 
   high_priority_notification_preference {

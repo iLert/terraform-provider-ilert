@@ -1,18 +1,50 @@
-data "ilert_escalation_policy" "default" {
-  name = "Default"
+resource "ilert_user" "example" {
+  email      = "example@example.com"
+  username   = "example"
+  first_name = "example"
+  last_name  = "example"
+
+  mobile {
+    region_code = "DE"
+    number      = "+491758250853"
+  }
+
+  high_priority_notification_preference {
+    method = "EMAIL"
+    delay  = 0
+  }
+
+  low_priority_notification_preference {
+    method = "EMAIL"
+    delay  = 0
+  }
+
+  on_call_notification_preference {
+    method     = "EMAIL"
+    before_min = 60
+  }
+}
+
+resource "ilert_escalation_policy" "example" {
+  name = "example"
+
+  escalation_rule {
+    escalation_timeout = 15
+    user               = ilert_user.example.id
+  }
 }
 
 resource "ilert_alert_source" "example" {
   name              = "My Grafana Integration from terraform"
   integration_type  = "GRAFANA"
-  escalation_policy = data.ilert_escalation_policy.default.id
+  escalation_policy = ilert_escalation_policy.example.id
 }
 
 resource "ilert_alert_source" "example_with_support_hours" {
-  name                   = "My Grafana Integration from terraform with support hours"
-  integration_type       = "GRAFANA"
-  escalation_policy      = data.ilert_escalation_policy.default.id
-  incident_priority_rule = "HIGH_DURING_SUPPORT_HOURS"
+  name                = "My Grafana Integration from terraform with support hours"
+  integration_type    = "GRAFANA"
+  escalation_policy   = ilert_escalation_policy.example.id
+  alert_priority_rule = "HIGH_DURING_SUPPORT_HOURS"
 
   support_hours {
     timezone = "Europe/Berlin"
@@ -49,10 +81,10 @@ resource "ilert_alert_source" "example_with_support_hours" {
 resource "ilert_alert_source" "example_email" {
   name              = "My Email Integration from terraform"
   integration_type  = "EMAIL"
-  email             = "support2@yacut.ilertnow.com"
-  escalation_policy = data.ilert_escalation_policy.default.id
+  email             = "myemail@username.ilert.eu"
+  escalation_policy = ilert_escalation_policy.example.id
 
-  incident_creation = "OPEN_RESOLVE_ON_EXTRACTION"
+  alert_creation = "OPEN_RESOLVE_ON_EXTRACTION"
   resolve_key_extractor {
     field    = "EMAIL_SUBJECT"
     criteria = "ALL_TEXT_BEFORE"
