@@ -8,7 +8,7 @@ description: |-
 
 # ilert_automation_rule
 
-An [automation rule](https://api.ilert.com/api-docs/#tag/Automation-Rules) is used for automatically setting the status of a service and creating incidents. They are triggered by your alert sources. 
+An [automation rule](https://api.ilert.com/api-docs/#tag/Automation-Rules) is used for automatically setting the status of a service and creating incidents. They are triggered by your alert sources.
 
 ## Example Usage
 
@@ -32,7 +32,7 @@ resource "ilert_automation_rule" "example" {
   service_status = "OPERATIONAL"
   service {
     id = data.ilert_service.example.id
-  } 
+  }
   alert_source {
     id = ilert_alert_source.example.id
   }
@@ -50,6 +50,7 @@ The following arguments are supported:
 - `resolve_incident` - (Optional) Indicates whether or not the incident will be resolved automatically. Default: `false`
 - `resolve_service` - (Optional) Indicates whether or not the service will be resolved automatically. Default: `true`
 - `template` - (Optional) The [incident template](#incident-template-arguments) block.
+- `send_notification` - (Optional) Indicates whether or not notifications will be sent. Default: `false`
 
 #### Service Arguments
 

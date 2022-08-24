@@ -1,5 +1,9 @@
 # Changelog
 
+## 09.08.2022, Version 1.6.3
+
+- fix parameter error send_notification on automation rules
+
 ## 28.07.2022, Version 1.6.2
 
 - fix 429 error code problem if a lot of resources are applied
