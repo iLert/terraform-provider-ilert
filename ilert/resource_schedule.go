@@ -233,9 +233,12 @@ func resourceSchedule() *schema.Resource {
 
 func buildSchedule(d *schema.ResourceData) (*ilert.Schedule, error) {
 	name := d.Get("name").(string)
+	timezone := d.Get("timezone").(string)
+	type := d.Get("type").(string)
 
 	schedule := &ilert.Schedule{
-		Name: name,
+		Name:     name,
+		Timezone: timezone,
 	}
 
 	if val, ok := d.GetOk("status"); ok {
