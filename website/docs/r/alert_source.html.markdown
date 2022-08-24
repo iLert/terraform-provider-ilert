@@ -46,7 +46,7 @@ The following arguments are supported:
 - `heartbeat` - (Optional) A [heartbeat](#heartbeat-arguments) block. This option is required if `integration_type` is `HEARTBEAT`.
 - `support_hours` - (Optional) A [support_hours](#support-hours-arguments) block. This option is allowed if `incident_priority_rule` is `HIGH_DURING_SUPPORT_HOURS` or `LOW_DURING_SUPPORT_HOURS`.
 - `autotask_metadata` - (Optional) An [autotask metadata](#autotask-metadata-arguments) block. This option is required if `integration_type` is `AUTOTASK`.
-- `teams` - (Optional) A list of related team ids.
+- `team` - (Optional) One or more [team](#team-arguments) blocks.
 
 #### Heartbeat Arguments
 
@@ -97,6 +97,11 @@ The following arguments are supported:
 - `field` - The field of the email resolve predicate. Allowed values are `EMAIL_FROM`, `EMAIL_SUBJECT` and `EMAIL_BODY`.
 - `criteria` - The criteria of the email resolve predicate. Allowed values are `CONTAINS_ANY_WORDS`, `CONTAINS_NOT_WORDS`, `CONTAINS_STRING`, `CONTAINS_NOT_STRING`, `IS_STRING`, `IS_NOT_STRING`, `MATCHES_REGEX`, `MATCHES_NOT_REGEX`.
 - `value` - The value of the email resolve predicate.
+
+#### Team Arguments
+
+- `id` - (Required) The ID of the team.
+- `name` - (Optional) The name of the team.
 
 ### Support Hours Example
 
