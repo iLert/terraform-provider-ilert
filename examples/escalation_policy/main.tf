@@ -24,5 +24,5 @@ resource "ilert_escalation_policy" "example" {
   }
 
   # @deprecated
-  teams = [1751]
+  # teams = [0000]
 }

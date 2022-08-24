@@ -81,7 +81,7 @@ resource "ilert_alert_source" "example_with_support_hours" {
 resource "ilert_alert_source" "example_email" {
   name              = "My Email Integration from terraform"
   integration_type  = "EMAIL"
-  email             = "myemail@username.ilert.eu"
+  email             = "myemail@marko.ilert.eu"
   escalation_policy = ilert_escalation_policy.example.id
 
   alert_creation = "OPEN_RESOLVE_ON_EXTRACTION"
@@ -104,4 +104,11 @@ resource "ilert_alert_source" "example_email" {
     criteria = "CONTAINS_STRING"
     value    = "resolve"
   }
+
+  team {
+    id = 0000
+  }
+
+  # @ deprecated
+  # team = [0000]
 }
