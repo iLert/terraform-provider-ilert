@@ -153,10 +153,29 @@ func resourceAlertSource() *schema.Resource {
 				}, false),
 			},
 			"teams": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:       schema.TypeList,
+				Optional:   true,
+				Deprecated: "The field teams is deprecated! Please use team instead.",
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
+				},
+			},
+			"team": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MinItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"name": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringLenBetween(1, 255),
+						},
+					},
 				},
 			},
 			"heartbeat": {
@@ -523,6 +542,21 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		for _, m := range vL {
 			v := int64(m.(int))
 			tms = append(tms, ilert.TeamShort{ID: v})
+		}
+		alertSource.Teams = tms
+	}
+	if val, ok := d.GetOk("team"); ok {
+		vL := val.([]interface{})
+		tms := make([]ilert.TeamShort, 0)
+		for _, m := range vL {
+			v := m.(map[string]interface{})
+			tm := ilert.TeamShort{
+				ID: int64(v["id"].(int)),
+			}
+			if v["name"] != nil && v["name"].(string) != "" {
+				tm.Name = v["name"].(string)
+			}
+			tms = append(tms, tm)
 		}
 		alertSource.Teams = tms
 	}
