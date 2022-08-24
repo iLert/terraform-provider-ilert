@@ -37,11 +37,10 @@ func resourceAutomationRule() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(ilert.ServiceStatusAll, false),
 			},
 			"template": {
-				Type:         schema.TypeList,
-				Optional:     true,
-				MinItems:     1,
-				MaxItems:     1,
-				RequiredWith: []string{"send_notification"},
+				Type:     schema.TypeList,
+				Optional: true,
+				MinItems: 1,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
