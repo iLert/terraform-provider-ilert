@@ -56,10 +56,29 @@ func resourceEscalationPolicy() *schema.Resource {
 				},
 			},
 			"teams": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:       schema.TypeList,
+				Optional:   true,
+				Deprecated: "The field teams is deprecated! Please use team instead.",
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
+				},
+			},
+			"team": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MinItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"name": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringLenBetween(1, 255),
+						},
+					},
 				},
 			},
 		},
@@ -130,6 +149,22 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 		for _, m := range vL {
 			v := int64(m.(int))
 			tms = append(tms, ilert.TeamShort{ID: v})
+		}
+		escalationPolicy.Teams = tms
+	}
+
+	if val, ok := d.GetOk("team"); ok {
+		vL := val.([]interface{})
+		tms := make([]ilert.TeamShort, 0)
+		for _, m := range vL {
+			v := m.(map[string]interface{})
+			tm := ilert.TeamShort{
+				ID: int64(v["id"].(int)),
+			}
+			if v["name"] != nil && v["name"].(string) != "" {
+				tm.Name = v["name"].(string)
+			}
+			tms = append(tms, tm)
 		}
 		escalationPolicy.Teams = tms
 	}
@@ -226,12 +261,43 @@ func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("error setting escalation rules: %s", err)
 	}
 
-	teams, err := flattenTeamsList(result.EscalationPolicy.Teams)
-	if err != nil {
-		return diag.FromErr(err)
+	if val, ok := d.GetOk("team"); ok {
+		if val != nil {
+			vL := val.([]interface{})
+			teams := make([]interface{}, 0)
+			for i, item := range result.EscalationPolicy.Teams {
+				team := make(map[string]interface{})
+				v := vL[i].(map[string]interface{})
+				team["id"] = item.ID
+
+				// Means: if server response has a name set, and the user typed in a name too,
+				// only then team name is stored in the terraform state
+				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+					team["name"] = item.Name
+				}
+				teams = append(teams, team)
+			}
+
+			if err := d.Set("team", teams); err != nil {
+				return diag.Errorf("error setting teams: %s", err)
+			}
+		}
 	}
-	if err := d.Set("teams", teams); err != nil {
-		return diag.Errorf("error setting teams: %s", err)
+
+	if val, ok := d.GetOk("teams"); ok {
+		if val != nil {
+			teams := make([]interface{}, 0)
+			for _, item := range result.EscalationPolicy.Teams {
+				team := make(map[string]interface{})
+				team["id"] = item.ID
+				teams = append(teams, team)
+			}
+			if err := d.Set("team", teams); err != nil {
+				return diag.Errorf("error setting teams: %s", err)
+			}
+
+			d.Set("teams", nil)
+		}
 	}
 
 	return nil

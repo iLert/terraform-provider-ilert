@@ -1,5 +1,9 @@
 # Changelog
 
+## 24.08.2022, Version 1.6.4
+
+- fix [#22](https://github.com/iLert/terraform-provider-ilert/issues/22)
+
 ## 09.08.2022, Version 1.6.3
 
 - fix parameter error send_notification on automation rules
