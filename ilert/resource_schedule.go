@@ -481,12 +481,6 @@ func resourceScheduleRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.Errorf("schedule response is empty")
 	}
 
-	if val, ok := d.GetOk("schedule_layers"); ok {
-		if val != nil {
-			d.Set("show_gaps", true)
-		}
-	}
-
 	d.Set("name", result.Schedule.Name)
 	d.Set("timezone", result.Schedule.Timezone)
 	d.Set("type", result.Schedule.Type)
@@ -671,6 +665,8 @@ func flattenScheduleLayerList(list []ilert.ScheduleLayer) ([]interface{}, error)
 			return nil, err
 		}
 		result["restriction"] = restr
+
+		results = append(results, result)
 	}
 
 	return results, nil
@@ -684,7 +680,7 @@ func flattenUserShortList(list []ilert.User) ([]interface{}, error) {
 	results := make([]interface{}, 0)
 	for _, item := range list {
 		result := make(map[string]interface{})
-		result["id"] = item.ID
+		result["id"] = strconv.Itoa(int(item.ID))
 		if item.FirstName != "" {
 			result["first_name"] = item.FirstName
 		}
