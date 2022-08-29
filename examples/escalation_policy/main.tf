@@ -18,4 +18,11 @@ resource "ilert_escalation_policy" "example" {
     escalation_timeout = 15
     user               = data.ilert_user.example.id
   }
+
+  team {
+    id = 0000
+  }
+
+  # @deprecated
+  # teams = [0000]
 }

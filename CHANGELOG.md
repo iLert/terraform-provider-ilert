@@ -1,8 +1,12 @@
 # Changelog
 
-## 29.08.2022, Version 1.6.4
+## 29.08.2022, Version 1.6.5
 
 - add schedule data source and resource
+
+## 24.08.2022, Version 1.6.4
+
+- fix [#22](https://github.com/iLert/terraform-provider-ilert/issues/22)
 
 ## 09.08.2022, Version 1.6.3
 
