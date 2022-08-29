@@ -289,13 +289,15 @@ func buildSchedule(d *schema.ResourceData) (*ilert.Schedule, error) {
 				for _, r := range rL {
 					v := r.(map[string]interface{})
 
-					fr := v["from"].(map[string]interface{})
+					fL := v["from"].([]interface{})
+					f := fL[0].(map[string]interface{})
 					from := ilert.TimeOfWeek{
-						DayOfWeek: fr["day_of_week"].(string),
-						Time:      fr["time"].(string),
+						DayOfWeek: f["day_of_week"].(string),
+						Time:      f["time"].(string),
 					}
 
-					t := v["to"].(map[string]interface{})
+					tL := v["to"].([]interface{})
+					t := tL[0].(map[string]interface{})
 					to := ilert.TimeOfWeek{
 						DayOfWeek: t["day_of_week"].(string),
 						Time:      t["time"].(string),
@@ -316,7 +318,7 @@ func buildSchedule(d *schema.ResourceData) (*ilert.Schedule, error) {
 	}
 
 	if val, ok := d.GetOk("shift"); ok && scheduleType == ilert.ScheduleType.Static {
-		vL := val.(map[string]interface{})
+		vL := val.([]interface{})
 		shs := make([]ilert.Shift, 0)
 		for _, s := range vL {
 			v := s.(map[string]interface{})
@@ -385,13 +387,8 @@ func buildSchedule(d *schema.ResourceData) (*ilert.Schedule, error) {
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
 			v := m.(map[string]interface{})
-			teamID, err := strconv.ParseInt(v["id"].(string), 10, 64)
-			if err != nil {
-				log.Printf("[ERROR] Could not parse team id %s", err.Error())
-				return nil, unconvertibleIDErr(v["id"].(string), err)
-			}
 			tm := ilert.TeamShort{
-				ID: int64(teamID),
+				ID: int64(v["id"].(int)),
 			}
 			if v["name"] != nil && v["name"].(string) != "" {
 				tm.Name = v["name"].(string)
@@ -454,7 +451,12 @@ func resourceScheduleRead(ctx context.Context, d *schema.ResourceData, m interfa
 	log.Printf("[DEBUG] Reading schedule: %s", d.Id())
 	result := &ilert.GetScheduleOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		includes := append(make([]*string, 0), ilert.String("scheduleLayers"), ilert.String("nextShift"))
+		includes := make([]*string, 0)
+		if d.Get("type").(string) == "RECURRING" {
+			includes = append(includes, ilert.String("scheduleLayers"), ilert.String("nextShift"), ilert.String("currentShift"))
+		} else if d.Get("type").(string) == "STATIC" {
+			includes = append(includes, ilert.String("shifts"))
+		}
 		r, err := client.GetSchedule(&ilert.GetScheduleInput{ScheduleID: ilert.Int64(scheduleID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
@@ -485,7 +487,7 @@ func resourceScheduleRead(ctx context.Context, d *schema.ResourceData, m interfa
 	d.Set("timezone", result.Schedule.Timezone)
 	d.Set("type", result.Schedule.Type)
 
-	layers, err := flattenScheduleLayerList(result.Schedule.ScheduleLayers)
+	layers, err := flattenScheduleLayerList(result.Schedule.ScheduleLayers, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -528,12 +530,27 @@ func resourceScheduleRead(ctx context.Context, d *schema.ResourceData, m interfa
 		d.Set("next_shift", []interface{}{})
 	}
 
-	teams, err := flattenTeamShortList(result.Schedule.Teams)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("team", teams); err != nil {
-		return diag.Errorf("error setting teams: %s", err)
+	if val, ok := d.GetOk("team"); ok {
+		if val != nil {
+			vL := val.([]interface{})
+			teams := make([]interface{}, 0)
+			for i, item := range result.Schedule.Teams {
+				team := make(map[string]interface{})
+				v := vL[i].(map[string]interface{})
+				team["id"] = item.ID
+
+				// Means: if server response has a name set, and the user typed in a name too,
+				// only then team name is stored in the terraform state
+				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+					team["name"] = item.Name
+				}
+				teams = append(teams, team)
+			}
+
+			if err := d.Set("team", teams); err != nil {
+				return diag.Errorf("error setting teams: %s", err)
+			}
+		}
 	}
 
 	return nil
@@ -639,17 +656,22 @@ func resourceScheduleExists(d *schema.ResourceData, m interface{}) (bool, error)
 	return result, nil
 }
 
-func flattenScheduleLayerList(list []ilert.ScheduleLayer) ([]interface{}, error) {
+func flattenScheduleLayerList(list []ilert.ScheduleLayer, d *schema.ResourceData) ([]interface{}, error) {
 	if list == nil {
 		return make([]interface{}, 0), nil
 	}
+
+	scL := d.Get("schedule_layer").([]interface{})
+
 	results := make([]interface{}, 0)
-	for _, item := range list {
+	for i, item := range list {
 		result := make(map[string]interface{})
 		result["name"] = item.Name
 		result["starts_on"] = item.StartsOn
 
-		users, err := flattenUserShortList(item.Users)
+		user := scL[i].(map[string]interface{})["user"].([]interface{})
+
+		users, err := flattenUserShortList(item.Users, user)
 		if err != nil {
 			return nil, err
 		}
@@ -672,19 +694,21 @@ func flattenScheduleLayerList(list []ilert.ScheduleLayer) ([]interface{}, error)
 	return results, nil
 }
 
-func flattenUserShortList(list []ilert.User) ([]interface{}, error) {
+func flattenUserShortList(list []ilert.User, user []interface{}) ([]interface{}, error) {
 	if list == nil {
 		return make([]interface{}, 0), nil
 	}
 
 	results := make([]interface{}, 0)
-	for _, item := range list {
+	for i, item := range list {
 		result := make(map[string]interface{})
 		result["id"] = strconv.Itoa(int(item.ID))
-		if item.FirstName != "" {
+		ufn := user[i].(map[string]interface{})["first_name"]
+		if item.FirstName != "" && ufn != nil && ufn.(string) != "" {
 			result["first_name"] = item.FirstName
 		}
-		if item.LastName != "" {
+		uln := user[i].(map[string]interface{})["last_name"]
+		if item.LastName != "" && uln != nil && uln.(string) != "" {
 			result["last_name"] = item.LastName
 		}
 		results = append(results, result)
@@ -702,16 +726,20 @@ func flattenRestrictionList(list []ilert.LayerRestriction) ([]interface{}, error
 	for _, item := range list {
 		result := make(map[string]interface{})
 
-		from := make(map[string]interface{})
+		fromL := make([]interface{}, 0)
+		fromL = append(fromL, make(map[string]interface{}))
+		from := fromL[0].(map[string]interface{})
 		from["day_of_week"] = item.From.DayOfWeek
 		from["time"] = item.From.Time
 
-		to := make(map[string]interface{})
+		toL := make([]interface{}, 0)
+		toL = append(toL, make(map[string]interface{}))
+		to := toL[0].(map[string]interface{})
 		to["day_of_week"] = item.To.DayOfWeek
 		to["time"] = item.To.Time
 
-		result["from"] = from
-		result["to"] = to
+		result["from"] = fromL
+		result["to"] = toL
 
 		results = append(results, result)
 	}
@@ -727,11 +755,7 @@ func flattenShiftList(list []ilert.Shift) ([]interface{}, error) {
 	results := make([]interface{}, 0)
 	for _, item := range list {
 		result := make(map[string]interface{})
-
-		user := make(map[string]interface{})
-		user["id"] = strconv.Itoa(int(item.User.ID))
-		result["user"] = user
-
+		result["user"] = strconv.Itoa(int(item.User.ID))
 		result["start"] = item.Start
 		result["end"] = item.End
 
