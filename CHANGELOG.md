@@ -1,5 +1,9 @@
 # Changelog
 
+## 29.08.2022, Version 1.6.3
+
+- add schedule data source and resource
+
 ## 28.07.2022, Version 1.6.2
 
 - fix 429 error code problem if a lot of resources are applied
@@ -14,6 +18,7 @@
 - add service data source and resource
 - add status page data source and resource
 - add incident template data source and resource
+- add automation rule resource
 - deprecate connection data source and resource
 - deprecate some legacy fields in resources
 
