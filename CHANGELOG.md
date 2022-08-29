@@ -1,8 +1,12 @@
 # Changelog
 
-## 29.08.2022, Version 1.6.3
+## 29.08.2022, Version 1.6.4
 
 - add schedule data source and resource
+
+## 09.08.2022, Version 1.6.3
+
+- fix parameter error send_notification on automation rules
 
 ## 28.07.2022, Version 1.6.2
 
