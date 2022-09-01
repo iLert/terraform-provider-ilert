@@ -27,9 +27,9 @@ func resourceSchedule() *schema.Resource {
 				Required: true,
 			},
 			"type": {
-				Type:     schema.TypeString,
-				Required: true,
-				// ValidateFunc: validation.StringInSlice(ilert.ScheduleTypeAll, false),
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice(ilert.ScheduleTypeAll, false),
 			},
 			"schedule_layer": {
 				Type:     schema.TypeList,
@@ -76,9 +76,9 @@ func resourceSchedule() *schema.Resource {
 							Required: true,
 						},
 						"restriction_type": {
-							Type:     schema.TypeString,
-							Optional: true,
-							// ValidateFunc: validation.StringInSlice(ilert.RestrictionTypeAll, false),
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringInSlice(ilert.RestrictionTypeAll, false),
 						},
 						"restriction": {
 							Type:     schema.TypeList,
@@ -94,9 +94,9 @@ func resourceSchedule() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"day_of_week": {
-													Type:     schema.TypeString,
-													Required: true,
-													// ValidateFunc: validation.StringInSlice(ilert.DayOfWeekAll, false),
+													Type:         schema.TypeString,
+													Required:     true,
+													ValidateFunc: validation.StringInSlice(ilert.DayOfWeekAll, false),
 												},
 												"time": {
 													Type:     schema.TypeString,
@@ -113,9 +113,9 @@ func resourceSchedule() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"day_of_week": {
-													Type:     schema.TypeString,
-													Required: true,
-													// ValidateFunc: validation.StringInSlice(ilert.DayOfWeekAll, false),
+													Type:         schema.TypeString,
+													Required:     true,
+													ValidateFunc: validation.StringInSlice(ilert.DayOfWeekAll, false),
 												},
 												"time": {
 													Type:     schema.TypeString,
