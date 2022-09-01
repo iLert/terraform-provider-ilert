@@ -1,5 +1,9 @@
 # Changelog
 
+## 01.09.2022, Version 1.7.1
+
+- upgrade to go 1.19
+
 ## 01.09.2022, Version 1.7.0
 
 - add schedule data source and resource
