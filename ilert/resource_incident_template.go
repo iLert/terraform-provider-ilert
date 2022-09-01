@@ -198,7 +198,7 @@ func resourceIncidentTemplateRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("message", result.IncidentTemplate.Message)
 	d.Set("send_notification", result.IncidentTemplate.SendNotification)
 
-	teams, err := flattenTeamShortList(result.IncidentTemplate.Teams)
+	teams, err := flattenTeamShortList(result.IncidentTemplate.Teams, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

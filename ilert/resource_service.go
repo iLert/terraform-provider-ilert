@@ -202,7 +202,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("one_open_incident_only", result.Service.OneOpenIncidentOnly)
 	d.Set("show_uptime_history", result.Service.ShowUptimeHistory)
 
-	teams, err := flattenTeamShortList(result.Service.Teams)
+	teams, err := flattenTeamShortList(result.Service.Teams, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -313,18 +313,22 @@ func resourceServiceExists(d *schema.ResourceData, m interface{}) (bool, error) 
 	return result, nil
 }
 
-func flattenTeamShortList(list []ilert.TeamShort) ([]interface{}, error) {
+func flattenTeamShortList(list []ilert.TeamShort, d *schema.ResourceData) ([]interface{}, error) {
 	if list == nil {
 		return make([]interface{}, 0), nil
 	}
 	results := make([]interface{}, 0)
-	for _, item := range list {
-		result := make(map[string]interface{})
-		result["id"] = item.ID
-		if item.Name != "" {
-			result["name"] = item.Name
+	if val, ok := d.GetOk("team"); ok && val != nil {
+		vL := val.([]interface{})
+		for i, item := range list {
+			result := make(map[string]interface{})
+			v := vL[i].(map[string]interface{})
+			result["id"] = item.ID
+			if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+				result["name"] = item.Name
+			}
+			results = append(results, result)
 		}
-		results = append(results, result)
 	}
 
 	return results, nil

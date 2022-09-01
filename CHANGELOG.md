@@ -1,5 +1,15 @@
 # Changelog
 
+## 01.09.2022, Version 1.6.6
+
+- fix issue that changes still happen if same resource is applied multiple times
+  - fix service
+  - fix status page
+  - fix uptime monitor
+  - fix user
+  - fix team
+- remove unnecessary field activated on statuspage
+
 ## 29.08.2022, Version 1.6.5
 
 - add schedule data source and resource
