@@ -28,6 +28,5 @@ The following arguments are supported:
 
 - `id` - The ID of the found status page.
 - `name` - The name of the found status page.
-- `status` - The status of the found status page.
 
 [1]: https://api.ilert.com/api-docs/#tag/Status-Pages

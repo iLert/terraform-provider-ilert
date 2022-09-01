@@ -47,7 +47,6 @@ The following arguments are supported:
 - `page_title` - (Optional) The title of the status page.
 - `page_description` - (Optional) The description of the status page.
 - `logo_redirect_url` - (Optional) The redirect url for the status page logo.
-- `status` - (Optional) The status of the status page. Allowed values are `OPERATIONAL`, `UNDER_MAINTENANCE`, `DEGRADED`, `PARTIAL_OUTAGE`, `MAJOR_OUTAGE`.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 
 #### Service Arguments
