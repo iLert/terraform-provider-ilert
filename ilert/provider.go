@@ -65,6 +65,7 @@ func Provider() *schema.Provider {
 			"ilert_team":              resourceTeam(),
 			"ilert_automation_rule":   resourceAutomationRule(),
 			"ilert_incident_template": resourceIncidentTemplate(),
+			"ilert_schedule":          resourceSchedule(),
 			"ilert_service":           resourceService(),
 			"ilert_status_page":       resourceStatusPage(),
 		},
