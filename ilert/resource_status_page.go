@@ -75,15 +75,6 @@ func resourceStatusPage() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"activated": {
-				Type:     schema.TypeBool,
-				Optional: true,
-			},
-			"status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringInSlice(ilert.ServiceStatusAll, false),
-			},
 			"team": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -191,14 +182,6 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 
 	if val, ok := d.GetOk("logo_redirect_url"); ok {
 		statusPage.LogoRedirectUrl = val.(string)
-	}
-
-	if val, ok := d.GetOk("activated"); ok {
-		statusPage.Activated = val.(bool)
-	}
-
-	if val, ok := d.GetOk("status"); ok {
-		statusPage.Status = val.(string)
 	}
 
 	if val, ok := d.GetOk("team"); ok {
@@ -316,21 +299,27 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 	d.Set("name", result.StatusPage.Name)
 	d.Set("domain", result.StatusPage.Domain)
 	d.Set("subdomain", result.StatusPage.Subdomain)
-	d.Set("timezone", result.StatusPage.Timezone)
+
+	if val, ok := d.GetOk("timezone"); ok && val != nil && val.(string) != "" {
+		d.Set("timezone", result.StatusPage.Timezone)
+	}
+
 	d.Set("custom_css", result.StatusPage.CustomCss)
 	d.Set("favicon_url", result.StatusPage.FaviconUrl)
 	d.Set("logo_url", result.StatusPage.LogoUrl)
 	d.Set("visibility", result.StatusPage.Visibility)
-	d.Set("hidden_from_search", result.StatusPage.HiddenFromSearch)
+
+	if val, ok := d.GetOk("hidden_from_search"); ok && val != nil {
+		d.Set("hidden_from_search", result.StatusPage.HiddenFromSearch)
+	}
+
 	d.Set("show_subscribe_action", result.StatusPage.ShowSubscribeAction)
 	d.Set("show_incident_history_option", result.StatusPage.ShowIncidentHistoryOption)
 	d.Set("page_title", result.StatusPage.PageTitle)
 	d.Set("page_description", result.StatusPage.PageDescription)
 	d.Set("logo_redirect_url", result.StatusPage.LogoRedirectUrl)
-	d.Set("activated", result.StatusPage.Activated)
-	d.Set("status", result.StatusPage.Status)
 
-	teams, err := flattenTeamShortList(result.StatusPage.Teams)
+	teams, err := flattenTeamShortList(result.StatusPage.Teams, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -338,7 +327,7 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.Errorf("error setting teams: %s", err)
 	}
 
-	services, err := flattenServicesList(result.StatusPage.Services)
+	services, err := flattenServicesList(result.StatusPage.Services, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -449,19 +438,22 @@ func resourceStatusPageExists(d *schema.ResourceData, m interface{}) (bool, erro
 	return result, nil
 }
 
-func flattenServicesList(list []ilert.Service) ([]interface{}, error) {
+func flattenServicesList(list []ilert.Service, d *schema.ResourceData) ([]interface{}, error) {
 	if list == nil {
 		return make([]interface{}, 0), nil
 	}
 	results := make([]interface{}, 0)
-	for _, item := range list {
-		result := make(map[string]interface{})
-		result["id"] = item.ID
-		if item.Name != "" {
-			result["name"] = item.Name
+	if val, ok := d.GetOk("service"); ok && val != nil {
+		vL := val.([]interface{})
+		for i, item := range list {
+			result := make(map[string]interface{})
+			v := vL[i].(map[string]interface{})
+			result["id"] = item.ID
+			if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+				result["name"] = item.Name
+			}
+			results = append(results, result)
 		}
-		results = append(results, result)
 	}
-
 	return results, nil
 }
