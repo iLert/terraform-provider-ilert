@@ -6,3 +6,4 @@ crash.log
 *.tfvars
 *.tfrc
 test/
+.DS_Store

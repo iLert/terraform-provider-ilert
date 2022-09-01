@@ -347,6 +347,11 @@ func buildUser(d *schema.ResourceData) (*ilert.User, error) {
 			}
 			nps = append(nps, ep)
 		}
+		// if first one in priority queue has a delay > 0: error, first one is always notified immediately
+		if nps[0].Delay > 0 {
+			return nil, fmt.Errorf("delay can't be %d! Has to be 0 for first notification preference", nps[0].Delay)
+		}
+
 		user.NotificationPreferences = nps
 	}
 
@@ -361,6 +366,11 @@ func buildUser(d *schema.ResourceData) (*ilert.User, error) {
 			}
 			nps = append(nps, ep)
 		}
+		// if first one in priority queue has a delay > 0: error, first one is always notified immediately
+		if nps[0].Delay > 0 {
+			return nil, fmt.Errorf("delay can't be %d! Has to be 0 for first notification preference", nps[0].Delay)
+		}
+
 		user.LowNotificationPreferences = nps
 	}
 
@@ -506,10 +516,22 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	d.Set("department", result.User.Department)
 	d.Set("language", result.User.Language)
 	d.Set("role", result.User.Role)
-	d.Set("subscribed_incident_update_states", result.User.SubscribedIncidentUpdateStates)
-	d.Set("subscribed_alert_update_states", result.User.SubscribedAlertUpdateStates)
-	d.Set("subscribed_incident_update_notification_types", result.User.SubscribedIncidentUpdateNotificationTypes)
-	d.Set("subscribed_alert_update_notification_types", result.User.SubscribedAlertUpdateNotificationTypes)
+
+	if val, ok := d.GetOk("subscribed_incident_update_states"); ok && val.([]interface{}) != nil && len(val.([]interface{})) > 0 {
+		d.Set("subscribed_incident_update_states", result.User.SubscribedIncidentUpdateStates)
+	}
+
+	if val, ok := d.GetOk("subscribed_alert_update_states"); ok && val.([]interface{}) != nil && len(val.([]interface{})) > 0 {
+		d.Set("subscribed_alert_update_states", result.User.SubscribedAlertUpdateStates)
+	}
+
+	if val, ok := d.GetOk("subscribed_incident_update_notification_types"); ok && val.([]interface{}) != nil && len(val.([]interface{})) > 0 {
+		d.Set("subscribed_incident_update_notification_types", result.User.SubscribedIncidentUpdateNotificationTypes)
+	}
+
+	if val, ok := d.GetOk("subscribed_alert_update_notification_types"); ok && val.([]interface{}) != nil && len(val.([]interface{})) > 0 {
+		d.Set("subscribed_alert_update_notification_types", result.User.SubscribedAlertUpdateNotificationTypes)
+	}
 
 	if result.User.Mobile != nil {
 		d.Set("mobile", []interface{}{
@@ -533,7 +555,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		d.Set("landline", nil)
 	}
 
-	highPriorityNotificationPreferences, err := flattenNotificationPreferencesList(result.User.NotificationPreferences)
+	highPriorityNotificationPreferences, err := flattenHighPrioNotificationPreferencesList(result.User.NotificationPreferences, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -541,7 +563,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.Errorf("error setting high priority notification preferences: %s", err)
 	}
 
-	lowPriorityNotificationPreferences, err := flattenNotificationPreferencesList(result.User.LowNotificationPreferences)
+	lowPriorityNotificationPreferences, err := flattenLowPrioNotificationPreferencesList(result.User.LowNotificationPreferences)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -659,7 +681,31 @@ func resourceUserExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	return result, nil
 }
 
-func flattenNotificationPreferencesList(list []ilert.NotificationPreference) ([]interface{}, error) {
+func flattenHighPrioNotificationPreferencesList(list []ilert.NotificationPreference, d *schema.ResourceData) ([]interface{}, error) {
+	if list == nil {
+		return make([]interface{}, 0), nil
+	}
+	results := make([]interface{}, 0)
+
+	if val, ok := d.GetOk("high_priority_notification_preference"); ok && val != nil {
+		vL := val.([]interface{})
+		for i, item := range list {
+			result := make(map[string]interface{})
+			v := vL[i].(map[string]interface{})
+			if v["method"] != nil && v["method"].(string) != "" {
+				result["method"] = item.Method
+			}
+			if v["delay"] != nil && strconv.Itoa(v["delay"].(int)) != "" {
+				result["delay"] = item.Delay
+			}
+			results = append(results, result)
+		}
+	}
+
+	return results, nil
+}
+
+func flattenLowPrioNotificationPreferencesList(list []ilert.NotificationPreference) ([]interface{}, error) {
 	if list == nil {
 		return make([]interface{}, 0), nil
 	}

@@ -1,11 +1,22 @@
-data "ilert_escalation_policy" "default" {
-  name = "Default"
+resource "ilert_user" "example" {
+  username   = "example1"
+  first_name = "example"
+  last_name  = "example"
+  email      = "example1@example.com"
+}
+
+resource "ilert_escalation_policy" "example" {
+  name = "example"
+  escalation_rule {
+    escalation_timeout = 15
+    user               = ilert_user.example.id
+  }
 }
 
 resource "ilert_alert_source" "example" {
   name              = "My Grafana Integration for GitHub"
   integration_type  = "GRAFANA"
-  escalation_policy = data.ilert_escalation_policy.default.id
+  escalation_policy = ilert_escalation_policy.default.id
 }
 
 resource "ilert_connector" "example" {

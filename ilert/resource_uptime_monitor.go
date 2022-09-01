@@ -106,11 +106,10 @@ func resourceUptimeMonitor() *schema.Resource {
 				ValidateFunc: validation.IntBetween(1000, 60000),
 			},
 			"create_incident_after_failed_checks": { // @deprecated
-				Deprecated:   "The field create_incident_after_failed_checks is deprecated! Please use create_alert_after_failed_checks instead.",
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      1,
-				ValidateFunc: validation.IntBetween(1, 12),
+				Deprecated: "The field create_incident_after_failed_checks is deprecated! Please use create_alert_after_failed_checks instead.",
+				Type:       schema.TypeInt,
+				Optional:   true,
+				Default:    0,
 			},
 			"create_alert_after_failed_checks": {
 				Type:         schema.TypeInt,
@@ -334,8 +333,14 @@ func resourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, m in
 
 	d.Set("interval_sec", result.UptimeMonitor.IntervalSec)
 	d.Set("timeout_ms", result.UptimeMonitor.TimeoutMs)
-	d.Set("create_incident_after_failed_checks", result.UptimeMonitor.CreateIncidentAfterFailedChecks)
-	d.Set("create_alert_after_failed_checks", result.UptimeMonitor.CreateAlertAfterFailedChecks)
+
+	if d.Get("create_incident_after_failed_checks") != nil {
+		d.Set("create_incident_after_failed_checks", result.UptimeMonitor.CreateIncidentAfterFailedChecks)
+	}
+
+	if d.Get("create_alert_after_failed_checks") != nil {
+		d.Set("create_alert_after_failed_checks", result.UptimeMonitor.CreateAlertAfterFailedChecks)
+	}
 	d.Set("escalation_policy", strconv.FormatInt(result.UptimeMonitor.EscalationPolicy.ID, 10))
 	d.Set("paused", result.UptimeMonitor.Paused)
 	d.Set("status", result.UptimeMonitor.Status)
