@@ -1,6 +1,6 @@
 # Changelog
 
-## 05.09.2022, Version 1.7.1
+## 05.09.2022, Version 1.7.2
 
 - improve data source search for:
   - alert actions
@@ -14,6 +14,10 @@
   - teams
   - uptime monitors
   - users
+
+## 01.09.2022, Version 1.7.1
+
+- upgrade to go 1.19
 
 ## 01.09.2022, Version 1.7.0
 
