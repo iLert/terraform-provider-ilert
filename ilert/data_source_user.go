@@ -38,7 +38,7 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta interf
 	searchEmail := d.Get("email").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.GetUsers(&ilert.GetUsersInput{})
+		resp, err := client.SearchUser(&ilert.SearchUserInput{})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
@@ -49,11 +49,8 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 		var found *ilert.User
 
-		for _, user := range resp.Users {
-			if user.Email == searchEmail {
-				found = user
-				break
-			}
+		if resp.user.Email == searchEmail {
+			found = resp.user
 		}
 
 		if found == nil {

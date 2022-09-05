@@ -46,7 +46,7 @@ func dataSourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, me
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.GetUptimeMonitors(&ilert.GetUptimeMonitorsInput{})
+		resp, err := client.SearchUptimeMonitor(&ilert.SearchUptimeMonitorInput{})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
@@ -57,11 +57,8 @@ func dataSourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, me
 
 		var found *ilert.UptimeMonitor
 
-		for _, uptimeMonitor := range resp.UptimeMonitors {
-			if uptimeMonitor.Name == searchName {
-				found = uptimeMonitor
-				break
-			}
+		if resp.uptimeMonitor.Name == searchName {
+			found = resp.uptimeMonitor
 		}
 
 		if found == nil {
@@ -70,18 +67,11 @@ func dataSourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, me
 			)
 		}
 
-		// Fetch uptime monitor again because the list route does not return report urls
-		result, err := client.GetUptimeMonitor(&ilert.GetUptimeMonitorInput{UptimeMonitorID: ilert.Int64(found.ID)})
-		if err != nil {
-			time.Sleep(2 * time.Second)
-			return resource.RetryableError(err)
-		}
-
-		d.SetId(strconv.FormatInt(result.UptimeMonitor.ID, 10))
-		d.Set("name", result.UptimeMonitor.Name)
-		d.Set("status", result.UptimeMonitor.Status)
-		d.Set("embed_url", result.UptimeMonitor.EmbedURL)
-		d.Set("share_url", result.UptimeMonitor.ShareURL)
+		d.SetId(strconv.FormatInt(found.ID, 10))
+		d.Set("name", found.Name)
+		d.Set("status", found.Status)
+		d.Set("embed_url", found.EmbedURL)
+		d.Set("share_url", found.ShareURL)
 
 		return nil
 	})
