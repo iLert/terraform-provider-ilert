@@ -38,7 +38,7 @@ func dataSourceTeamRead(ctx context.Context, d *schema.ResourceData, meta interf
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.GetTeams(&ilert.GetTeamsInput{})
+		resp, err := client.SearchTeam(&ilert.SearchTeamInput{})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
@@ -49,11 +49,8 @@ func dataSourceTeamRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 		var found *ilert.Team
 
-		for _, team := range resp.Teams {
-			if team.Name == searchName {
-				found = team
-				break
-			}
+		if resp.team.Name == searchName {
+			found = resp.team
 		}
 
 		if found == nil {
