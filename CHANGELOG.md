@@ -1,5 +1,20 @@
 # Changelog
 
+## 05.09.2022, Version 1.7.1
+
+- improve data source search for:
+  - alert actions
+  - alert sources
+  - connectors
+  - escalation policies
+  - incident templates
+  - schedules
+  - services
+  - status pages
+  - teams
+  - uptime monitors
+  - users
+
 ## 01.09.2022, Version 1.7.0
 
 - add schedule data source and resource
