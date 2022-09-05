@@ -46,7 +46,7 @@ func dataSourceIncidentTemplateRead(ctx context.Context, d *schema.ResourceData,
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.GetIncidentTemplates(&ilert.GetIncidentTemplatesInput{})
+		resp, err := client.SearchIncidentTemplate(&ilert.SearchIncidentTemplateInput{})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
@@ -57,11 +57,8 @@ func dataSourceIncidentTemplateRead(ctx context.Context, d *schema.ResourceData,
 
 		var found *ilert.IncidentTemplate
 
-		for _, incidentTemplate := range resp.IncidentTemplates {
-			if incidentTemplate.Name == searchName {
-				found = incidentTemplate
-				break
-			}
+		if resp.incidentTemplate.Name == searchName {
+			found = resp.incidentTemplate
 		}
 
 		if found == nil {
