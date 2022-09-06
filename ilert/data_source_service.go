@@ -38,7 +38,7 @@ func dataSourceServiceRead(ctx context.Context, d *schema.ResourceData, meta int
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.SearchService(&ilert.SearchServiceInput{})
+		resp, err := client.SearchService(&ilert.SearchServiceInput{ServiceName: &searchName})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
@@ -47,11 +47,7 @@ func dataSourceServiceRead(ctx context.Context, d *schema.ResourceData, meta int
 			return resource.NonRetryableError(fmt.Errorf("could not read a service with ID %s", d.Id()))
 		}
 
-		var found *ilert.Service
-
-		if resp.service.Name == searchName {
-			found = resp.service
-		}
+		found := resp.Service
 
 		if found == nil {
 			return resource.NonRetryableError(

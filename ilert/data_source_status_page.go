@@ -38,7 +38,7 @@ func dataSourceStatusPageRead(ctx context.Context, d *schema.ResourceData, meta 
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.SearchStatusPage(&ilert.SearchStatusPageInput{})
+		resp, err := client.SearchStatusPage(&ilert.SearchStatusPageInput{StatusPageName: &searchName})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
@@ -47,11 +47,7 @@ func dataSourceStatusPageRead(ctx context.Context, d *schema.ResourceData, meta 
 			return resource.NonRetryableError(fmt.Errorf("could not read a status page with ID %s", d.Id()))
 		}
 
-		var found *ilert.StatusPage
-
-		if resp.statusPage.Name == searchName {
-			found = resp.statusPage
-		}
+		found := resp.StatusPage
 
 		if found == nil {
 			return resource.NonRetryableError(

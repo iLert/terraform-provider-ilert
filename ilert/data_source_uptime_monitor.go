@@ -46,7 +46,7 @@ func dataSourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, me
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.SearchUptimeMonitor(&ilert.SearchUptimeMonitorInput{})
+		resp, err := client.SearchUptimeMonitor(&ilert.SearchUptimeMonitorInput{UptimeMonitorName: &searchName})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
@@ -55,11 +55,7 @@ func dataSourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, me
 			return resource.NonRetryableError(fmt.Errorf("could not read an uptime monitor with ID %s", d.Id()))
 		}
 
-		var found *ilert.UptimeMonitor
-
-		if resp.uptimeMonitor.Name == searchName {
-			found = resp.uptimeMonitor
-		}
+		found := resp.UptimeMonitor
 
 		if found == nil {
 			return resource.NonRetryableError(
