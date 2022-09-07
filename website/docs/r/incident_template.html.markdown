@@ -14,8 +14,10 @@ An [incident template](https://api.ilert.com/api-docs/#tag/Incident-Templates) s
 
 ```hcl
 resource "ilert_incident_template" "example" {
-  name = "example"
-  status = "INVESTIGATING"
+  name              = "example"
+  status            = "INVESTIGATING"
+  send_notification = true
+  summary           = "example_incident_template"
 }
 ```
 
@@ -25,7 +27,7 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the incident template.
 - `status` - (Required) The status in which the incident should be in. Allowed values are `INVESTIGATING`, `IDENTIFIED`, `MONITORING`, `RESOLVED`.
-- `summary` - (Optional) The summary of the incident.
+- `summary` - (Required) The summary of the incident.
 - `message` - (Optional) The message of the incident.
 - `send_notification` - (Optional) Indicates whether or not notifications should be sent.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
