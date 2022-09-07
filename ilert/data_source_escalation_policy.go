@@ -34,7 +34,7 @@ func dataSourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData,
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.GetEscalationPolicies(&ilert.GetEscalationPoliciesInput{})
+		resp, err := client.SearchEscalationPolicy(&ilert.SearchEscalationPolicyInput{EscalationPolicyName: &searchName})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
@@ -43,14 +43,7 @@ func dataSourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData,
 			return resource.NonRetryableError(fmt.Errorf("could not read an escalation policy with ID %s", d.Id()))
 		}
 
-		var found *ilert.EscalationPolicy
-
-		for _, escalationPolicy := range resp.EscalationPolicies {
-			if escalationPolicy.Name == searchName {
-				found = escalationPolicy
-				break
-			}
-		}
+		found := resp.EscalationPolicy
 
 		if found == nil {
 			return resource.NonRetryableError(

@@ -34,7 +34,7 @@ func dataSourceScheduleRead(ctx context.Context, d *schema.ResourceData, meta in
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.GetSchedules(&ilert.GetSchedulesInput{})
+		resp, err := client.SearchSchedule(&ilert.SearchScheduleInput{ScheduleName: &searchName})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
@@ -43,14 +43,7 @@ func dataSourceScheduleRead(ctx context.Context, d *schema.ResourceData, meta in
 			return resource.NonRetryableError(fmt.Errorf("could not read a schedule with ID %s", d.Id()))
 		}
 
-		var found *ilert.Schedule
-
-		for _, schedule := range resp.Schedules {
-			if schedule.Name == searchName {
-				found = schedule
-				break
-			}
-		}
+		found := resp.Schedule
 
 		if found == nil {
 			return resource.NonRetryableError(

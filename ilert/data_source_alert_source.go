@@ -48,7 +48,7 @@ func dataSourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, meta
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.GetAlertSources(&ilert.GetAlertSourcesInput{})
+		resp, err := client.SearchAlertSource(&ilert.SearchAlertSourceInput{AlertSourceName: &searchName})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
@@ -57,14 +57,7 @@ func dataSourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, meta
 			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s", d.Id()))
 		}
 
-		var found *ilert.AlertSource
-
-		for _, alertSource := range resp.AlertSources {
-			if alertSource.Name == searchName {
-				found = alertSource
-				break
-			}
-		}
+		found := resp.AlertSource
 
 		if found == nil {
 			return resource.NonRetryableError(

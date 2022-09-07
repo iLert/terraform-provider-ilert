@@ -37,7 +37,7 @@ func dataSourceConnectorRead(ctx context.Context, d *schema.ResourceData, meta i
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.GetConnectors(&ilert.GetConnectorsInput{})
+		resp, err := client.SearchConnector(&ilert.SearchConnectorInput{ConnectorName: &searchName})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
@@ -46,14 +46,7 @@ func dataSourceConnectorRead(ctx context.Context, d *schema.ResourceData, meta i
 			return resource.NonRetryableError(fmt.Errorf("could not read a connector with ID %s", d.Id()))
 		}
 
-		var found *ilert.ConnectorOutput
-
-		for _, connector := range resp.Connectors {
-			if connector.Name == searchName {
-				found = connector
-				break
-			}
-		}
+		found := resp.Connector
 
 		if found == nil {
 			return resource.NonRetryableError(
