@@ -24,7 +24,7 @@ func resourceIncidentTemplate() *schema.Resource {
 			},
 			"summary": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 			"status": {
 				Type:         schema.TypeString,

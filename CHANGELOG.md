@@ -1,5 +1,10 @@
 # Changelog
 
+## 07.09.2022, Version 1.7.3
+
+- fix incident template + example
+- fix schedule + example
+
 ## 05.09.2022, Version 1.7.2
 
 - improve data source search for:

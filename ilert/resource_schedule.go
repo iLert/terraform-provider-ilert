@@ -76,9 +76,8 @@ func resourceSchedule() *schema.Resource {
 							Required: true,
 						},
 						"restriction_type": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validation.StringInSlice(ilert.RestrictionTypeAll, false),
+							Type:     schema.TypeString,
+							Optional: true,
 						},
 						"restriction": {
 							Type:     schema.TypeList,
