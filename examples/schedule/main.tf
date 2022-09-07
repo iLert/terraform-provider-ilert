@@ -30,7 +30,7 @@ resource "ilert_schedule" "example_recurring" {
     }
   }
   team {
-    id = 1751
+    id = 0
   }
 }
 
@@ -45,7 +45,7 @@ resource "ilert_schedule" "example_static" {
     end   = "2022-09-02T08:00"
   }
   team {
-    id = 1751
+    id = 0
   }
   default_shift_duration = "PT24H"
 }
