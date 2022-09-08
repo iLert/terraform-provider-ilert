@@ -1,5 +1,9 @@
 # Changelog
 
+## 08.09.2022, Version 1.8.0
+
+- add support for multiple responders in escalation rule (escalation policy)
+
 ## 07.09.2022, Version 1.7.3
 
 - fix incident template + example
