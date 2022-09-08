@@ -2,6 +2,7 @@ package ilert
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -51,6 +52,44 @@ func resourceEscalationPolicy() *schema.Resource {
 						"schedule": {
 							Type:     schema.TypeString,
 							Optional: true,
+						},
+						"users": {
+							Type:     schema.TypeList,
+							Optional: true,
+							MinItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"first_name": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									"last_name": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+								},
+							},
+						},
+						"schedules": {
+							Type:     schema.TypeList,
+							Optional: true,
+							MinItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"name": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -118,6 +157,11 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 			ep := ilert.EscalationRule{
 				EscalationTimeout: v["escalation_timeout"].(int),
 			}
+			err := checkEscalationRuleSchema(v)
+			if err != nil {
+				log.Printf("[ERROR] Could not validate escalation rule: %s", err.Error())
+				return nil, err
+			}
 			if v["user"] != nil && v["user"].(string) != "" {
 				userID, err := strconv.ParseInt(v["user"].(string), 10, 64)
 				if err != nil {
@@ -135,6 +179,50 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 				}
 				ep.Schedule = &ilert.Schedule{
 					ID: scheduleID,
+				}
+			} else {
+				if v["users"] != nil && len(v["users"].([]interface{})) > 0 {
+					usr := make([]ilert.User, 0)
+					uL := v["users"].([]interface{})
+					for _, u := range uL {
+						v := u.(map[string]interface{})
+						uid, err := strconv.ParseInt(v["id"].(string), 10, 64)
+						if err != nil {
+							log.Printf("[ERROR] Could not parse user id %s", err.Error())
+							return nil, unconvertibleIDErr(v["id"].(string), err)
+						}
+						us := ilert.User{
+							ID: uid,
+						}
+						if v["first_name"] != nil && v["first_name"].(string) != "" {
+							us.FirstName = v["first_name"].(string)
+						}
+						if v["last_name"] != nil && v["last_name"].(string) != "" {
+							us.LastName = v["last_name"].(string)
+						}
+						usr = append(usr, us)
+					}
+					ep.Users = usr
+				}
+				if v["schedules"] != nil && len(v["schedules"].([]interface{})) > 0 {
+					sdl := make([]ilert.Schedule, 0)
+					sL := v["schedules"].([]interface{})
+					for _, u := range sL {
+						v := u.(map[string]interface{})
+						sid, err := strconv.ParseInt(v["id"].(string), 10, 64)
+						if err != nil {
+							log.Printf("[ERROR] Could not parse user id %s", err.Error())
+							return nil, unconvertibleIDErr(v["id"].(string), err)
+						}
+						sd := ilert.Schedule{
+							ID: sid,
+						}
+						if v["name"] != nil && v["name"].(string) != "" {
+							sd.Name = v["name"].(string)
+						}
+						sdl = append(sdl, sd)
+					}
+					ep.Schedules = sdl
 				}
 			}
 			nps = append(nps, ep)
@@ -253,7 +341,7 @@ func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("frequency", result.EscalationPolicy.Frequency)
 	d.Set("repeating", result.EscalationPolicy.Repeating)
 
-	escalationRules, err := flattenEscalationRulesList(result.EscalationPolicy.EscalationRules)
+	escalationRules, err := flattenEscalationRulesList(result.EscalationPolicy.EscalationRules, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -404,22 +492,96 @@ func resourceEscalationPolicyExists(d *schema.ResourceData, m interface{}) (bool
 	return result, nil
 }
 
-func flattenEscalationRulesList(list []ilert.EscalationRule) ([]interface{}, error) {
+func flattenEscalationRulesList(list []ilert.EscalationRule, d *schema.ResourceData) ([]interface{}, error) {
 	if list == nil {
 		return make([]interface{}, 0), nil
 	}
+
+	usL := d.Get("escalation_rule").([]interface{})
+
 	results := make([]interface{}, 0)
-	for _, item := range list {
+	for i, item := range list {
 		result := make(map[string]interface{})
 		result["escalation_timeout"] = item.EscalationTimeout
-		if item.User != nil {
+		v := usL[i].(map[string]interface{})
+		if item.User != nil && v["user"] != nil && v["user"].(string) != "" {
 			result["user"] = strconv.FormatInt(item.User.ID, 10)
 		}
-		if item.Schedule != nil {
+		if item.Schedule != nil && v["schedule"] != nil && v["schedule"].(string) != "" {
 			result["schedule"] = strconv.FormatInt(item.Schedule.ID, 10)
+		}
+
+		user := v["users"].([]interface{})
+		users, err := flattenUserShortList(item.Users, user)
+		if err != nil {
+			return nil, err
+		}
+		result["users"] = users
+
+		schedule := v["schedules"].([]interface{})
+		schedules, err := flattenScheduleShortList(item.Schedules, schedule)
+		if err != nil {
+			return nil, err
+		}
+		result["schedules"] = schedules
+
+		results = append(results, result)
+	}
+
+	return results, nil
+}
+
+func flattenScheduleShortList(list []ilert.Schedule, schedule []interface{}) ([]interface{}, error) {
+	if list == nil || schedule == nil || len(schedule) <= 0 {
+		return make([]interface{}, 0), nil
+	}
+
+	results := make([]interface{}, 0)
+	for i, item := range list {
+		result := make(map[string]interface{})
+		result["id"] = strconv.FormatInt(item.ID, 10)
+		var sdn interface{}
+		if len(schedule) > 0 && schedule[i] != nil && len(schedule[i].(map[string]interface{})) > 0 {
+			sdn = schedule[i].(map[string]interface{})["name"]
+		}
+
+		if item.Name != "" && sdn != nil && sdn.(string) != "" {
+			result["name"] = item.Name
 		}
 		results = append(results, result)
 	}
 
 	return results, nil
+}
+
+func checkEscalationRuleSchema(rule map[string]interface{}) error {
+	if rule["user"] != nil && rule["user"].(string) != "" {
+		if (rule["schedule"] != nil && rule["schedule"].(string) != "") || (rule["users"] != nil && len(rule["users"].([]interface{})) > 0) || (rule["schedules"] != nil && len(rule["schedules"].([]interface{})) > 0) {
+			err := errors.New("fields 'schedule', 'users', or 'schedules' are not allowed when setting 'user'")
+			return err
+		}
+
+	}
+	if rule["schedule"] != nil && rule["schedule"].(string) != "" {
+		if (rule["user"] != nil && rule["user"].(string) != "") || (rule["users"] != nil && len(rule["users"].([]interface{})) > 0) || (rule["schedules"] != nil && len(rule["schedules"].([]interface{})) > 0) {
+			err := errors.New("fields 'user', 'users', or 'schedules' are not allowed when setting 'schedule'")
+			return err
+		}
+
+	}
+	if rule["users"] != nil && len(rule["users"].([]interface{})) > 0 {
+		if (rule["user"] != nil && rule["user"].(string) != "") || (rule["schedule"] != nil && rule["schedule"].(string) != "") {
+			err := errors.New("fields 'user' or 'schedule' are not allowed when setting 'users'")
+			return err
+		}
+
+	}
+	if rule["schedules"] != nil && len(rule["schedules"].([]interface{})) > 0 {
+		if (rule["user"] != nil && rule["user"].(string) != "") || (rule["schedule"] != nil && rule["schedule"].(string) != "") {
+			err := errors.New("fields 'user' or 'schedule' are not allowed when setting 'schedules'")
+			return err
+		}
+
+	}
+	return nil
 }

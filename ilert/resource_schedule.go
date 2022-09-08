@@ -698,7 +698,7 @@ func flattenScheduleLayerList(list []ilert.ScheduleLayer, d *schema.ResourceData
 }
 
 func flattenUserShortList(list []ilert.User, user []interface{}) ([]interface{}, error) {
-	if list == nil {
+	if list == nil || user == nil || len(user) <= 0 {
 		return make([]interface{}, 0), nil
 	}
 
@@ -706,11 +706,14 @@ func flattenUserShortList(list []ilert.User, user []interface{}) ([]interface{},
 	for i, item := range list {
 		result := make(map[string]interface{})
 		result["id"] = strconv.Itoa(int(item.ID))
-		ufn := user[i].(map[string]interface{})["first_name"]
+		var ufn, uln interface{}
+		if len(user) > 0 && user[i] != nil && len(user[i].(map[string]interface{})) > 0 {
+			ufn = user[i].(map[string]interface{})["first_name"]
+			uln = user[i].(map[string]interface{})["last_name"]
+		}
 		if item.FirstName != "" && ufn != nil && ufn.(string) != "" {
 			result["first_name"] = item.FirstName
 		}
-		uln := user[i].(map[string]interface{})["last_name"]
 		if item.LastName != "" && uln != nil && uln.(string) != "" {
 			result["last_name"] = item.LastName
 		}
