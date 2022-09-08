@@ -25,17 +25,19 @@ resource "ilert_escalation_policy" "example" {
   name = "example"
 
   escalation_rule {
-    escalation_timeout = 5
-    schedule           = data.ilert_schedule.example.id
-  }
-
-  escalation_rule {
     escalation_timeout = 15
-    user               = data.ilert_user.example.id
+    users {
+      id = data.ilert_user.example.id
+    }
+    schedules {
+      id = data.ilert_schedule.example.id
+    }
   }
 }
 
-
+data "ilert_user" "example" {
+  email = "example@example.com"
+}
 ```
 
 ## Argument Reference
@@ -56,8 +58,21 @@ The following arguments are supported:
 #### Escalation Rule Arguments
 
 - `escalation_timeout` - (Required) The number of minutes before an unacknowledged incident escalates away from this rule.
-- `user` - (Optional) The user id of the escalation rule. Conflicts with `schedule`.
-- `schedule` - (Optional) The schedule id of the escalation rule. Conflicts with `user`.
+- `user` - (Optional) The user id of the escalation rule. Conflicts with `schedule`, `users` and `schedules`.
+- `schedule` - (Optional) The schedule id of the escalation rule. Conflicts with `user`, `users` and `schedules`.
+- `users` - (Optional) One or more [user](#user-arguments) blocks. Conflicts with `user` and `schedule`.
+- `schedules` - (Optional) One or more [schedule](#schedule-arguments) blocks. Conflicts with `user` and `schedule`.
+
+#### User Arguments
+
+- `id` - (Required) The ID of the user.
+- `first_name` - (Optional) The first name of the user.
+- `last_name` - (Optional) The last name of the user.
+
+#### Schedule Arguments
+
+- `id` - (Required) The ID of the schedule.
+- `name` - (Optional) The name of the schedule.
 
 ## Attributes Reference
 
