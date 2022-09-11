@@ -17,7 +17,7 @@ resource "ilert_schedule" "example_recurring" {
       id = ilert_user.example.id
     }
     rotation         = "P1D"
-    restriction_type = "TIMES_OF_WEEK"
+    restriction_type = "TIME_OF_WEEK"
     restriction {
       from {
         day_of_week = "MONDAY"

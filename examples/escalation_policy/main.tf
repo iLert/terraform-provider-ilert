@@ -21,12 +21,12 @@ resource "ilert_escalation_policy" "example" {
 
   escalation_rule {
     escalation_timeout = 15
-    users {
+    users = [{
       id = data.ilert_user.example.id
-    }
-    schedules {
+    }]
+    schedules = [{
       id = data.ilert_schedule.example.id
-    }
+    }]
   }
 
   team {
