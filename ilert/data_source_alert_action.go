@@ -41,9 +41,9 @@ func dataSourceAlertActionRead(ctx context.Context, d *schema.ResourceData, meta
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert action with name '%s' to be read", searchName))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read a alert action with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read a alert action with name: %s", searchName))
 		}
 
 		found := resp.AlertAction

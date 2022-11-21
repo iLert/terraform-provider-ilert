@@ -42,9 +42,9 @@ func dataSourceServiceRead(ctx context.Context, d *schema.ResourceData, meta int
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for service with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for service with name '%s' to be read", searchName))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read a service with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read a service with name: %s", searchName))
 		}
 
 		found := resp.Service
