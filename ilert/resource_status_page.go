@@ -223,14 +223,18 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 		statusPage.Services = svc
 	}
 
-	if val, ok := d.GetOk("ipWhitelist"); ok {
-		vL := val.([]interface{})
-		sL := make([]string, 0)
-		for _, m := range vL {
-			v := m.(string)
-			sL = append(sL, v)
+	if val, ok := d.GetOk("ip_whitelist"); ok {
+		if statusPage.Visibility == ilert.StatusPageVisibility.Private {
+			vL := val.([]interface{})
+			sL := make([]string, 0)
+			for _, m := range vL {
+				v := m.(string)
+				sL = append(sL, v)
+			}
+			statusPage.IpWhitelist = sL
+		} else {
+			return nil, fmt.Errorf("[ERROR] Can't set ip whitelist, as it is only allowed on private status pages")
 		}
-		statusPage.IpWhitelist = sL
 	}
 
 	return statusPage, nil
@@ -352,8 +356,8 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.Errorf("error setting services: %s", err)
 	}
 
-	if val, ok := d.GetOk("ipWhitelist"); ok && val.([]interface{}) != nil && len(val.([]interface{})) > 0 {
-		d.Set("ipWhitelist", result.StatusPage.IpWhitelist)
+	if val, ok := d.GetOk("ip_whitelist"); ok && val.([]interface{}) != nil && len(val.([]interface{})) > 0 {
+		d.Set("ip_whitelist", result.StatusPage.IpWhitelist)
 	}
 
 	return nil
