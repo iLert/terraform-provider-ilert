@@ -111,6 +111,13 @@ func resourceStatusPage() *schema.Resource {
 					},
 				},
 			},
+			"ip_whitelist": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 		CreateContext: resourceStatusPageCreate,
 		ReadContext:   resourceStatusPageRead,
@@ -214,6 +221,16 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 			svc = append(svc, sv)
 		}
 		statusPage.Services = svc
+	}
+
+	if val, ok := d.GetOk("ipWhitelist"); ok {
+		vL := val.([]interface{})
+		sL := make([]string, 0)
+		for _, m := range vL {
+			v := m.(string)
+			sL = append(sL, v)
+		}
+		statusPage.IpWhitelist = sL
 	}
 
 	return statusPage, nil
@@ -333,6 +350,10 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 	if err := d.Set("service", services); err != nil {
 		return diag.Errorf("error setting services: %s", err)
+	}
+
+	if val, ok := d.GetOk("ipWhitelist"); ok && val.([]interface{}) != nil && len(val.([]interface{})) > 0 {
+		d.Set("ipWhitelist", result.StatusPage.IpWhitelist)
 	}
 
 	return nil
