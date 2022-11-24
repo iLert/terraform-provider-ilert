@@ -469,6 +469,99 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
+			"ding_talk": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.DingTalk),
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"secret": {
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
+						},
+						"is_at_all": {
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+						"at_mobiles": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
+			"ding_talk_action": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.DingTalkAction),
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"automation_rule": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.AutomationRule),
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"alert_type": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice(ilert.AlertTypeAll, false),
+						},
+						"resolve_incident": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"service_status": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice(ilert.ServiceStatusAll, false),
+						},
+						"template_id": {
+							Type:     schema.TypeInt,
+							Optional: true,
+						},
+						"send_notification": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"service_ids": {
+							Type:     schema.TypeList,
+							Required: true,
+							MinItems: 1,
+							Elem: &schema.Schema{
+								Type: schema.TypeInt,
+							},
+						},
+					},
+				},
+			},
+
 			"created_at": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -765,6 +858,58 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
+	if val, ok := d.GetOk("ding_talk"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			params := &ilert.AlertActionParamsDingTalk{
+				URL:     v["url"].(string),
+				Secret:  v["secret"].(string),
+				IsAtAll: v["is_at_all"].(bool),
+			}
+			vL := v["at_mobiles"].([]interface{})
+			sL := make([]string, 0)
+			for _, m := range vL {
+				v := m.(string)
+				sL = append(sL, v)
+			}
+			params.AtMobiles = sL
+			alertAction.Params = params
+		}
+	}
+
+	if val, ok := d.GetOk("ding_talk_action"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertAction.Params = &ilert.AlertActionParamsDingTalk{
+				URL: v["url"].(string),
+			}
+		}
+	}
+
+	if val, ok := d.GetOk("automation_rule"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			params := &ilert.AlertActionParamsAutomationRule{
+				AlertType:        v["alert_type"].(string),
+				ResolveIncident:  v["resolve_incident"].(bool),
+				ServiceStatus:    v["service_status"].(string),
+				TemplateId:       int64(v["template_id"].(int)),
+				SendNotification: v["send_notification"].(bool),
+			}
+			vL := v["service_ids"].([]interface{})
+			sL := make([]int64, 0)
+			for _, m := range vL {
+				v := int64(m.(int))
+				sL = append(sL, v)
+			}
+			params.ServiceIds = sL
+			alertAction.Params = params
+		}
+	}
+
 	return alertAction, nil
 }
 
@@ -977,9 +1122,35 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 			},
 		})
 	case ilert.ConnectorTypes.StatusPageIO:
-		d.Set("zammad", []interface{}{
+		d.Set("status_page_io", []interface{}{
 			map[string]interface{}{
 				"page_id": result.AlertAction.Params.PageID,
+			},
+		})
+	case ilert.ConnectorTypes.DingTalk:
+		d.Set("ding_talk", []interface{}{
+			map[string]interface{}{
+				"url":        result.AlertAction.Params.URL,
+				"secret":     result.AlertAction.Params.Secret,
+				"is_at_all":  result.AlertAction.Params.IsAtAll,
+				"at_mobiles": result.AlertAction.Params.AtMobiles,
+			},
+		})
+	case ilert.ConnectorTypes.DingTalkAction:
+		d.Set("ding_talk_action", []interface{}{
+			map[string]interface{}{
+				"url": result.AlertAction.Params.URL,
+			},
+		})
+	case ilert.ConnectorTypes.AutomationRule:
+		d.Set("automation_rule", []interface{}{
+			map[string]interface{}{
+				"alert_type":        result.AlertAction.Params.AlertType,
+				"resolve_incident":  result.AlertAction.Params.ResolveIncident,
+				"service_status":    result.AlertAction.Params.ServiceStatus,
+				"template_id":       result.AlertAction.Params.TemplateId,
+				"send_notification": result.AlertAction.Params.SendNotification,
+				"service_ids":       result.AlertAction.Params.ServiceIds,
 			},
 		})
 	}

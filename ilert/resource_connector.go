@@ -342,6 +342,27 @@ func resourceConnector() *schema.Resource {
 					},
 				},
 			},
+			"ding_talk": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.DingTalk),
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"secret": {
+							Type:      schema.TypeString,
+							Required:  true,
+							Sensitive: true,
+						},
+					},
+				},
+			},
 			"created_at": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -548,6 +569,17 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 		}
 	}
 
+	if val, ok := d.GetOk("ding_talk"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			connector.Params = &ilert.ConnectorParamsDingTalk{
+				URL:    v["url"].(string),
+				Secret: v["secret"].(string),
+			}
+		}
+	}
+
 	return connector, nil
 }
 
@@ -730,6 +762,13 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 		d.Set("status_page_io", []interface{}{
 			map[string]interface{}{
 				"api_key": result.Connector.Params.APIKey,
+			},
+		})
+	case ilert.ConnectorTypes.DingTalk:
+		d.Set("ding_talk", []interface{}{
+			map[string]interface{}{
+				"url":    result.Connector.Params.URL,
+				"secret": result.Connector.Params.Secret,
 			},
 		})
 	}
