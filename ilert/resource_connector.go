@@ -567,7 +567,7 @@ func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m inte
 		r, err := client.CreateConnector(&ilert.CreateConnectorInput{Connector: connector})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating iLert connector error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Creating ilert connector error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for connector to be created, error: %s", err.Error()))
 			}
@@ -577,16 +577,16 @@ func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m inte
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Creating iLert connector error %s", err.Error())
+		log.Printf("[ERROR] Creating ilert connector error %s", err.Error())
 		return diag.FromErr(err)
 	}
 	if result == nil {
-		log.Printf("[ERROR] Creating iLert connector error: empty response ")
+		log.Printf("[ERROR] Creating ilert connector error: empty response ")
 		return diag.Errorf("connector response is empty")
 	}
 
 	if result == nil || result.Connector == nil {
-		log.Printf("[ERROR] Reading iLert connector error: empty response ")
+		log.Printf("[ERROR] Reading ilert connector error: empty response ")
 		return diag.Errorf("connector response is empty")
 	}
 
@@ -625,7 +625,7 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	if result == nil || result.Connector == nil {
-		log.Printf("[ERROR] Reading iLert connector error: empty response ")
+		log.Printf("[ERROR] Reading ilert connector error: empty response ")
 		return diag.Errorf("connector response is empty")
 	}
 
@@ -762,7 +762,7 @@ func resourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating iLert connector error %s", err.Error())
+		log.Printf("[ERROR] Updating ilert connector error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -786,7 +786,7 @@ func resourceConnectorDelete(ctx context.Context, d *schema.ResourceData, m inte
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting iLert connector error %s", err.Error())
+		log.Printf("[ERROR] Deleting ilert connector error %s", err.Error())
 		return diag.FromErr(err)
 	}
 	d.SetId("")
@@ -808,7 +808,7 @@ func resourceConnectorExists(d *schema.ResourceData, m interface{}) (bool, error
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading iLert connector error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Reading ilert connector error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for connector to be read, error: %s", err.Error()))
 			}

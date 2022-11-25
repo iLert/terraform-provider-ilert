@@ -1,6 +1,6 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_team"
+page_title: "ilert: ilert_team"
 sidebar_current: "docs-ilert-data-source-team"
 description: |-
   Get information about an team that you have created.
@@ -22,7 +22,7 @@ data "ilert_team" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The team name to use to find an team in the iLert API.
+- `name` - (Required) The team name to use to find an team in the ilert API.
 
 ## Attributes Reference
 

@@ -1,9 +1,9 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_automation_rule"
+page_title: "ilert: ilert_automation_rule"
 sidebar_current: "docs-ilert-resource-automation-rule"
 description: |-
-  Creates and manages an automation rule in iLert.
+  Creates and manages an automation rule in ilert.
 ---
 
 # ilert_automation_rule

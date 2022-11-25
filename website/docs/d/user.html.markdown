@@ -1,6 +1,6 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_user"
+page_title: "ilert: ilert_user"
 sidebar_current: "docs-ilert-data-source-user"
 description: |-
   Get information about an user that you have created.
@@ -22,7 +22,7 @@ data "ilert_user" "example" {
 
 The following arguments are supported:
 
-- `email` - (Required) The user email to use to find an user in the iLert API.
+- `email` - (Required) The user email to use to find an user in the ilert API.
 
 ## Attributes Reference
 

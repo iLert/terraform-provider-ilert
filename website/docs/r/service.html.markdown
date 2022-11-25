@@ -1,9 +1,9 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_service"
+page_title: "ilert: ilert_service"
 sidebar_current: "docs-ilert-resource-service"
 description: |-
-  Creates and manages a service in iLert.
+  Creates and manages a service in ilert.
 ---
 
 # ilert_service
@@ -20,7 +20,7 @@ resource "ilert_team" "example"{
 resource "ilert_service" "example" {
   name = "example"
   status = "OPERATIONAL"
-  description = "example iLert service"
+  description = "example ilert service"
   team {
     id = ilert_team.example.id
   }

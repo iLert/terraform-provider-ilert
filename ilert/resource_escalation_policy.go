@@ -276,7 +276,7 @@ func resourceEscalationPolicyCreate(ctx context.Context, d *schema.ResourceData,
 		r, err := client.CreateEscalationPolicy(&ilert.CreateEscalationPolicyInput{EscalationPolicy: escalationPolicy})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating iLert escalation policy error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Creating ilert escalation policy error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for escalation policy to be created, error: %s", err.Error()))
 			}
@@ -286,11 +286,11 @@ func resourceEscalationPolicyCreate(ctx context.Context, d *schema.ResourceData,
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Creating iLert escalation policy error %s", err.Error())
+		log.Printf("[ERROR] Creating ilert escalation policy error %s", err.Error())
 		return diag.FromErr(err)
 	}
 	if result == nil || result.EscalationPolicy == nil {
-		log.Printf("[ERROR] Creating iLert escalation policy error: empty response ")
+		log.Printf("[ERROR] Creating ilert escalation policy error: empty response ")
 		return diag.Errorf("escalation policy response is empty")
 	}
 
@@ -333,7 +333,7 @@ func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if result == nil || result.EscalationPolicy == nil {
-		log.Printf("[ERROR] Reading iLert escalation policy error: empty response ")
+		log.Printf("[ERROR] Reading ilert escalation policy error: empty response ")
 		return diag.Errorf("escalation policy response is empty")
 	}
 
@@ -420,7 +420,7 @@ func resourceEscalationPolicyUpdate(ctx context.Context, d *schema.ResourceData,
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating iLert escalation policy error %s", err.Error())
+		log.Printf("[ERROR] Updating ilert escalation policy error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -449,7 +449,7 @@ func resourceEscalationPolicyDelete(ctx context.Context, d *schema.ResourceData,
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting iLert escalation policy error %s", err.Error())
+		log.Printf("[ERROR] Deleting ilert escalation policy error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -476,7 +476,7 @@ func resourceEscalationPolicyExists(d *schema.ResourceData, m interface{}) (bool
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading iLert escalation policy error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Reading ilert escalation policy error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for escalation policy to be read, error: %s", err.Error()))
 			}

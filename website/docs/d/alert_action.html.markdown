@@ -1,6 +1,6 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_alert_action"
+page_title: "ilert: ilert_alert_action"
 sidebar_current: "docs-ilert-data-source-alert-action"
 description: |-
   Get information about an alert action that you have created.
@@ -22,7 +22,7 @@ data "ilert_alert_action" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The alert action name to use to find an alert action in the iLert API.
+- `name` - (Required) The alert action name to use to find an alert action in the ilert API.
 
 ## Attributes Reference
 

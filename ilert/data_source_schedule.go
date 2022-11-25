@@ -29,7 +29,7 @@ func dataSourceSchedule() *schema.Resource {
 func dataSourceScheduleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert schedule")
+	log.Printf("[DEBUG] Reading ilert schedule")
 
 	searchName := d.Get("name").(string)
 

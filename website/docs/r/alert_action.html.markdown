@@ -1,9 +1,9 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_alert_action"
+page_title: "ilert: ilert_alert_action"
 sidebar_current: "docs-ilert-resource-alert-action"
 description: |-
-  Creates and manages a alert_action in iLert.
+  Creates and manages a alert_action in ilert.
 ---
 
 # ilert_alert_action

@@ -27,7 +27,7 @@ $ gnumake build
 
 ## Using the provider
 
-Detailed documentation for the iLert provider can be found [here](https://registry.terraform.io/providers/iLert/ilert/latest/docs).
+Detailed documentation for the ilert provider can be found [here](https://registry.terraform.io/providers/iLert/ilert/latest/docs).
 
 ## Developing the Provider
 

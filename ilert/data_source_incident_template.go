@@ -41,7 +41,7 @@ func dataSourceIncidentTemplate() *schema.Resource {
 func dataSourceIncidentTemplateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert incident template")
+	log.Printf("[DEBUG] Reading ilert incident template")
 
 	searchName := d.Get("name").(string)
 

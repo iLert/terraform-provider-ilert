@@ -136,7 +136,7 @@ func resourceServiceCreate(ctx context.Context, d *schema.ResourceData, m interf
 		r, err := client.CreateService(&ilert.CreateServiceInput{Service: service})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating iLert service error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Creating ilert service error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for service to be created, error: %s", err.Error()))
 			}
@@ -146,11 +146,11 @@ func resourceServiceCreate(ctx context.Context, d *schema.ResourceData, m interf
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Creating iLert service error %s", err.Error())
+		log.Printf("[ERROR] Creating ilert service error %s", err.Error())
 		return diag.FromErr(err)
 	}
 	if result == nil || result.Service == nil {
-		log.Printf("[ERROR] Creating iLert service error: empty response ")
+		log.Printf("[ERROR] Creating ilert service error: empty response ")
 		return diag.Errorf("service response is empty")
 	}
 
@@ -192,7 +192,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	if result == nil || result.Service == nil {
-		log.Printf("[ERROR] Reading iLert service error: empty response ")
+		log.Printf("[ERROR] Reading ilert service error: empty response ")
 		return diag.Errorf("service response is empty")
 	}
 
@@ -242,7 +242,7 @@ func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating iLert service error %s", err.Error())
+		log.Printf("[ERROR] Updating ilert service error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -270,7 +270,7 @@ func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, m interf
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting iLert service error %s", err.Error())
+		log.Printf("[ERROR] Deleting ilert service error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -297,7 +297,7 @@ func resourceServiceExists(d *schema.ResourceData, m interface{}) (bool, error) 
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading iLert service error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Reading ilert service error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for service to be read, error: %s", err.Error()))
 			}
