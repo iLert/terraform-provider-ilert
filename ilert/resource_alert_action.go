@@ -469,7 +469,7 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
-			"ding_talk": {
+			"dingtalk": {
 				Type:          schema.TypeList,
 				Optional:      true,
 				MaxItems:      1,
@@ -501,7 +501,7 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
-			"ding_talk_action": {
+			"dingtalk_action": {
 				Type:          schema.TypeList,
 				Optional:      true,
 				MaxItems:      1,
@@ -858,7 +858,7 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
-	if val, ok := d.GetOk("ding_talk"); ok {
+	if val, ok := d.GetOk("dingtalk"); ok {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
@@ -878,7 +878,7 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
-	if val, ok := d.GetOk("ding_talk_action"); ok {
+	if val, ok := d.GetOk("dingtalk_action"); ok {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
@@ -1128,7 +1128,7 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 			},
 		})
 	case ilert.ConnectorTypes.DingTalk:
-		d.Set("ding_talk", []interface{}{
+		d.Set("dingtalk", []interface{}{
 			map[string]interface{}{
 				"url":        result.AlertAction.Params.URL,
 				"secret":     result.AlertAction.Params.Secret,
@@ -1137,7 +1137,7 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 			},
 		})
 	case ilert.ConnectorTypes.DingTalkAction:
-		d.Set("ding_talk_action", []interface{}{
+		d.Set("dingtalk_action", []interface{}{
 			map[string]interface{}{
 				"url": result.AlertAction.Params.URL,
 			},

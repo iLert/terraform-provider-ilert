@@ -15,7 +15,7 @@ import (
 
 func resourceConnector() *schema.Resource {
 	// include only type that schema supports
-	connectorTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Email, ilert.ConnectorTypes.MicrosoftTeams, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.ZoomChat, ilert.ConnectorTypes.ZoomMeeting, ilert.ConnectorTypes.Webex, ilert.ConnectorTypes.Slack, ilert.ConnectorTypes.Webhook, ilert.ConnectorTypes.Zapier)
+	connectorTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Email, ilert.ConnectorTypes.MicrosoftTeams, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.ZoomChat, ilert.ConnectorTypes.ZoomMeeting, ilert.ConnectorTypes.Webex, ilert.ConnectorTypes.Slack, ilert.ConnectorTypes.Webhook, ilert.ConnectorTypes.Zapier, ilert.ConnectorTypes.DingTalkAction, ilert.ConnectorTypes.AutomationRule)
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -342,7 +342,7 @@ func resourceConnector() *schema.Resource {
 					},
 				},
 			},
-			"ding_talk": {
+			"dingtalk": {
 				Type:          schema.TypeList,
 				Optional:      true,
 				MaxItems:      1,
@@ -569,7 +569,7 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 		}
 	}
 
-	if val, ok := d.GetOk("ding_talk"); ok {
+	if val, ok := d.GetOk("dingtalk"); ok {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
@@ -765,7 +765,7 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 			},
 		})
 	case ilert.ConnectorTypes.DingTalk:
-		d.Set("ding_talk", []interface{}{
+		d.Set("dingtalk", []interface{}{
 			map[string]interface{}{
 				"url":    result.Connector.Params.URL,
 				"secret": result.Connector.Params.Secret,

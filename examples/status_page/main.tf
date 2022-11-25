@@ -18,7 +18,7 @@ resource "ilert_status_page" "example" {
 #   name         = "example"
 #   subdomain    = "example.ilert.io"
 #   visibility   = "PRIVATE"
-#   ip_whitelist = ["23.34.45.56"]
+#   ip_whitelist = ["###.###.###.###"]
 
 #   service {
 #     id = ilert_service.example.id
