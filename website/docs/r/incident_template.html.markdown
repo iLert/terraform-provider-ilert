@@ -1,9 +1,9 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_incident_template"
+page_title: "ilert: ilert_incident_template"
 sidebar_current: "docs-ilert-resource-incident-template"
 description: |-
-  Creates and manages an incident template in iLert.
+  Creates and manages an incident template in ilert.
 ---
 
 # ilert_incident_template

@@ -1,6 +1,6 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_status_page"
+page_title: "ilert: ilert_status_page"
 sidebar_current: "docs-ilert-data-source-status-page"
 description: |-
   Get information about an status page that you have created.
@@ -22,7 +22,7 @@ data "ilert_status_page" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The status page name to use to find an status page in the iLert API.
+- `name` - (Required) The status page name to use to find an status page in the ilert API.
 
 ## Attributes Reference
 

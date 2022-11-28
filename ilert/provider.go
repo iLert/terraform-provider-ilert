@@ -102,7 +102,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData, terraformVer
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Api token or basic credentials are required",
-			Detail:   "Unable to create iLert client with the given token or basic credentials, either the token or basic credentials are empty or invalid",
+			Detail:   "Unable to create ilert client with the given token or basic credentials, either the token or basic credentials are empty or invalid",
 		})
 		return nil, diags
 	}

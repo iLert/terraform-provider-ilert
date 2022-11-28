@@ -850,7 +850,7 @@ func resourceAlertActionCreate(ctx context.Context, d *schema.ResourceData, m in
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating iLert alert action rule error %s, so retry again", err.Error())
+				log.Printf("[ERROR] Creating ilert alert action rule error %s, so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert action to be created, error: %s", err.Error()))
 			}
@@ -865,7 +865,7 @@ func resourceAlertActionCreate(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	if result == nil || result.AlertAction == nil {
-		log.Printf("[ERROR] Creating iLert alert action error: empty response ")
+		log.Printf("[ERROR] Creating ilert alert action error: empty response ")
 		return diag.FromErr(fmt.Errorf("alert action response is empty"))
 	}
 
@@ -904,7 +904,7 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	if result == nil || result.AlertAction == nil {
-		log.Printf("[ERROR] Reading iLert alert action error: empty response ")
+		log.Printf("[ERROR] Reading ilert alert action error: empty response ")
 		return diag.Errorf("alert action response is empty")
 	}
 
@@ -919,7 +919,7 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	connector := map[string]interface{}{}
-	log.Printf("[DEBUG] Reading iLert alert action: %s , connector id: %s", d.Id(), result.AlertAction.ConnectorID)
+	log.Printf("[DEBUG] Reading ilert alert action: %s , connector id: %s", d.Id(), result.AlertAction.ConnectorID)
 	if result.AlertAction.ConnectorID != "" {
 		connector["id"] = result.AlertAction.ConnectorID
 		connector["type"] = result.AlertAction.ConnectorType
@@ -1081,7 +1081,7 @@ func resourceAlertActionUpdate(ctx context.Context, d *schema.ResourceData, m in
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating iLert alert action error %s", err.Error())
+		log.Printf("[ERROR] Updating ilert alert action error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -1106,7 +1106,7 @@ func resourceAlertActionDelete(ctx context.Context, d *schema.ResourceData, m in
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting iLert alert action error %s", err.Error())
+		log.Printf("[ERROR] Deleting ilert alert action error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -1129,7 +1129,7 @@ func resourceAlertActionExists(d *schema.ResourceData, m interface{}) (bool, err
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading iLert alert action error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Reading ilert alert action error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert action to be read, error: %s", err.Error()))
 			}

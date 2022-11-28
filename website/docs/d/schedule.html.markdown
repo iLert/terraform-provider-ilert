@@ -1,6 +1,6 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_schedule"
+page_title: "ilert: ilert_schedule"
 sidebar_current: "docs-ilert-data-source-schedule"
 description: |-
   Get information about an schedule that you have created.
@@ -22,7 +22,7 @@ data "ilert_schedule" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The schedule name to use to find a schedule in the iLert API.
+- `name` - (Required) The schedule name to use to find a schedule in the ilert API.
 
 ## Attributes Reference
 

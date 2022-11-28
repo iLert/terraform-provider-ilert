@@ -132,7 +132,7 @@ func resourceIncidentTemplateCreate(ctx context.Context, d *schema.ResourceData,
 		r, err := client.CreateIncidentTemplate(&ilert.CreateIncidentTemplateInput{IncidentTemplate: incidentTemplate})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating iLert incident template error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Creating ilert incident template error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for incident template to be created, error: %s", err.Error()))
 			}
@@ -142,11 +142,11 @@ func resourceIncidentTemplateCreate(ctx context.Context, d *schema.ResourceData,
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Creating iLert incident template error %s", err.Error())
+		log.Printf("[ERROR] Creating ilert incident template error %s", err.Error())
 		return diag.FromErr(err)
 	}
 	if result == nil || result.IncidentTemplate == nil {
-		log.Printf("[ERROR] Creating iLert incident template error: empty response ")
+		log.Printf("[ERROR] Creating ilert incident template error: empty response ")
 		return diag.Errorf("incident template response is empty")
 	}
 
@@ -188,7 +188,7 @@ func resourceIncidentTemplateRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if result == nil || result.IncidentTemplate == nil {
-		log.Printf("[ERROR] Reading iLert incident template error: empty response ")
+		log.Printf("[ERROR] Reading ilert incident template error: empty response ")
 		return diag.Errorf("incident template response is empty")
 	}
 
@@ -238,7 +238,7 @@ func resourceIncidentTemplateUpdate(ctx context.Context, d *schema.ResourceData,
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating iLert incident template error %s", err.Error())
+		log.Printf("[ERROR] Updating ilert incident template error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -266,7 +266,7 @@ func resourceIncidentTemplateDelete(ctx context.Context, d *schema.ResourceData,
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting iLert incident template error %s", err.Error())
+		log.Printf("[ERROR] Deleting ilert incident template error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -293,7 +293,7 @@ func resourceIncidentTemplateExists(d *schema.ResourceData, m interface{}) (bool
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading iLert incident template error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Reading ilert incident template error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for incident template to be read, error: %s", err.Error()))
 			}

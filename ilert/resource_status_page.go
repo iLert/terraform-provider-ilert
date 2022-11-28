@@ -236,7 +236,7 @@ func resourceStatusPageCreate(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			log.Printf("[DEBUG] Creating status page error occurred: %s", err.Error())
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating iLert status page error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Creating ilert status page error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for status page to be created, error: %s", err.Error()))
 			}
@@ -246,11 +246,11 @@ func resourceStatusPageCreate(ctx context.Context, d *schema.ResourceData, m int
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Creating iLert status page error %s", err.Error())
+		log.Printf("[ERROR] Creating ilert status page error %s", err.Error())
 		return diag.FromErr(err)
 	}
 	if result == nil || result.StatusPage == nil {
-		log.Printf("[ERROR] Creating iLert status page error: empty response ")
+		log.Printf("[ERROR] Creating ilert status page error: empty response ")
 		return diag.Errorf("status page response is empty")
 	}
 
@@ -292,7 +292,7 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	if result == nil || result.StatusPage == nil {
-		log.Printf("[ERROR] Reading iLert status page error: empty response ")
+		log.Printf("[ERROR] Reading ilert status page error: empty response ")
 		return diag.Errorf("status page response is empty")
 	}
 
@@ -367,7 +367,7 @@ func resourceStatusPageUpdate(ctx context.Context, d *schema.ResourceData, m int
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating iLert status page error %s", err.Error())
+		log.Printf("[ERROR] Updating ilert status page error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -395,7 +395,7 @@ func resourceStatusPageDelete(ctx context.Context, d *schema.ResourceData, m int
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting iLert status page error %s", err.Error())
+		log.Printf("[ERROR] Deleting ilert status page error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -422,7 +422,7 @@ func resourceStatusPageExists(d *schema.ResourceData, m interface{}) (bool, erro
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading iLert status page error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Reading ilert status page error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for status page to be read, error: %s", err.Error()))
 			}

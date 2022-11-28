@@ -420,7 +420,7 @@ func resourceScheduleCreate(ctx context.Context, d *schema.ResourceData, m inter
 		r, err := client.CreateSchedule(&ilert.CreateScheduleInput{Schedule: schedule})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating iLert schedule error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Creating ilert schedule error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for schedule to be created, error: %s", err.Error()))
 			}
@@ -430,11 +430,11 @@ func resourceScheduleCreate(ctx context.Context, d *schema.ResourceData, m inter
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Creating iLert schedule error %s", err.Error())
+		log.Printf("[ERROR] Creating ilert schedule error %s", err.Error())
 		return diag.FromErr(err)
 	}
 	if result == nil || result.Schedule == nil {
-		log.Printf("[ERROR] Creating iLert schedule error: empty response ")
+		log.Printf("[ERROR] Creating ilert schedule error: empty response ")
 		return diag.Errorf("schedule response is empty")
 	}
 
@@ -482,7 +482,7 @@ func resourceScheduleRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if result == nil || result.Schedule == nil {
-		log.Printf("[ERROR] Reading iLert schedule error: empty response ")
+		log.Printf("[ERROR] Reading ilert schedule error: empty response ")
 		return diag.Errorf("schedule response is empty")
 	}
 
@@ -588,7 +588,7 @@ func resourceScheduleUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating iLert schedule error %s", err.Error())
+		log.Printf("[ERROR] Updating ilert schedule error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -616,7 +616,7 @@ func resourceScheduleDelete(ctx context.Context, d *schema.ResourceData, m inter
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting iLert schedule error %s", err.Error())
+		log.Printf("[ERROR] Deleting ilert schedule error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -643,7 +643,7 @@ func resourceScheduleExists(d *schema.ResourceData, m interface{}) (bool, error)
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading iLert schedule error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Reading ilert schedule error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for schedule to be read, error: %s", err.Error()))
 			}

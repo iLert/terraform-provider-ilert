@@ -41,7 +41,7 @@ func dataSourceUptimeMonitor() *schema.Resource {
 func dataSourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert uptime monitor")
+	log.Printf("[DEBUG] Reading ilert uptime monitor")
 
 	searchName := d.Get("name").(string)
 
@@ -50,9 +50,9 @@ func dataSourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, me
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor with name '%s' to be read", searchName))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an uptime monitor with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an uptime monitor with name: %s", searchName))
 		}
 
 		found := resp.UptimeMonitor

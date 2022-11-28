@@ -1,6 +1,6 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_service"
+page_title: "ilert: ilert_service"
 sidebar_current: "docs-ilert-data-source-service"
 description: |-
   Get information about a service that you have created.
@@ -22,7 +22,7 @@ data "ilert_service" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The service name to use to find a service in the iLert API.
+- `name` - (Required) The service name to use to find a service in the ilert API.
 
 ## Attributes Reference
 
