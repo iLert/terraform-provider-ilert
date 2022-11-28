@@ -15,7 +15,7 @@ import (
 
 func resourceConnector() *schema.Resource {
 	// include only type that schema supports
-	connectorTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Email, ilert.ConnectorTypes.MicrosoftTeams, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.ZoomChat, ilert.ConnectorTypes.ZoomMeeting, ilert.ConnectorTypes.Webex, ilert.ConnectorTypes.Slack, ilert.ConnectorTypes.Webhook, ilert.ConnectorTypes.Zapier)
+	connectorTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Email, ilert.ConnectorTypes.MicrosoftTeams, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.ZoomChat, ilert.ConnectorTypes.ZoomMeeting, ilert.ConnectorTypes.Webex, ilert.ConnectorTypes.Slack, ilert.ConnectorTypes.Webhook, ilert.ConnectorTypes.Zapier, ilert.ConnectorTypes.DingTalkAction, ilert.ConnectorTypes.AutomationRule)
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -342,6 +342,27 @@ func resourceConnector() *schema.Resource {
 					},
 				},
 			},
+			"dingtalk": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.DingTalk),
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"secret": {
+							Type:      schema.TypeString,
+							Required:  true,
+							Sensitive: true,
+						},
+					},
+				},
+			},
 			"created_at": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -548,6 +569,17 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 		}
 	}
 
+	if val, ok := d.GetOk("dingtalk"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			connector.Params = &ilert.ConnectorParamsDingTalk{
+				URL:    v["url"].(string),
+				Secret: v["secret"].(string),
+			}
+		}
+	}
+
 	return connector, nil
 }
 
@@ -730,6 +762,13 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 		d.Set("status_page_io", []interface{}{
 			map[string]interface{}{
 				"api_key": result.Connector.Params.APIKey,
+			},
+		})
+	case ilert.ConnectorTypes.DingTalk:
+		d.Set("dingtalk", []interface{}{
+			map[string]interface{}{
+				"url":    result.Connector.Params.URL,
+				"secret": result.Connector.Params.Secret,
 			},
 		})
 	}

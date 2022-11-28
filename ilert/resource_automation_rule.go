@@ -13,8 +13,10 @@ import (
 	"github.com/iLert/ilert-go/v2"
 )
 
+// Legacy API - please use alert-actions of type 'automation_rule' - for more information see https://api.ilert.com/api-docs/#tag/Alert-Actions/paths/~1alert-actions/post
 func resourceAutomationRule() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: "The resource automation rule is deprecated! Please use alert actions of type 'automation_rule' instead.",
 		Schema: map[string]*schema.Schema{
 			"alert_type": {
 				Type:         schema.TypeString,

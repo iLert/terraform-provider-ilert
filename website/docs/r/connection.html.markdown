@@ -10,6 +10,8 @@ description: |-
 
 A [connection](https://docs.ilert.com/getting-started/intro#connectors-and-connections-outbond-integrations) is created at the alert source level and uses its [connector](connector.html) to perform a concrete action.
 
+> WARNING - this resource is deprecated - please use alert-actions - for more information see https://docs.ilert.com/rest-api/api-version-history#renaming-connections-to-alert-actions
+
 ## Example Usage
 
 ```hcl
