@@ -29,7 +29,7 @@ func dataSourceEscalationPolicy() *schema.Resource {
 func dataSourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert escalation policy")
+	log.Printf("[DEBUG] Reading ilert escalation policy")
 
 	searchName := d.Get("name").(string)
 

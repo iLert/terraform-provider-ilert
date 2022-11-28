@@ -447,7 +447,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 		r, err := client.CreateUser(&ilert.CreateUserInput{User: user})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating iLert user error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Creating ilert user error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for user to be created, error: %s", err.Error()))
 			}
@@ -457,11 +457,11 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Creating iLert user error %s", err.Error())
+		log.Printf("[ERROR] Creating ilert user error %s", err.Error())
 		return diag.FromErr(err)
 	}
 	if result == nil || result.User == nil {
-		log.Printf("[ERROR] Creating iLert user error: empty response ")
+		log.Printf("[ERROR] Creating ilert user error: empty response ")
 		return diag.Errorf("user response is empty")
 	}
 
@@ -503,7 +503,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	}
 
 	if result == nil || result.User == nil {
-		log.Printf("[ERROR] Reading iLert user error: empty response ")
+		log.Printf("[ERROR] Reading ilert user error: empty response ")
 		return diag.Errorf("user response is empty")
 	}
 
@@ -610,7 +610,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating iLert user error %s", err.Error())
+		log.Printf("[ERROR] Updating ilert user error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -638,7 +638,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting iLert user error %s", err.Error())
+		log.Printf("[ERROR] Deleting ilert user error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -665,7 +665,7 @@ func resourceUserExists(d *schema.ResourceData, m interface{}) (bool, error) {
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading iLert user error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Reading ilert user error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for user to be read, error: %s", err.Error()))
 			}

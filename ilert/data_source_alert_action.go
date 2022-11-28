@@ -32,7 +32,7 @@ func dataSourceAlertAction() *schema.Resource {
 func dataSourceAlertActionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert alert action")
+	log.Printf("[DEBUG] Reading ilert alert action")
 
 	searchName := d.Get("name").(string)
 

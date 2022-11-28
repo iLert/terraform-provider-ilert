@@ -1,14 +1,14 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_connector"
+page_title: "ilert: ilert_connector"
 sidebar_current: "docs-ilert-resource-connector"
 description: |-
-  Creates and manages a connector in iLert.
+  Creates and manages a connector in ilert.
 ---
 
 # ilert_connector
 
-A [connector](https://docs.ilert.com/getting-started/intro#connectors-and-connections-outbond-integrations) is created globally in iLert and usually contains all the information to connect with the target system.
+A [connector](https://docs.ilert.com/getting-started/intro#connectors-and-connections-outbond-integrations) is created globally in ilert and usually contains all the information to connect with the target system.
 
 ## Example Usage
 

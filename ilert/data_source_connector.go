@@ -32,7 +32,7 @@ func dataSourceConnector() *schema.Resource {
 func dataSourceConnectorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert connector")
+	log.Printf("[DEBUG] Reading ilert connector")
 
 	searchName := d.Get("name").(string)
 

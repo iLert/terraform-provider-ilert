@@ -41,7 +41,7 @@ func dataSourceUptimeMonitor() *schema.Resource {
 func dataSourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert uptime monitor")
+	log.Printf("[DEBUG] Reading ilert uptime monitor")
 
 	searchName := d.Get("name").(string)
 

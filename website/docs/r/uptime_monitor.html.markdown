@@ -1,9 +1,9 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_uptime_monitor"
+page_title: "ilert: ilert_uptime_monitor"
 sidebar_current: "docs-ilert-resource-uptime-monitor"
 description: |-
-  Creates and manages an uptime monitor in iLert.
+  Creates and manages an uptime monitor in ilert.
 ---
 
 # ilert_uptime_monitor

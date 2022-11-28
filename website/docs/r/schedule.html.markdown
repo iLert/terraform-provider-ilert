@@ -1,14 +1,14 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_schedule"
+page_title: "ilert: ilert_schedule"
 sidebar_current: "docs-ilert-resource-schedule"
 description: |-
-  Creates and manages an on-call-schedule in iLert.
+  Creates and manages an on-call-schedule in ilert.
 ---
 
 # ilert_schedule
 
-A [schedule](https://api.ilert.com/api-docs/#tag/Schedules) is used to dynamically determine to whom an alert will be assigned to based on the time of the day. iLert offers two types of schedules - recurring and static schedules, which differ in the way a schedule is created and maintained.
+A [schedule](https://api.ilert.com/api-docs/#tag/Schedules) is used to dynamically determine to whom an alert will be assigned to based on the time of the day. ilert offers two types of schedules - recurring and static schedules, which differ in the way a schedule is created and maintained.
 
 ## Example Usage
 

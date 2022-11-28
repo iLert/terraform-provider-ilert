@@ -1,26 +1,37 @@
 ---
 layout: "ilert"
-page_title: "ilert: ilert_connection"
-sidebar_current: "docs-ilert-resource-connection"
+page_title: "ilert: ilert_alert_action"
+sidebar_current: "docs-ilert-resource-alert-action"
 description: |-
-  Creates and manages a connection in ilert.
+  Creates and manages a alert_action in ilert.
 ---
 
-# ilert_connection
+# ilert_alert_action
 
-A [connection](https://docs.ilert.com/getting-started/intro#connectors-and-connections-outbond-integrations) is created at the alert source level and uses its [connector](connector.html) to perform a concrete action.
+An [alert_action](https://docs.ilert.com/getting-started/readme#connectors-and-alert-actions-aka-outbound-integrations) is created at the alert source level and uses its [connector](connector.html) to perform a concrete action.
 
 ## Example Usage
 
 ```hcl
-data "ilert_escalation_policy" "default" {
-  name = "Default"
+resource "ilert_user" "example" {
+  username   = "example1"
+  first_name = "example"
+  last_name  = "example"
+  email      = "example1@example.com"
+}
+
+resource "ilert_escalation_policy" "example" {
+  name = "example"
+  escalation_rule {
+    escalation_timeout = 15
+    user               = ilert_user.example.id
+  }
 }
 
 resource "ilert_alert_source" "example" {
   name              = "My Grafana Integration for GitHub"
   integration_type  = "GRAFANA"
-  escalation_policy = data.ilert_escalation_policy.default.id
+  escalation_policy = ilert_escalation_policy.default.id
 }
 
 resource "ilert_connector" "example" {
@@ -32,8 +43,8 @@ resource "ilert_connector" "example" {
   }
 }
 
-resource "ilert_connection" "example" {
-  name = "My GitHub Connection"
+resource "ilert_alert_action" "example" {
+  name = "My GitHub Alert Action"
 
   alert_source {
     id = ilert_alert_source.example.id
@@ -55,11 +66,11 @@ resource "ilert_connection" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The name of the connection.
-- `alert_source` - (Required) A [alert_source](#alert-source-arguments) block.
+- `name` - (Required) The name of the alert action.
+- `alert_source` - (Required) An [alert source](#alert-source-arguments) block.
 - `connector` - (Required) A [connector](#connector-arguments) block.
-- `trigger_mode` - (Optional) The trigger mode of the connection. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
-- `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode ) A list of the trigger types. Allowed values are `incident-created`, `incident-assigned`, `incident-auto-escalated`, `incident-acknowledged`, `incident-raised`, `incident-comment-added`, `incident-resolved`.
+- `trigger_mode` - (Optional) The trigger mode of the alert action. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
+- `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode ) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-resolved`.
 - `datadog` - (Optional) A [datadog](#datadog-arguments) block.
 - `jira` - (Optional) A [jira](#jira-arguments) block.
 - `servicenow` - (Optional) A [servicenow](#servicenow-arguments) block.
@@ -216,15 +227,15 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-- `id` - The ID of the connection.
-- `name` - The name of the connection.
-- `created_at` - The creation date time of the connection in in ISO 8601 format.
-- `updated_at` - The creation date time of the connection in in ISO 8601 format.
+- `id` - The ID of the alert action.
+- `name` - The name of the alert action.
+- `created_at` - The creation date time of the alert action in in ISO 8601 format.
+- `updated_at` - The creation date time of the alert action in in ISO 8601 format.
 
 ## Import
 
 Services can be imported using the `id`, e.g.
 
 ```sh
-$ terraform import ilert_connection.main 123456789
+$ terraform import ilert_alert_action.main 123456789
 ```

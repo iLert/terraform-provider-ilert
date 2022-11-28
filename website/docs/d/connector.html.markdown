@@ -1,6 +1,6 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_connector"
+page_title: "ilert: ilert_connector"
 sidebar_current: "docs-ilert-data-source-connector"
 description: |-
   Get information about a connector that you have created.
@@ -22,7 +22,7 @@ data "ilert_connector" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The connector name to use to find an connector in the iLert API.
+- `name` - (Required) The connector name to use to find an connector in the ilert API.
 
 ## Attributes Reference
 

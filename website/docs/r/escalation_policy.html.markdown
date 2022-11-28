@@ -1,9 +1,9 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_escalation_policy"
+page_title: "ilert: ilert_escalation_policy"
 sidebar_current: "docs-ilert-resource-escalation-policy"
 description: |-
-  Creates and manages an escalation policy in iLert.
+  Creates and manages an escalation policy in ilert.
 ---
 
 # ilert_escalation_policy

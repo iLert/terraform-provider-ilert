@@ -1,6 +1,6 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_connection"
+page_title: "ilert: ilert_connection"
 sidebar_current: "docs-ilert-data-source-connection"
 description: |-
   Get information about a connection that you have created.
@@ -22,7 +22,7 @@ data "ilert_connection" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The connection name to use to find an connection in the iLert API.
+- `name` - (Required) The connection name to use to find an connection in the ilert API.
 
 ## Attributes Reference
 

@@ -1,9 +1,9 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_team"
+page_title: "ilert: ilert_team"
 sidebar_current: "docs-ilert-resource-team"
 description: |-
-  Creates and manages an team in iLert.
+  Creates and manages an team in ilert.
 ---
 
 # ilert_team
