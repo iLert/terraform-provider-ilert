@@ -50,9 +50,9 @@ func dataSourceIncidentTemplateRead(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for incident template with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for incident template with name '%s' to be read", searchName))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read a incident template with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read a incident template with name %s", searchName))
 		}
 
 		found := resp.IncidentTemplate
