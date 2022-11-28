@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.21.0
-	github.com/iLert/ilert-go/v2 v2.2.2
+	github.com/iLert/ilert-go/v2 v2.3.2
 )
 
 require (

@@ -477,6 +477,44 @@ func resourceAlertAction() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"alert_filter": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MinItems: 1,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"operator": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice(ilert.AlertFilterOperatorAll, false),
+						},
+						"predicate": {
+							Type:     schema.TypeList,
+							Required: true,
+							MinItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"field": {
+										Type:         schema.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringInSlice(ilert.AlertFilterPredicateFieldsAll, false),
+									},
+									"criteria": {
+										Type:         schema.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringInSlice(ilert.AlertFilterPredicateCriteriaAll, false),
+									},
+									"value": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 		CreateContext: resourceAlertActionCreate,
 		ReadContext:   resourceAlertActionRead,
@@ -765,6 +803,29 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
+	if val, ok := d.GetOk("alert_filter"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			filter := &ilert.AlertFilter{
+				Operator: v["operator"].(string),
+			}
+			vL := v["predicate"].([]interface{})
+			pL := make([]ilert.AlertFilterPredicate, 0)
+			for _, m := range vL {
+				v := m.(map[string]interface{})
+				p := ilert.AlertFilterPredicate{
+					Field:    v["field"].(string),
+					Criteria: v["criteria"].(string),
+					Value:    v["value"].(string),
+				}
+				pL = append(pL, p)
+			}
+			filter.Predicates = pL
+			alertAction.AlertFilter = filter
+		}
+	}
+
 	return alertAction, nil
 }
 
@@ -984,6 +1045,14 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 		})
 	}
 
+	alertFilter, err := flattenAlertActionAlertFilter(result.AlertAction.AlertFilter)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("alert_filter", alertFilter); err != nil {
+		return diag.Errorf("error setting alert filter: %s", err)
+	}
+
 	return nil
 }
 
@@ -1086,6 +1155,28 @@ func flattenAlertActionAlertSourceIDList(list []int64) ([]interface{}, error) {
 		result["id"] = strconv.FormatInt(item, 10)
 		results = append(results, result)
 	}
+
+	return results, nil
+}
+
+func flattenAlertActionAlertFilter(filter *ilert.AlertFilter) ([]interface{}, error) {
+	if filter == nil {
+		return make([]interface{}, 0), nil
+	}
+
+	results := make([]interface{}, 0)
+	r := make(map[string]interface{})
+	r["operator"] = filter.Operator
+	prds := make([]interface{}, 0)
+	for _, p := range filter.Predicates {
+		prd := make(map[string]interface{})
+		prd["field"] = p.Field
+		prd["criteria"] = p.Criteria
+		prd["value"] = p.Value
+		prds = append(prds, prd)
+	}
+	r["predicate"] = prds
+	results = append(results, r)
 
 	return results, nil
 }
