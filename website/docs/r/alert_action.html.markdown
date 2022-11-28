@@ -90,6 +90,7 @@ The following arguments are supported:
 - `status_page_io` - (Optional) A [status_page_io](#statuspage-arguments) block.
 - `dingtalk` - (Optional) A [dingtalk](#dingtalk-arguments) block.
 - `dingtalk_action` - (Optional) A [dingtalk_action](#dingtalk-action-arguments) block.
+- `automation_rule` - (Optional) An [automation_rule](#automation-rule-arguments) block.
 
 #### Alert Source Arguments
 
@@ -240,6 +241,15 @@ The following arguments are supported:
 - `secret` - (Optional) The secret for the provided Dingtalk URL.
 - `is_at_all` - (Optional) Determines whether messages are sent with `@all` or not. Allowed values are `true` or `false`.
 - `at_mobiles` - (Optional) Mobile numbers to notify related DingTalk users.
+
+#### Automation Rule Arguments
+
+- `alert_type` - (Required) The alert type. Allowed values are `CREATED` or `ACCEPTED`.
+- `service_ids` - (Required) One or more service ID's.
+- `service_status` - (Required) The status the service should be set in. Allowed values are `OPERATIONAL`, `UNDER_MAINTENANCE`, `DEGRADED`, `PARTIAL_OUTAGE`, `MAJOR_OUTAGE`.
+- `template_id` - (Optional) The ID of the incident template.
+- `resolve_incident` - (Optional, requires `template_id`) Determines whether an incident should be resolved or not. Default: `false`
+- `send_notification` - (Optional, requires `template_id`) Determines whether notifications should be sent or not. Default: `false`
 
 ## Attributes Reference
 
