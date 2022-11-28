@@ -10,6 +10,8 @@ description: |-
 
 An [automation rule](https://api.ilert.com/api-docs/#tag/Automation-Rules) is used for automatically setting the status of a service and creating incidents. They are triggered by your alert sources.
 
+> WARNING - this resource is deprecated - please use alert-actions of type 'automation_rule' - for more information see https://api.ilert.com/api-docs/#tag/Alert-Actions/paths/~1alert-actions/post
+
 ## Example Usage
 
 ```hcl
