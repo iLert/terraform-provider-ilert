@@ -71,6 +71,7 @@ The following arguments are supported:
 - `connector` - (Required) A [connector](#connector-arguments) block.
 - `trigger_mode` - (Optional) The trigger mode of the alert action. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
 - `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode ) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-resolved`.
+- `alert_filter` - (Optional) An [alert filter](#alert-filter-arguments) block.
 - `datadog` - (Optional) A [datadog](#datadog-arguments) block.
 - `jira` - (Optional) A [jira](#jira-arguments) block.
 - `servicenow` - (Optional) A [servicenow](#servicenow-arguments) block.
@@ -250,6 +251,17 @@ The following arguments are supported:
 - `template_id` - (Optional) The ID of the incident template.
 - `resolve_incident` - (Optional, requires `template_id`) Determines whether an incident should be resolved or not. Default: `false`
 - `send_notification` - (Optional, requires `template_id`) Determines whether notifications should be sent or not. Default: `false`
+
+#### Alert Filter Arguments
+
+- `operator` - (Required) The operator to use for the filter. Allowed values are `AND` or `OR`.
+- `predicate` - (Required) One or more [predicate](#predicate-arguments) blocks.
+
+#### Predicate Arguments
+
+- `field` - (Required) The field which should be monitored for conditional execution. Allowed values are `ALERT_SUMMARY`, `ALERT_DETAILS`, `ESCALATION_POLICY`, `ALERT_PRIORITY`.
+- `criteria` - (Required) The criteria for the condition. Allowed values are `CONTAINS_ANY_WORDS`, `CONTAINS_NOT_WORDS`, `CONTAINS_STRING`, `CONTAINS_NOT_STRING`, `IS_STRING`, `IS_NOT_STRING`, `MATCHES_REGEX`, `MATCHES_NOT_REGEX`.
+- `value` - (Required) The value for the condition.
 
 ## Attributes Reference
 
