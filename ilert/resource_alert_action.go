@@ -478,15 +478,6 @@ func resourceAlertAction() *schema.Resource {
 				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.DingTalk),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"secret": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-						},
 						"is_at_all": {
 							Type:     schema.TypeBool,
 							Optional: true,
@@ -513,6 +504,22 @@ func resourceAlertAction() *schema.Resource {
 						"url": {
 							Type:     schema.TypeString,
 							Required: true,
+						},
+						"secret": {
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
+						},
+						"is_at_all": {
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+						"at_mobiles": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
 						},
 					},
 				},
@@ -863,8 +870,6 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
 			params := &ilert.AlertActionParamsDingTalk{
-				URL:     v["url"].(string),
-				Secret:  v["secret"].(string),
 				IsAtAll: v["is_at_all"].(bool),
 			}
 			vL := v["at_mobiles"].([]interface{})
@@ -882,9 +887,19 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			alertAction.Params = &ilert.AlertActionParamsDingTalk{
-				URL: v["url"].(string),
+			params := &ilert.AlertActionParamsDingTalkAction{
+				URL:     v["url"].(string),
+				Secret:  v["secret"].(string),
+				IsAtAll: v["is_at_all"].(bool),
 			}
+			vL := v["at_mobiles"].([]interface{})
+			sL := make([]string, 0)
+			for _, m := range vL {
+				v := m.(string)
+				sL = append(sL, v)
+			}
+			params.AtMobiles = sL
+			alertAction.Params = params
 		}
 	}
 
@@ -1006,8 +1021,8 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	log.Printf("[DEBUG] Reading iLert alert action: %s , connector id: %s", d.Id(), result.AlertAction.ConnectorID)
 	if result.AlertAction.ConnectorID != "" {
 		connector["id"] = result.AlertAction.ConnectorID
-		connector["type"] = result.AlertAction.ConnectorType
 	}
+	connector["type"] = result.AlertAction.ConnectorType
 	d.Set("connector", []interface{}{connector})
 	d.Set("trigger_mode", result.AlertAction.TriggerMode)
 	d.Set("trigger_types", result.AlertAction.TriggerTypes)
@@ -1130,8 +1145,6 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	case ilert.ConnectorTypes.DingTalk:
 		d.Set("dingtalk", []interface{}{
 			map[string]interface{}{
-				"url":        result.AlertAction.Params.URL,
-				"secret":     result.AlertAction.Params.Secret,
 				"is_at_all":  result.AlertAction.Params.IsAtAll,
 				"at_mobiles": result.AlertAction.Params.AtMobiles,
 			},
@@ -1139,7 +1152,10 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	case ilert.ConnectorTypes.DingTalkAction:
 		d.Set("dingtalk_action", []interface{}{
 			map[string]interface{}{
-				"url": result.AlertAction.Params.URL,
+				"url":        result.AlertAction.Params.URL,
+				"secret":     result.AlertAction.Params.Secret,
+				"is_at_all":  result.AlertAction.Params.IsAtAll,
+				"at_mobiles": result.AlertAction.Params.AtMobiles,
 			},
 		})
 	case ilert.ConnectorTypes.AutomationRule:
