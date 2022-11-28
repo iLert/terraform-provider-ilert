@@ -245,11 +245,11 @@ The following arguments are supported:
 #### Automation Rule Arguments
 
 - `alert_type` - (Required) The alert type. Allowed values are `CREATED` or `ACCEPTED`.
-- `resolve_incident` - (Optional) Determines whether an incident should be resolved or not. Default: `false`
+- `service_ids` - (Required) One or more service ID's.
 - `service_status` - (Required) The status the service should be set in. Allowed values are `OPERATIONAL`, `UNDER_MAINTENANCE`, `DEGRADED`, `PARTIAL_OUTAGE`, `MAJOR_OUTAGE`.
 - `template_id` - (Optional) The ID of the incident template.
-- `send_notification` - (Optional) Determines whether notifications should be sent or not. Default: `false`
-- `service_ids` - (Required) One or more service ID's.
+- `resolve_incident` - (Optional, requires `template_id`) Determines whether an incident should be resolved or not. Default: `false`
+- `send_notification` - (Optional, requires `template_id`) Determines whether notifications should be sent or not. Default: `false`
 
 ## Attributes Reference
 
