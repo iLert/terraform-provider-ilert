@@ -242,7 +242,7 @@ The following arguments are supported:
 - `is_at_all` - (Optional) Determines whether messages are sent with `@all` or not. Allowed values are `true` or `false`.
 - `at_mobiles` - (Optional) Mobile numbers to notify related DingTalk users.
 
-#### Automation rule Arguments
+#### Automation Rule Arguments
 
 - `alert_type` - (Required) The alert type. Allowed values are `CREATED` or `ACCEPTED`.
 - `resolve_incident` - (Optional) Determines whether an incident should be resolved or not. Default: `false`
