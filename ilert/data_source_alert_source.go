@@ -43,7 +43,7 @@ func dataSourceAlertSource() *schema.Resource {
 func dataSourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert alert source")
+	log.Printf("[DEBUG] Reading ilert alert source")
 
 	searchName := d.Get("name").(string)
 
@@ -52,9 +52,9 @@ func dataSourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, meta
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with name '%s' to be read", searchName))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with name: %s", searchName))
 		}
 
 		found := resp.AlertSource

@@ -1,9 +1,9 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_connection"
+page_title: "ilert: ilert_connection"
 sidebar_current: "docs-ilert-resource-connection"
 description: |-
-  Creates and manages a connection in iLert.
+  Creates and manages a connection in ilert.
 ---
 
 # ilert_connection

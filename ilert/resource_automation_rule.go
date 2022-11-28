@@ -203,7 +203,7 @@ func resourceAutomationRuleCreate(ctx context.Context, d *schema.ResourceData, m
 		r, err := client.CreateAutomationRule(&ilert.CreateAutomationRuleInput{AutomationRule: automationRule})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating iLert automation rule error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Creating ilert automation rule error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for automation rule to be created, error: %s", err.Error()))
 			}
@@ -213,11 +213,11 @@ func resourceAutomationRuleCreate(ctx context.Context, d *schema.ResourceData, m
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Creating iLert automation rule error %s", err.Error())
+		log.Printf("[ERROR] Creating ilert automation rule error %s", err.Error())
 		return diag.FromErr(err)
 	}
 	if result == nil || result.AutomationRule == nil {
-		log.Printf("[ERROR] Creating iLert automation rule error: empty response ")
+		log.Printf("[ERROR] Creating ilert automation rule error: empty response ")
 		return diag.Errorf("automation rule response is empty")
 	}
 
@@ -255,7 +255,7 @@ func resourceAutomationRuleRead(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	if result == nil || result.AutomationRule == nil {
-		log.Printf("[ERROR] Reading iLert automation rule error: empty response ")
+		log.Printf("[ERROR] Reading ilert automation rule error: empty response ")
 		return diag.Errorf("automation rule response is empty")
 	}
 
@@ -318,7 +318,7 @@ func resourceAutomationRuleUpdate(ctx context.Context, d *schema.ResourceData, m
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating iLert automation rule error %s", err.Error())
+		log.Printf("[ERROR] Updating ilert automation rule error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -342,7 +342,7 @@ func resourceAutomationRuleDelete(ctx context.Context, d *schema.ResourceData, m
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting iLert automation rule error %s", err.Error())
+		log.Printf("[ERROR] Deleting ilert automation rule error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -365,7 +365,7 @@ func resourceAutomationRuleExists(d *schema.ResourceData, m interface{}) (bool, 
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading iLert automation rule error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Reading ilert automation rule error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for automation rule to be read, error: %s", err.Error()))
 			}

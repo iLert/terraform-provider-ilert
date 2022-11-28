@@ -1,6 +1,6 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_incident_template"
+page_title: "ilert: ilert_incident_template"
 sidebar_current: "docs-ilert-data-source-incident-template"
 description: |-
   Get information about an incident template that you have created.
@@ -22,7 +22,7 @@ data "ilert_incident_template" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The incident template name to use to find an incident template in the iLert API.
+- `name` - (Required) The incident template name to use to find an incident template in the ilert API.
 
 ## Attributes Reference
 

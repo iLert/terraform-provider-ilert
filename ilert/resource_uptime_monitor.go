@@ -246,7 +246,7 @@ func resourceUptimeMonitorCreate(ctx context.Context, d *schema.ResourceData, m 
 		r, err := client.CreateUptimeMonitor(&ilert.CreateUptimeMonitorInput{UptimeMonitor: uptimeMonitor})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating iLert uptime monitor error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Creating ilert uptime monitor error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor to be created, error: %s", err.Error()))
 			}
@@ -256,11 +256,11 @@ func resourceUptimeMonitorCreate(ctx context.Context, d *schema.ResourceData, m 
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Creating iLert uptime monitor error %s", err.Error())
+		log.Printf("[ERROR] Creating ilert uptime monitor error %s", err.Error())
 		return diag.FromErr(err)
 	}
 	if result == nil || result.UptimeMonitor == nil {
-		log.Printf("[ERROR] Creating iLert uptime monitor error: empty response ")
+		log.Printf("[ERROR] Creating ilert uptime monitor error: empty response ")
 		return diag.Errorf("alert source response is empty")
 	}
 
@@ -303,7 +303,7 @@ func resourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	if result == nil || result.UptimeMonitor == nil {
-		log.Printf("[ERROR] Reading iLert uptime monitor error: empty response ")
+		log.Printf("[ERROR] Reading ilert uptime monitor error: empty response ")
 		return diag.Errorf("uptime monitor response is empty")
 	}
 
@@ -379,7 +379,7 @@ func resourceUptimeMonitorUpdate(ctx context.Context, d *schema.ResourceData, m 
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating iLert uptime monitor error %s", err.Error())
+		log.Printf("[ERROR] Updating ilert uptime monitor error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -408,7 +408,7 @@ func resourceUptimeMonitorDelete(ctx context.Context, d *schema.ResourceData, m 
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting iLert uptime monitor error %s", err.Error())
+		log.Printf("[ERROR] Deleting ilert uptime monitor error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -435,7 +435,7 @@ func resourceUptimeMonitorExists(d *schema.ResourceData, m interface{}) (bool, e
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading iLert uptime monitor error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Reading ilert uptime monitor error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor to be read, error: %s", err.Error()))
 			}

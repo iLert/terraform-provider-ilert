@@ -29,7 +29,7 @@ func dataSourceEscalationPolicy() *schema.Resource {
 func dataSourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert escalation policy")
+	log.Printf("[DEBUG] Reading ilert escalation policy")
 
 	searchName := d.Get("name").(string)
 
@@ -38,9 +38,9 @@ func dataSourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with name '%s' to be read", searchName))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an escalation policy with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an escalation policy with name: %s", searchName))
 		}
 
 		found := resp.EscalationPolicy

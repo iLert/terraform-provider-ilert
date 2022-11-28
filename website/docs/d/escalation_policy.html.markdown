@@ -1,6 +1,6 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_escalation_policy"
+page_title: "ilert: ilert_escalation_policy"
 sidebar_current: "docs-ilert-data-source-escalation-policy"
 description: |-
   Get information about an escalation policy that you have created.
@@ -22,7 +22,7 @@ data "ilert_escalation_policy" "default" {
 
 The following arguments are supported:
 
-- `name` - (Required) The escalation policy name to use to find an escalation policy in the iLert API.
+- `name` - (Required) The escalation policy name to use to find an escalation policy in the ilert API.
 
 ## Attributes Reference
 

@@ -1,14 +1,14 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_alert_source"
+page_title: "ilert: ilert_alert_source"
 sidebar_current: "docs-ilert-resource-alert-source"
 description: |-
-  Creates and manages an alert source in iLert.
+  Creates and manages an alert source in ilert.
 ---
 
 # ilert_alert_source
 
-An [alert source](https://api.ilert.com/api-docs/#tag/Alert-Sources) represents the connection between your tools (usually a monitoring system, a ticketing tool, or an application) and iLert. We often refer to alert sources as inbound integrations.
+An [alert source](https://api.ilert.com/api-docs/#tag/Alert-Sources) represents the connection between your tools (usually a monitoring system, a ticketing tool, or an application) and ilert. We often refer to alert sources as inbound integrations.
 
 ## Example Usage
 
@@ -31,7 +31,7 @@ The following arguments are supported:
 - `name` - (Required) The name of the alert source.
 - `integration_type` - (Required) The integration type of the alert source. Allowed values are `NAGIOS`, `ICINGA`, `EMAIL`, `SMS`, `API`, `CRN`, `HEARTBEAT`, `PRTG`, `PINGDOM`, `CLOUDWATCH`, `AWSPHD`, `STACKDRIVER`, `INSTANA`, `ZABBIX`, `SOLARWINDS`, `PROMETHEUS`, `NEWRELIC`, `GRAFANA`, `GITHUB`, `DATADOG`, `UPTIMEROBOT`, `APPDYNAMICS`, `DYNATRACE`, `TOPDESK`, `STATUSCAKE`, `MONITOR`, `TOOL`, `CHECKMK`, `AUTOTASK`, `AWSBUDGET`, `KENTIXAM`, `JIRA`, `CONSUL`, `ZAMMAD`, `SIGNALFX`, `SPLUNK`, `KUBERNETES`, `SEMATEXT`, `SENTRY`, `SUMOLOGIC`, `RAYGUN`, `MXTOOLBOX`, `ESWATCHER`, `AMAZONSNS`, `KAPACITOR`, `CORTEXXSOAR`, `SYSDIG`, `SERVERDENSITY`, `ZAPIER`, `SERVICENOW`, `SEARCHGUARD`, `AZUREALERTS`, `TERRAFORMCLOUD`, `ZENDESK`, `AUVIK`, `SENSU`, `NCENTRAL`, `JUMPCLOUD`, `SALESFORCE`, `GUARDDUTY`, `STATUSHUB`, `IXON`, `APIFORTRESS`, `FRESHSERVICE`, `APPSIGNAL`, `LIGHTSTEP`, `IBMCLOUDFUNCTIONS`, `CROWDSTRIKE`, `HUMIO`, `OHDEAR`, `MONGODBATLAS`, `GITLAB`.
 - `escalation_policy` - (Required) The escalation policy id used by this alert source.
-- `incident_creation` - (Optional) iLert receives events from your monitoring systems and can then create incidents in different ways. This option is recommended. Allowed values are `ONE_INCIDENT_PER_EMAIL`, `ONE_INCIDENT_PER_EMAIL_SUBJECT`, `ONE_PENDING_INCIDENT_ALLOWED`, `ONE_OPEN_INCIDENT_ALLOWED`, `OPEN_RESOLVE_ON_EXTRACTION`.
+- `incident_creation` - (Optional) ilert receives events from your monitoring systems and can then create incidents in different ways. This option is recommended. Allowed values are `ONE_INCIDENT_PER_EMAIL`, `ONE_INCIDENT_PER_EMAIL_SUBJECT`, `ONE_PENDING_INCIDENT_ALLOWED`, `ONE_OPEN_INCIDENT_ALLOWED`, `OPEN_RESOLVE_ON_EXTRACTION`.
 - `active` - (Optional) The state of the alert source. Default: `true`.
 - `incident_priority_rule` - (Optional) The incident priority rule. This option is recommended. Allowed values are `HIGH`, `LOW`, `HIGH_DURING_SUPPORT_HOURS`, `LOW_DURING_SUPPORT_HOURS`.
 - `auto_resolution_timeout` - (Optional) The auto resolution timeout. Allowed values are `PT10M`, `PT20M`, `PT30M`, `PT40M`, `PT50M`, `PT60M`, `PT90M`, `PT2H`, `PT3H`, `PT4H`, `PT5H`, `PT6H`, `PT12H`, `PT24H` (`H` means hour and `M` means minute).

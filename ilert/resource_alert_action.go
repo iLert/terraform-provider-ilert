@@ -577,6 +577,44 @@ func resourceAlertAction() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"alert_filter": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MinItems: 1,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"operator": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice(ilert.AlertFilterOperatorAll, false),
+						},
+						"predicate": {
+							Type:     schema.TypeList,
+							Required: true,
+							MinItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"field": {
+										Type:         schema.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringInSlice(ilert.AlertFilterPredicateFieldsAll, false),
+									},
+									"criteria": {
+										Type:         schema.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringInSlice(ilert.AlertFilterPredicateCriteriaAll, false),
+									},
+									"value": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 		CreateContext: resourceAlertActionCreate,
 		ReadContext:   resourceAlertActionRead,
@@ -925,6 +963,29 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
+	if val, ok := d.GetOk("alert_filter"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			filter := &ilert.AlertFilter{
+				Operator: v["operator"].(string),
+			}
+			vL := v["predicate"].([]interface{})
+			pL := make([]ilert.AlertFilterPredicate, 0)
+			for _, m := range vL {
+				v := m.(map[string]interface{})
+				p := ilert.AlertFilterPredicate{
+					Field:    v["field"].(string),
+					Criteria: v["criteria"].(string),
+					Value:    v["value"].(string),
+				}
+				pL = append(pL, p)
+			}
+			filter.Predicates = pL
+			alertAction.AlertFilter = filter
+		}
+	}
+
 	return alertAction, nil
 }
 
@@ -949,7 +1010,7 @@ func resourceAlertActionCreate(ctx context.Context, d *schema.ResourceData, m in
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating iLert alert action rule error %s, so retry again", err.Error())
+				log.Printf("[ERROR] Creating ilert alert action rule error %s, so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert action to be created, error: %s", err.Error()))
 			}
@@ -964,7 +1025,7 @@ func resourceAlertActionCreate(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	if result == nil || result.AlertAction == nil {
-		log.Printf("[ERROR] Creating iLert alert action error: empty response ")
+		log.Printf("[ERROR] Creating ilert alert action error: empty response ")
 		return diag.FromErr(fmt.Errorf("alert action response is empty"))
 	}
 
@@ -1003,7 +1064,7 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	if result == nil || result.AlertAction == nil {
-		log.Printf("[ERROR] Reading iLert alert action error: empty response ")
+		log.Printf("[ERROR] Reading ilert alert action error: empty response ")
 		return diag.Errorf("alert action response is empty")
 	}
 
@@ -1018,7 +1079,7 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	connector := map[string]interface{}{}
-	log.Printf("[DEBUG] Reading iLert alert action: %s , connector id: %s", d.Id(), result.AlertAction.ConnectorID)
+	log.Printf("[DEBUG] Reading ilert alert action: %s , connector id: %s", d.Id(), result.AlertAction.ConnectorID)
 	if result.AlertAction.ConnectorID != "" {
 		connector["id"] = result.AlertAction.ConnectorID
 	}
@@ -1171,6 +1232,14 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 		})
 	}
 
+	alertFilter, err := flattenAlertActionAlertFilter(result.AlertAction.AlertFilter)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("alert_filter", alertFilter); err != nil {
+		return diag.Errorf("error setting alert filter: %s", err)
+	}
+
 	return nil
 }
 
@@ -1199,7 +1268,7 @@ func resourceAlertActionUpdate(ctx context.Context, d *schema.ResourceData, m in
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating iLert alert action error %s", err.Error())
+		log.Printf("[ERROR] Updating ilert alert action error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -1224,7 +1293,7 @@ func resourceAlertActionDelete(ctx context.Context, d *schema.ResourceData, m in
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting iLert alert action error %s", err.Error())
+		log.Printf("[ERROR] Deleting ilert alert action error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -1247,7 +1316,7 @@ func resourceAlertActionExists(d *schema.ResourceData, m interface{}) (bool, err
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading iLert alert action error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Reading ilert alert action error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert action to be read, error: %s", err.Error()))
 			}
@@ -1273,6 +1342,28 @@ func flattenAlertActionAlertSourceIDList(list []int64) ([]interface{}, error) {
 		result["id"] = strconv.FormatInt(item, 10)
 		results = append(results, result)
 	}
+
+	return results, nil
+}
+
+func flattenAlertActionAlertFilter(filter *ilert.AlertFilter) ([]interface{}, error) {
+	if filter == nil {
+		return make([]interface{}, 0), nil
+	}
+
+	results := make([]interface{}, 0)
+	r := make(map[string]interface{})
+	r["operator"] = filter.Operator
+	prds := make([]interface{}, 0)
+	for _, p := range filter.Predicates {
+		prd := make(map[string]interface{})
+		prd["field"] = p.Field
+		prd["criteria"] = p.Criteria
+		prd["value"] = p.Value
+		prds = append(prds, prd)
+	}
+	r["predicate"] = prds
+	results = append(results, r)
 
 	return results, nil
 }

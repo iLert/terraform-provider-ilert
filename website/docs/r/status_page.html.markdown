@@ -1,9 +1,9 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_status_page"
+page_title: "ilert: ilert_status_page"
 sidebar_current: "docs-ilert-resource-status-page"
 description: |-
-  Creates and manages a status page in iLert.
+  Creates and manages a status page in ilert.
 ---
 
 # ilert_status_page
@@ -33,7 +33,7 @@ resource "ilert_status_page" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the status page.
-- `subdomain` - (Required) The iLert domain of the status page. Format: `[your status page].ilerthq.com`
+- `subdomain` - (Required) The ilert domain of the status page. Format: `[your status page].ilerthq.com`
 - `visibility` - (Required) The visibility of the status page. Allowed values are `PUBLIC` and `PRIVATE`.
 - `service` - (Required) One or more [service](#service-arguments) blocks.
 - `domain` - (Optional) The custom domain of the status page.
@@ -65,7 +65,7 @@ The following attributes are exported:
 
 - `id` - The ID of the status page.
 - `name` - The name of the status page.
-- `subdomain` - The iLert domain of the status page.
+- `subdomain` - The ilert domain of the status page.
 - `visibility` - The visibility of the status page.
 
 ## Import

@@ -33,7 +33,7 @@ func dataSourceUser() *schema.Resource {
 func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading iLert user")
+	log.Printf("[DEBUG] Reading ilert user")
 
 	searchEmail := d.Get("email").(string)
 
@@ -42,9 +42,9 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta interf
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for user with email '%s' to be read", searchEmail))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an user with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an user with email: %s", searchEmail))
 		}
 
 		found := resp.User

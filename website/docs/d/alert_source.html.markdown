@@ -1,6 +1,6 @@
 ---
 layout: "ilert"
-page_title: "iLert: ilert_alert_source"
+page_title: "ilert: ilert_alert_source"
 sidebar_current: "docs-ilert-data-source-alert-source"
 description: |-
   Get information about an alert source that you have created.
@@ -22,7 +22,7 @@ data "ilert_alert_source" "example" {
 
 The following arguments are supported:
 
-- `name` - (Required) The alert source name to use to find an alert source in the iLert API.
+- `name` - (Required) The alert source name to use to find an alert source in the ilert API.
 
 ## Attributes Reference
 

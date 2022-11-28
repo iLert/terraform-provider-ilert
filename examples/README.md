@@ -1,6 +1,6 @@
-# iLert Provider Examples
+# ilert Provider Examples
 
-This directory contains a set of examples of using various iLert resources with
+This directory contains a set of examples of using various ilert resources with
 Terraform. The examples each have their own README containing more details
 on what the example does.
 

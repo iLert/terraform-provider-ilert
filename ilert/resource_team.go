@@ -125,11 +125,11 @@ func resourceTeamCreate(ctx context.Context, d *schema.ResourceData, m interface
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Creating iLert team error %s", err.Error())
+		log.Printf("[ERROR] Creating ilert team error %s", err.Error())
 		return diag.FromErr(err)
 	}
 	if result == nil || result.Team == nil {
-		log.Printf("[ERROR] Creating iLert team error: empty response ")
+		log.Printf("[ERROR] Creating ilert team error: empty response ")
 		return diag.Errorf("team response is empty")
 	}
 
@@ -157,7 +157,7 @@ func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating iLert team error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Creating ilert team error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for team to be read, error: %s", err.Error()))
 			}
@@ -172,7 +172,7 @@ func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	}
 
 	if result == nil || result.Team == nil {
-		log.Printf("[ERROR] Reading iLert team error: empty response ")
+		log.Printf("[ERROR] Reading ilert team error: empty response ")
 		return diag.Errorf("team response is empty")
 	}
 
@@ -219,7 +219,7 @@ func resourceTeamUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating iLert team error %s", err.Error())
+		log.Printf("[ERROR] Updating ilert team error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -247,7 +247,7 @@ func resourceTeamDelete(ctx context.Context, d *schema.ResourceData, m interface
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting iLert team error %s", err.Error())
+		log.Printf("[ERROR] Deleting ilert team error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -274,7 +274,7 @@ func resourceTeamExists(d *schema.ResourceData, m interface{}) (bool, error) {
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading iLert team error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Reading ilert team error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for team to be read, error: %s", err.Error()))
 			}
