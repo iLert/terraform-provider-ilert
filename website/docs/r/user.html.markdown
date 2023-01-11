@@ -8,7 +8,7 @@ description: |-
 
 # ilert_user
 
-An [user](https://api.ilert.com/api-docs/#tag/Users) is a member of a ilert account that have the ability to interact with incidents and other data on the account.
+An [user](https://api.ilert.com/api-docs/#tag/Users) is a member of a ilert account that have the ability to interact with alerts and other data on the account.
 
 ## Example Usage
 
@@ -59,8 +59,8 @@ The following arguments are supported:
 - `high_priority_notification_preference` - (Optional) One or more [high priority notification preference](#high-priority-notification-preference-arguments) blocks.
 - `low_priority_notification_preference` - (Optional) One or more [low priority notification preference](#low-priority-notification-preference-arguments) blocks.
 - `on_call_notification_preference` - (Optional) One or more [on-call notification preference](#on-call-notification-preference-arguments) blocks.
-- `subscribed_incident_update_states` - (Optional) A list of subscribed incident update states. Allowed values are `ACCEPTED`, `ESCALATED` or `RESOLVED`.
-- `subscribed_incident_update_notification_types` - (Optional) A list of subscribed incident update notification types. Allowed values are `EMAIL`, `ANDROID`, `IPHONE`, `SMS`, `VOICE_MOBILE`, `VOICE_LANDLINE` or `WHATSAPP`.
+- `subscribed_alert_update_states` - (Optional) A list of subscribed alert update states. Allowed values are `ACCEPTED`, `ESCALATED` or `RESOLVED`.
+- `subscribed_alert_update_notification_types` - (Optional) A list of subscribed alert update notification types. Allowed values are `EMAIL`, `ANDROID`, `IPHONE`, `SMS`, `VOICE_MOBILE`, `VOICE_LANDLINE` or `WHATSAPP`.
 
 #### High Priority Notification Preference Arguments
 
