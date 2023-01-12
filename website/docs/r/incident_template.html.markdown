@@ -8,7 +8,7 @@ description: |-
 
 # ilert_incident_template
 
-An [incident template](https://api.ilert.com/api-docs/#tag/Incident-Templates) serves as a starting point when manually creating incidents. It is also used in alert source automation rules for automatically creating incidents.
+An [incident template](https://api.ilert.com/api-docs/#tag/Incident-Templates) serves as a starting point when manually creating incidents. It is also used in alert source alert actions for automatically creating incidents.
 
 ## Example Usage
 

@@ -26,6 +26,19 @@ resource "ilert_status_page" "example" {
     id = data.ilert_service.example.id
   }
 }
+
+# private status page with ip whitelist enabled
+
+resource "ilert_status_page" "example" {
+  name         = "example"
+  subdomain    = "example.ilert.io"
+  visibility   = "PRIVATE"
+  ip_whitelist = ["###.###.###.###"]
+
+  service {
+    id = ilert_service.example.id
+  }
+}
 ```
 
 ## Argument Reference
@@ -48,6 +61,7 @@ The following arguments are supported:
 - `page_description` - (Optional) The description of the status page.
 - `logo_redirect_url` - (Optional) The redirect url for the status page logo.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `ip_whitelist` - (Optional) One or more IP's to whitelist.
 
 #### Service Arguments
 

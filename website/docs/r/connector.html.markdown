@@ -28,7 +28,7 @@ resource "ilert_connector" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the connector.
-- `type` - (Required) The type of the connector. Allowed values are `aws_lambda`, `azure_faas`, `datadog`, `discord`, `email`, `github`, `google_faas`, `jira`, `microsoft_teams`, `servicenow`, `slack`, `sysdig`, `topdesk`, `webhook`, `zapier`, `zendesk`, `autotask`, `mattermost`, `zammad`, `status_page_io`.
+- `type` - (Required) The type of the connector. Allowed values are `aws_lambda`, `azure_faas`, `datadog`, `discord`, `email`, `github`, `google_faas`, `jira`, `microsoft_teams`, `servicenow`, `slack`, `sysdig`, `topdesk`, `webhook`, `zapier`, `zendesk`, `autotask`, `mattermost`, `zammad`, `status_page_io`, `dingtalk`.
 - `datadog` - (Optional) A [datadog](#datadog-arguments) block.
 - `jira` - (Optional) A [jira](#jira-arguments) block.
 - `microsoft_teams` - (Optional) A [microsoft_teams](#microsoft-teams-arguments) block.
@@ -45,6 +45,7 @@ The following arguments are supported:
 - `mattermost` - (Optional) A [mattermost](#mattermost-arguments) block.
 - `zammad` - (Optional) A [zammad](#zammad-arguments) block.
 - `status_page_io` - (Optional) A [status_page_io](#statuspage-arguments) block.
+- `dingtalk` - (Optional) A [dingtalk](#dingtalk-arguments) block.
 
 #### Datadog Arguments
 
@@ -152,6 +153,13 @@ The following arguments are supported:
 > See [the StatusPage outbound integration documentation](https://docs.ilert.com/integrations/statuspage) for more details.
 
 - `api_key` - (Required) The StatusPage API key.
+
+#### Dingtalk Arguments
+
+> See [the Dingtalk outbound integration documentation](https://docs.ilert.com/integrations/dingtalk) for more details.
+
+- `url` - (Required) The Dingtalk server URL.
+- `secret` - (Required) The Dingtalk secret.
 
 ## Attributes Reference
 

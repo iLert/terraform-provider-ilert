@@ -71,7 +71,6 @@ The following arguments are supported:
 - `connector` - (Required) A [connector](#connector-arguments) block.
 - `trigger_mode` - (Optional) The trigger mode of the alert action. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
 - `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode ) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-resolved`.
-- `alert_filter` - (Optional) An [alert filter](#alert-filter-arguments) block.
 - `datadog` - (Optional) A [datadog](#datadog-arguments) block.
 - `jira` - (Optional) A [jira](#jira-arguments) block.
 - `servicenow` - (Optional) A [servicenow](#servicenow-arguments) block.
@@ -92,6 +91,7 @@ The following arguments are supported:
 - `dingtalk` - (Optional) A [dingtalk](#dingtalk-arguments) block.
 - `dingtalk_action` - (Optional) A [dingtalk_action](#dingtalk-action-arguments) block.
 - `automation_rule` - (Optional) An [automation_rule](#automation-rule-arguments) block.
+- `alert_filter` - (Optional) An [alert_filter](#alert-filter-arguments) block.
 
 #### Alert Source Arguments
 

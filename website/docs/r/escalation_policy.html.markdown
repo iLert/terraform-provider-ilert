@@ -8,7 +8,7 @@ description: |-
 
 # ilert_escalation_policy
 
-An [escalation policy](https://api.ilert.com/api-docs/#tag/Escalation-Policies) connects an alert source with the users that are responsible for this alert source. It defines which users or on-call schedules should be notified when an incident is created.
+An [escalation policy](https://api.ilert.com/api-docs/#tag/Escalation-Policies) connects an alert source with the users that are responsible for this alert source. It defines which users or on-call schedules should be notified when an alert is created.
 
 ## Example Usage
 
