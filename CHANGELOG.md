@@ -1,5 +1,17 @@
 # Changelog
 
+## 28.11.2022, Version 1.9.1
+
+- fix/alert action docs alert filter in [#38](https://github.com/iLert/terraform-provider-ilert/pull/38)
+
+## 28.11.2022, Version 1.9.0
+
+- fix/improve data source error messages in [#33](https://github.com/iLert/terraform-provider-ilert/pull/33)
+- fix/alert action docs & iLert to ilert in [#34](https://github.com/iLert/terraform-provider-ilert/pull/34)
+- feature/add alert filter field to alert action in [#35](https://github.com/iLert/terraform-provider-ilert/pull/35)
+- feature/move automation rule status page ip filter in [#36](https://github.com/iLert/terraform-provider-ilert/pull/36)
+- fix/add docu for automation rule type in [#37](https://github.com/iLert/terraform-provider-ilert/pull/37)
+
 ## 08.09.2022, Version 1.8.0
 
 - add support for multiple responders in escalation rule (escalation policy)
@@ -55,7 +67,9 @@
 
 - fix [#19](https://github.com/iLert/terraform-provider-ilert/issues/19)
 
-## 14.07.2022, Version 1.6.0
+## 14.07.2022, Version 1.6.0 - API Version Update
+
+### version renaming changes, see: https://docs.ilert.com/rest-api/api-version-history
 
 - add alert action data source and resource
 - add service data source and resource
