@@ -14,3 +14,14 @@ export ILERT_API_TOKEN=
 terraform apply \
   -var "api_token=${ILERT_API_TOKEN}"
 ```
+
+If you want to create a **status page with groups**, please follow the following instructions:
+
+- 1. create service, create status page without structure (id reference to status page group is not yet available)
+- 2. terraform apply
+- 3. create data source to get created status page, create status page group, add structure block to the status page with group reference
+- 4. terraform apply
+
+> If you have already created a status page or a status page with a status page group, the steps above are not needed.
+
+Resource deletion is accomplished by executing `terraform destroy`.
