@@ -62,6 +62,7 @@ The following arguments are supported:
 - `logo_redirect_url` - (Optional) The redirect url for the status page logo.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 - `ip_whitelist` - (Optional) One or more IP's to whitelist.
+- `structure` - (Optional) A [structure](#structure-arguments) block.
 
 #### Service Arguments
 
@@ -72,6 +73,21 @@ The following arguments are supported:
 
 - `id` - (Required) The ID of the team.
 - `name` - (Optional) The name of the team.
+
+#### Structure Arguments
+
+- `element` - (Required) One or more [element](#element-arguments) blocks.
+
+#### Element Arguments
+
+- `id` - (Required) The ID of the element. Can be either an id of a service or a status page group.
+- `type` - (Required) The type of the element. Allowed values are `SERVICE` and `GROUP`.
+- `child` - (Optional) One or more [child](#child-arguments) blocks.
+
+#### Child Arguments
+
+- `id` - (Required) The ID of the child. Must be a status page group id.
+- `type` - (Required) The type of the child. Allowed values are `SERVICE`.
 
 ## Attributes Reference
 
