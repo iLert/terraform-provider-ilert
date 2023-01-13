@@ -13,8 +13,10 @@ resource "ilert_service" "example" {
 # }
 
 # resource "ilert_status_page_group" "example" {
-#   name           = "example"
-#   status_page_id = data.ilert_status_page.example.id
+#   name = "example"
+#   status_page {
+#     id = data.ilert_status_page.example.id
+#   }
 # }
 
 resource "ilert_status_page" "example" {

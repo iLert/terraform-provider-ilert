@@ -24,4 +24,4 @@ If you want to create a **status page with groups**, please follow the following
 
 > If you have already created a status page or a status page with a status page group, the steps above are not needed.
 
-Resource deletion is accomplished by executing `terraform destroy`.
+When destroying the resources it is recommended to destroy status page groups first and status page second to ensure a correct Terraform state.
