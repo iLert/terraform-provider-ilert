@@ -22,9 +22,19 @@ func dataSourceStatusPageGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"status_page_id": {
-				Type:     schema.TypeInt,
+			"status_page": {
+				Type:     schema.TypeList,
 				Required: true,
+				MinItems: 1,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -36,7 +46,13 @@ func dataSourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, 
 	log.Printf("[DEBUG] Reading ilert status page group")
 
 	searchName := d.Get("name").(string)
-	statusPageID := int64(d.Get("status_page_id").(int))
+	spL := d.Get("status_page").([]interface{})
+	statusPageID := int64(-1)
+	if len(spL) > 0 && spL[0] != nil {
+		sp := spL[0].(map[string]interface{})
+		id := int64(sp["id"].(int))
+		statusPageID = id
+	}
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		resp, err := client.SearchStatusPageGroup(&ilert.SearchStatusPageGroupInput{StatusPageGroupName: &searchName, StatusPageID: &statusPageID})
@@ -58,6 +74,12 @@ func dataSourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, 
 
 		d.SetId(strconv.FormatInt(found.ID, 10))
 		d.Set("name", found.Name)
+
+		sp := make([]interface{}, 0)
+		s := make(map[string]interface{}, 0)
+		s["id"] = int(statusPageID)
+		sp = append(sp, s)
+		d.Set("status_page", sp)
 
 		return nil
 	})

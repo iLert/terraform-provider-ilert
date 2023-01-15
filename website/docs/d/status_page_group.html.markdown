@@ -15,7 +15,9 @@ Use this data source to get information about a specific status page group on a 
 ```hcl
 data "ilert_status_page_group" "example" {
   name = "example"
-  status_page_id = -1
+  status_page {
+    id = 10000  # your status page id
+  }
 }
 ```
 
@@ -24,7 +26,11 @@ data "ilert_status_page_group" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The status page group name to use to find a status page group on a status page in the ilert API.
-- `status_page_id` - (Required) The id of the status page the group should be searched in.
+- `status_page` - (Required) A [status_page](#status-page-arguments) block. Note that only an `id` can be entered here.
+
+#### Status Page Arguments
+
+- `id` - (Required) The id of the status page.
 
 ## Attributes Reference
 
