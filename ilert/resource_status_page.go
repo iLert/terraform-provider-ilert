@@ -316,7 +316,7 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 								ID:   cid,
 								Type: v["type"].(string),
 							}
-							if v["child"] != nil {
+							if v["child"] != nil && ch.Type == "SERVICE" {
 								log.Printf("[ERROR] Could not set child, as no children are allowed on type service %s", err.Error())
 								return nil, unconvertibleIDErr(v["id"].(string), err)
 							}
