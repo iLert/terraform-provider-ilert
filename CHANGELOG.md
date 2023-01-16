@@ -1,5 +1,11 @@
 # Changelog
 
+## 12.01.2023, Version 1.10.0
+
+- fix/update-changelog-12_22 in [#39](https://github.com/iLert/terraform-provider-ilert/pull/39)
+- fix/update-docs-deprecated-fields in [#40](https://github.com/iLert/terraform-provider-ilert/pull/40)
+- feature/status-page-groups [#41](https://github.com/iLert/terraform-provider-ilert/pull/41)
+
 ## 28.11.2022, Version 1.9.1
 
 - fix/alert action docs alert filter in [#38](https://github.com/iLert/terraform-provider-ilert/pull/38)

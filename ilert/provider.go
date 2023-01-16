@@ -53,6 +53,7 @@ func Provider() *schema.Provider {
 			"ilert_incident_template": dataSourceIncidentTemplate(),
 			"ilert_service":           dataSourceService(),
 			"ilert_status_page":       dataSourceStatusPage(),
+			"ilert_status_page_group": dataSourceStatusPageGroup(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ilert_alert_action":      resourceAlertAction(),
@@ -68,6 +69,7 @@ func Provider() *schema.Provider {
 			"ilert_schedule":          resourceSchedule(),
 			"ilert_service":           resourceService(),
 			"ilert_status_page":       resourceStatusPage(),
+			"ilert_status_page_group": resourceStatusPageGroup(),
 		},
 	}
 	p.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {

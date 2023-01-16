@@ -118,6 +118,53 @@ func resourceStatusPage() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"structure": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MinItems:    1,
+				MaxItems:    1,
+				Description: "Please make sure to follow the instructions for setting a structure with Terraform in the status page group example.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"element": {
+							Type:     schema.TypeList,
+							Required: true,
+							MinItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"type": {
+										Type:         schema.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringInSlice(ilert.StatusPageElementTypeAll, false),
+									},
+									"child": {
+										Type:     schema.TypeList,
+										Optional: true,
+										MinItems: 1,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": {
+													Type:     schema.TypeString,
+													Required: true,
+												},
+												"type": {
+													Type:         schema.TypeString,
+													Required:     true,
+													ValidateFunc: validation.StringInSlice([]string{ilert.StatusPageElementTypeAll[0]}, false),
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 		CreateContext: resourceStatusPageCreate,
 		ReadContext:   resourceStatusPageRead,
@@ -234,6 +281,54 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 			statusPage.IpWhitelist = sL
 		} else {
 			return nil, fmt.Errorf("[ERROR] Can't set ip whitelist, as it is only allowed on private status pages")
+		}
+	}
+
+	if val, ok := d.GetOk("structure"); ok {
+		if vL, ok := val.([]interface{}); ok && len(vL) > 0 && vL[0] != nil {
+			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
+				st := ilert.StatusPageStructure{}
+
+				elm := make([]ilert.StatusPageElement, 0)
+				eL := v["element"].([]interface{})
+				for _, e := range eL {
+					v := e.(map[string]interface{})
+					eid, err := strconv.ParseInt(v["id"].(string), 10, 64)
+					if err != nil {
+						log.Printf("[ERROR] Could not parse status page element id %s", err.Error())
+						return nil, unconvertibleIDErr(v["id"].(string), err)
+					}
+					el := ilert.StatusPageElement{
+						ID:   eid,
+						Type: v["type"].(string),
+					}
+					if v["child"] != nil {
+						cdr := make([]ilert.StatusPageElement, 0)
+						cL := v["child"].([]interface{})
+						for _, c := range cL {
+							v := c.(map[string]interface{})
+							cid, err := strconv.ParseInt(v["id"].(string), 10, 64)
+							if err != nil {
+								log.Printf("[ERROR] Could not parse status page child id %s", err.Error())
+								return nil, unconvertibleIDErr(v["id"].(string), err)
+							}
+							ch := ilert.StatusPageElement{
+								ID:   cid,
+								Type: v["type"].(string),
+							}
+							if v["child"] != nil && ch.Type == "SERVICE" {
+								log.Printf("[ERROR] Could not set child, as no children are allowed on type service %s", err.Error())
+								return nil, unconvertibleIDErr(v["id"].(string), err)
+							}
+							cdr = append(cdr, ch)
+						}
+						el.Children = cdr
+					}
+					elm = append(elm, el)
+				}
+				st.Elements = elm
+				statusPage.Structure = &st
+			}
 		}
 	}
 
@@ -360,6 +455,14 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 		d.Set("ip_whitelist", result.StatusPage.IpWhitelist)
 	}
 
+	structure, err := flattenStatusPageStructure(result.StatusPage.Structure)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("structure", structure); err != nil {
+		return diag.Errorf("error setting structure: %s", err)
+	}
+
 	return nil
 }
 
@@ -481,4 +584,36 @@ func flattenServicesList(list []ilert.Service, d *schema.ResourceData) ([]interf
 		}
 	}
 	return results, nil
+}
+
+func flattenStatusPageStructure(structure *ilert.StatusPageStructure) ([]interface{}, error) {
+	if structure == nil {
+		return make([]interface{}, 0), nil
+	}
+	structureResult := make([]interface{}, 0)
+	results := make(map[string]interface{}, 0)
+	if structure.Elements != nil && len(structure.Elements) > 0 {
+		elm := make([]interface{}, 0)
+		for _, e := range structure.Elements {
+			el := make(map[string]interface{})
+			el["id"] = strconv.FormatInt(e.ID, 10)
+			el["type"] = e.Type
+
+			if e.Children != nil && len(e.Children) > 0 {
+				chd := make([]interface{}, 0)
+				for _, c := range e.Children {
+					ch := make(map[string]interface{})
+					ch["id"] = strconv.FormatInt(c.ID, 10)
+					ch["type"] = c.Type
+					chd = append(chd, ch)
+				}
+				el["child"] = chd
+			}
+			elm = append(elm, el)
+		}
+		results["element"] = elm
+	}
+	structureResult = append(structureResult, results)
+
+	return structureResult, nil
 }
