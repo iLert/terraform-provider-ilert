@@ -64,6 +64,7 @@ func Provider() *schema.Provider {
 			"ilert_connector":          resourceConnector(),
 			"ilert_escalation_policy":  resourceEscalationPolicy(),
 			"ilert_incident_template":  resourceIncidentTemplate(),
+			"ilert_metric":             resourceMetric(),
 			"ilert_metric_data_source": resourceMetricDataSource(),
 			"ilert_schedule":           resourceSchedule(),
 			"ilert_service":            resourceService(),
