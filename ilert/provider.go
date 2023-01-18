@@ -47,6 +47,7 @@ func Provider() *schema.Provider {
 			"ilert_connector":          dataSourceConnector(),
 			"ilert_escalation_policy":  dataSourceEscalationPolicy(),
 			"ilert_incident_template":  dataSourceIncidentTemplate(),
+			"ilert_metric":             dataSourceMetric(),
 			"ilert_metric_data_source": dataSourceMetricDataSource(),
 			"ilert_schedule":           dataSourceSchedule(),
 			"ilert_service":            dataSourceService(),
