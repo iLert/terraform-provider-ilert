@@ -6,7 +6,7 @@ description: |-
   Creates and manages a status page group in ilert.
 ---
 
-# ilert_team
+# ilert_status_group
 
 A [status page group](https://api.ilert.com/api-docs/#tag/Status-Pages) helps you organize and structure entities in your status page in collapsable containers.
 
@@ -72,13 +72,13 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-- `id` - The ID of the team.
-- `name` - The name of the team.
+- `id` - The ID of the status page group.
+- `name` - The name of the status page group.
 
 ## Import
 
 Status page groups can be imported using the `id`, e.g.
 
 ```sh
-$ terraform import ilert_team.main 123456789
+$ terraform import ilert_status_page_group.main 123456789
 ```
