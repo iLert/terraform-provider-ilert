@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.01.2023, Version 1.11.0
+
+- feature/metrics in [#42](https://github.com/iLert/terraform-provider-ilert/pull/42)
+  - add metrics resource and data source
+  - add metric data sources resource and data source
+
 ## 12.01.2023, Version 1.10.0
 
 - fix/update-changelog-12_22 in [#39](https://github.com/iLert/terraform-provider-ilert/pull/39)
