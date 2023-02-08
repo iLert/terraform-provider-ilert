@@ -19,6 +19,7 @@ func resourceUser() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"username": {
 				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validation.StringLenBetween(1, 255),
 			},
 			"first_name": {
