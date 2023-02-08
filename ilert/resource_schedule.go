@@ -538,7 +538,7 @@ func resourceScheduleRead(ctx context.Context, d *schema.ResourceData, m interfa
 			vL := val.([]interface{})
 			teams := make([]interface{}, 0)
 			for i, item := range result.Schedule.Teams {
-				if vL != nil && vL[i] != nil {
+				if vL != nil && i < len(vL) && vL[i] != nil {
 					team := make(map[string]interface{})
 					v := vL[i].(map[string]interface{})
 					team["id"] = item.ID
@@ -670,7 +670,7 @@ func flattenScheduleLayerList(list []ilert.ScheduleLayer, d *schema.ResourceData
 
 	results := make([]interface{}, 0)
 	for i, item := range list {
-		if scL != nil && scL[i] != nil {
+		if scL != nil && i < len(scL) && scL[i] != nil {
 			result := make(map[string]interface{})
 			result["name"] = item.Name
 			result["starts_on"] = item.StartsOn
@@ -712,7 +712,7 @@ func flattenUserShortList(list []ilert.User, user []interface{}) ([]interface{},
 			result := make(map[string]interface{})
 			result["id"] = strconv.Itoa(int(item.ID))
 			var ufn, uln interface{}
-			if len(user) > 0 && user[i] != nil && len(user[i].(map[string]interface{})) > 0 {
+			if len(user) > 0 && i < len(user) && user[i] != nil && len(user[i].(map[string]interface{})) > 0 {
 				ufn = user[i].(map[string]interface{})["first_name"]
 				uln = user[i].(map[string]interface{})["last_name"]
 			}

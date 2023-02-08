@@ -501,7 +501,7 @@ func flattenEscalationRulesList(list []ilert.EscalationRule, d *schema.ResourceD
 
 	results := make([]interface{}, 0)
 	for i, item := range list {
-		if usL != nil && usL[i] != nil {
+		if usL != nil && i < len(usL) && usL[i] != nil {
 			result := make(map[string]interface{})
 			result["escalation_timeout"] = item.EscalationTimeout
 			v := usL[i].(map[string]interface{})
@@ -544,7 +544,7 @@ func flattenScheduleShortList(list []ilert.Schedule, schedule []interface{}) ([]
 			result := make(map[string]interface{})
 			result["id"] = strconv.FormatInt(item.ID, 10)
 			var sdn interface{}
-			if len(schedule) > 0 && schedule[i] != nil && len(schedule[i].(map[string]interface{})) > 0 {
+			if len(schedule) > 0 && i < len(schedule) && schedule[i] != nil && len(schedule[i].(map[string]interface{})) > 0 {
 				sdn = schedule[i].(map[string]interface{})["name"]
 			}
 

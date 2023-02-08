@@ -574,7 +574,7 @@ func flattenServicesList(list []ilert.Service, d *schema.ResourceData) ([]interf
 	if val, ok := d.GetOk("service"); ok && val != nil {
 		vL := val.([]interface{})
 		for i, item := range list {
-			if vL != nil && vL[i] != nil {
+			if vL != nil && i < len(vL) && vL[i] != nil {
 				result := make(map[string]interface{})
 				v := vL[i].(map[string]interface{})
 				result["id"] = item.ID

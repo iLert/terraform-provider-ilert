@@ -19,7 +19,7 @@ func resourceUser() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"username": {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validation.StringLenBetween(1, 255),
 			},
 			"first_name": {
@@ -690,7 +690,7 @@ func flattenHighPrioNotificationPreferencesList(list []ilert.NotificationPrefere
 	if val, ok := d.GetOk("high_priority_notification_preference"); ok && val != nil {
 		vL := val.([]interface{})
 		for i, item := range list {
-			if vL != nil && vL[i] != nil {
+			if vL != nil && i < len(vL) && vL[i] != nil {
 				result := make(map[string]interface{})
 				v := vL[i].(map[string]interface{})
 				if v["method"] != nil && v["method"].(string) != "" {
