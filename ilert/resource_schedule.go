@@ -538,16 +538,18 @@ func resourceScheduleRead(ctx context.Context, d *schema.ResourceData, m interfa
 			vL := val.([]interface{})
 			teams := make([]interface{}, 0)
 			for i, item := range result.Schedule.Teams {
-				team := make(map[string]interface{})
-				v := vL[i].(map[string]interface{})
-				team["id"] = item.ID
+				if vL != nil && vL[i] != nil {
+					team := make(map[string]interface{})
+					v := vL[i].(map[string]interface{})
+					team["id"] = item.ID
 
-				// Means: if server response has a name set, and the user typed in a name too,
-				// only then team name is stored in the terraform state
-				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
-					team["name"] = item.Name
+					// Means: if server response has a name set, and the user typed in a name too,
+					// only then team name is stored in the terraform state
+					if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+						team["name"] = item.Name
+					}
+					teams = append(teams, team)
 				}
-				teams = append(teams, team)
 			}
 
 			if err := d.Set("team", teams); err != nil {
@@ -668,30 +670,32 @@ func flattenScheduleLayerList(list []ilert.ScheduleLayer, d *schema.ResourceData
 
 	results := make([]interface{}, 0)
 	for i, item := range list {
-		result := make(map[string]interface{})
-		result["name"] = item.Name
-		result["starts_on"] = item.StartsOn
+		if scL != nil && scL[i] != nil {
+			result := make(map[string]interface{})
+			result["name"] = item.Name
+			result["starts_on"] = item.StartsOn
 
-		user := scL[i].(map[string]interface{})["user"].([]interface{})
+			user := scL[i].(map[string]interface{})["user"].([]interface{})
 
-		users, err := flattenUserShortList(item.Users, user)
-		if err != nil {
-			return nil, err
+			users, err := flattenUserShortList(item.Users, user)
+			if err != nil {
+				return nil, err
+			}
+			result["user"] = users
+
+			result["rotation"] = item.Rotation
+			if item.RestrictionType != "" {
+				result["restriction_type"] = item.RestrictionType
+			}
+
+			restr, err := flattenRestrictionList(item.Restrictions)
+			if err != nil {
+				return nil, err
+			}
+			result["restriction"] = restr
+
+			results = append(results, result)
 		}
-		result["user"] = users
-
-		result["rotation"] = item.Rotation
-		if item.RestrictionType != "" {
-			result["restriction_type"] = item.RestrictionType
-		}
-
-		restr, err := flattenRestrictionList(item.Restrictions)
-		if err != nil {
-			return nil, err
-		}
-		result["restriction"] = restr
-
-		results = append(results, result)
 	}
 
 	return results, nil
@@ -704,20 +708,22 @@ func flattenUserShortList(list []ilert.User, user []interface{}) ([]interface{},
 
 	results := make([]interface{}, 0)
 	for i, item := range list {
-		result := make(map[string]interface{})
-		result["id"] = strconv.Itoa(int(item.ID))
-		var ufn, uln interface{}
-		if len(user) > 0 && user[i] != nil && len(user[i].(map[string]interface{})) > 0 {
-			ufn = user[i].(map[string]interface{})["first_name"]
-			uln = user[i].(map[string]interface{})["last_name"]
+		if user != nil {
+			result := make(map[string]interface{})
+			result["id"] = strconv.Itoa(int(item.ID))
+			var ufn, uln interface{}
+			if len(user) > 0 && user[i] != nil && len(user[i].(map[string]interface{})) > 0 {
+				ufn = user[i].(map[string]interface{})["first_name"]
+				uln = user[i].(map[string]interface{})["last_name"]
+			}
+			if item.FirstName != "" && ufn != nil && ufn.(string) != "" {
+				result["first_name"] = item.FirstName
+			}
+			if item.LastName != "" && uln != nil && uln.(string) != "" {
+				result["last_name"] = item.LastName
+			}
+			results = append(results, result)
 		}
-		if item.FirstName != "" && ufn != nil && ufn.(string) != "" {
-			result["first_name"] = item.FirstName
-		}
-		if item.LastName != "" && uln != nil && uln.(string) != "" {
-			result["last_name"] = item.LastName
-		}
-		results = append(results, result)
 	}
 
 	return results, nil

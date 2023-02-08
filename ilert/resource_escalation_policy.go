@@ -501,31 +501,33 @@ func flattenEscalationRulesList(list []ilert.EscalationRule, d *schema.ResourceD
 
 	results := make([]interface{}, 0)
 	for i, item := range list {
-		result := make(map[string]interface{})
-		result["escalation_timeout"] = item.EscalationTimeout
-		v := usL[i].(map[string]interface{})
-		if item.User != nil && v["user"] != nil && v["user"].(string) != "" {
-			result["user"] = strconv.FormatInt(item.User.ID, 10)
-		}
-		if item.Schedule != nil && v["schedule"] != nil && v["schedule"].(string) != "" {
-			result["schedule"] = strconv.FormatInt(item.Schedule.ID, 10)
-		}
+		if usL != nil && usL[i] != nil {
+			result := make(map[string]interface{})
+			result["escalation_timeout"] = item.EscalationTimeout
+			v := usL[i].(map[string]interface{})
+			if item.User != nil && v["user"] != nil && v["user"].(string) != "" {
+				result["user"] = strconv.FormatInt(item.User.ID, 10)
+			}
+			if item.Schedule != nil && v["schedule"] != nil && v["schedule"].(string) != "" {
+				result["schedule"] = strconv.FormatInt(item.Schedule.ID, 10)
+			}
 
-		user := v["users"].([]interface{})
-		users, err := flattenUserShortList(item.Users, user)
-		if err != nil {
-			return nil, err
-		}
-		result["users"] = users
+			user := v["users"].([]interface{})
+			users, err := flattenUserShortList(item.Users, user)
+			if err != nil {
+				return nil, err
+			}
+			result["users"] = users
 
-		schedule := v["schedules"].([]interface{})
-		schedules, err := flattenScheduleShortList(item.Schedules, schedule)
-		if err != nil {
-			return nil, err
-		}
-		result["schedules"] = schedules
+			schedule := v["schedules"].([]interface{})
+			schedules, err := flattenScheduleShortList(item.Schedules, schedule)
+			if err != nil {
+				return nil, err
+			}
+			result["schedules"] = schedules
 
-		results = append(results, result)
+			results = append(results, result)
+		}
 	}
 
 	return results, nil
@@ -538,17 +540,19 @@ func flattenScheduleShortList(list []ilert.Schedule, schedule []interface{}) ([]
 
 	results := make([]interface{}, 0)
 	for i, item := range list {
-		result := make(map[string]interface{})
-		result["id"] = strconv.FormatInt(item.ID, 10)
-		var sdn interface{}
-		if len(schedule) > 0 && schedule[i] != nil && len(schedule[i].(map[string]interface{})) > 0 {
-			sdn = schedule[i].(map[string]interface{})["name"]
-		}
+		if schedule != nil {
+			result := make(map[string]interface{})
+			result["id"] = strconv.FormatInt(item.ID, 10)
+			var sdn interface{}
+			if len(schedule) > 0 && schedule[i] != nil && len(schedule[i].(map[string]interface{})) > 0 {
+				sdn = schedule[i].(map[string]interface{})["name"]
+			}
 
-		if item.Name != "" && sdn != nil && sdn.(string) != "" {
-			result["name"] = item.Name
+			if item.Name != "" && sdn != nil && sdn.(string) != "" {
+				result["name"] = item.Name
+			}
+			results = append(results, result)
 		}
-		results = append(results, result)
 	}
 
 	return results, nil
