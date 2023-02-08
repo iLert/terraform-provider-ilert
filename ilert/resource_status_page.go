@@ -574,13 +574,15 @@ func flattenServicesList(list []ilert.Service, d *schema.ResourceData) ([]interf
 	if val, ok := d.GetOk("service"); ok && val != nil {
 		vL := val.([]interface{})
 		for i, item := range list {
-			result := make(map[string]interface{})
-			v := vL[i].(map[string]interface{})
-			result["id"] = item.ID
-			if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
-				result["name"] = item.Name
+			if vL != nil && vL[i] != nil {
+				result := make(map[string]interface{})
+				v := vL[i].(map[string]interface{})
+				result["id"] = item.ID
+				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+					result["name"] = item.Name
+				}
+				results = append(results, result)
 			}
-			results = append(results, result)
 		}
 	}
 	return results, nil

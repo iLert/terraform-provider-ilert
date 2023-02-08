@@ -690,15 +690,17 @@ func flattenHighPrioNotificationPreferencesList(list []ilert.NotificationPrefere
 	if val, ok := d.GetOk("high_priority_notification_preference"); ok && val != nil {
 		vL := val.([]interface{})
 		for i, item := range list {
-			result := make(map[string]interface{})
-			v := vL[i].(map[string]interface{})
-			if v["method"] != nil && v["method"].(string) != "" {
-				result["method"] = item.Method
+			if vL != nil && vL[i] != nil {
+				result := make(map[string]interface{})
+				v := vL[i].(map[string]interface{})
+				if v["method"] != nil && v["method"].(string) != "" {
+					result["method"] = item.Method
+				}
+				if v["delay"] != nil && strconv.Itoa(v["delay"].(int)) != "" {
+					result["delay"] = item.Delay
+				}
+				results = append(results, result)
 			}
-			if v["delay"] != nil && strconv.Itoa(v["delay"].(int)) != "" {
-				result["delay"] = item.Delay
-			}
-			results = append(results, result)
 		}
 	}
 
