@@ -1,5 +1,14 @@
 # Changelog
 
+## 08.02.2023, Version 1.11.2
+
+- fix/optional-username in [#44](https://github.com/iLert/terraform-provider-ilert/pull/44)
+
+## 08.02.2023, Version 1.11.1
+
+- fix/resource-schema-validation in [#43](https://github.com/iLert/terraform-provider-ilert/pull/43)
+  - add nil checks to validation methods
+
 ## 18.01.2023, Version 1.11.0
 
 - feature/metrics in [#42](https://github.com/iLert/terraform-provider-ilert/pull/42)
