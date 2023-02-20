@@ -6,5 +6,7 @@ resource "ilert_escalation_policy" "this" {
     user               = ilert_user.this.id
   }
 
-  teams = [ilert_team.this.id]
+  team {
+    id = ilert_team.this.id
+  }
 }
