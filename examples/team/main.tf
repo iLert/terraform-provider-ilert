@@ -28,5 +28,7 @@ resource "ilert_alert_source" "example" {
   name              = "My Grafana Integration"
   integration_type  = "GRAFANA"
   escalation_policy = data.ilert_escalation_policy.default.id
-  teams             = [ilert_team.example.id]
+  team {
+    id = ilert_team.example.id
+  }
 }
