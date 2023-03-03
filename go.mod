@@ -4,8 +4,10 @@ go 1.19
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.21.0
-	github.com/iLert/ilert-go/v2 v2.6.0
+	github.com/iLert/ilert-go/v3 v3.0.0
 )
+
+replace github.com/iLert/ilert-go/v3 => /Users/markosimon/Documents/workspace/ilert-go
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
