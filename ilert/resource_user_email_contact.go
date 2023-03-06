@@ -73,7 +73,7 @@ func buildUserEmailContact(d *schema.ResourceData) (*ilert.UserEmailContact, *in
 		userId = id
 	}
 
-	return contact, &userId, nil
+	return contact, ilert.Int64(userId), nil
 }
 
 func resourceUserEmailContactCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

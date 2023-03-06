@@ -79,7 +79,7 @@ func buildUserPhoneNumberContact(d *schema.ResourceData) (*ilert.UserPhoneNumber
 		userId = id
 	}
 
-	return contact, &userId, nil
+	return contact, ilert.Int64(userId), nil
 }
 
 func resourceUserPhoneNumberContactCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
