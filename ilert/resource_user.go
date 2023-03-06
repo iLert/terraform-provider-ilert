@@ -17,11 +17,6 @@ import (
 func resourceUser() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"username": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringLenBetween(1, 255),
-			},
 			"first_name": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -30,45 +25,13 @@ func resourceUser() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"username": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"email": {
 				Type:     schema.TypeString,
 				Required: true,
-			},
-			"mobile": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"region_code": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"number": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-					},
-				},
-			},
-			"landline": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"region_code": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"number": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-					},
-				},
 			},
 			"timezone": {
 				Type:     schema.TypeString,
@@ -104,6 +67,10 @@ func resourceUser() *schema.Resource {
 					"GUEST",
 				}, false),
 			},
+			"shift_color": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 		CreateContext: resourceUserCreate,
 		ReadContext:   resourceUserRead,
@@ -123,54 +90,14 @@ func resourceUser() *schema.Resource {
 }
 
 func buildUser(d *schema.ResourceData) (*ilert.User, error) {
-	email := d.Get("email").(string)
-	username := d.Get("username").(string)
 	firstName := d.Get("first_name").(string)
 	lastName := d.Get("last_name").(string)
+	email := d.Get("email").(string)
 
 	user := &ilert.User{
-		Email:     email,
-		Username:  username,
 		FirstName: firstName,
 		LastName:  lastName,
-	}
-
-	if val, ok := d.GetOk("mobile"); ok {
-		if vL, ok := val.([]interface{}); ok && len(vL) > 0 && vL[0] != nil {
-			mobile := &ilert.Phone{}
-			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
-				if code, ok := v["region_code"].(string); ok && code != "" {
-					mobile.RegionCode = code
-				}
-				if number, ok := v["number"].(string); ok && number != "" {
-					mobile.Number = number
-				}
-			}
-			if mobile.RegionCode != "" && mobile.Number != "" {
-				user.Mobile = mobile
-			} else {
-				user.Mobile = nil
-			}
-		}
-	}
-
-	if val, ok := d.GetOk("landline"); ok {
-		if vL, ok := val.([]interface{}); ok && len(vL) > 0 && vL[0] != nil {
-			landline := &ilert.Phone{}
-			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
-				if code, ok := v["region_code"].(string); ok && code != "" {
-					landline.RegionCode = code
-				}
-				if number, ok := v["number"].(string); ok && number != "" {
-					landline.Number = number
-				}
-			}
-			if landline.RegionCode != "" && landline.Number != "" {
-				user.Landline = landline
-			} else {
-				user.Landline = nil
-			}
-		}
+		Email:     email,
 	}
 
 	if val, ok := d.GetOk("timezone"); ok {
@@ -191,6 +118,10 @@ func buildUser(d *schema.ResourceData) (*ilert.User, error) {
 
 	if val, ok := d.GetOk("role"); ok {
 		user.Role = val.(string)
+	}
+
+	if val, ok := d.GetOk("shift_color"); ok {
+		user.ShiftColor = val.(string)
 	}
 
 	return user, nil
@@ -272,15 +203,16 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.Errorf("user response is empty")
 	}
 
-	d.Set("username", result.User.Username)
 	d.Set("first_name", result.User.FirstName)
 	d.Set("last_name", result.User.LastName)
+	d.Set("username", result.User.Username)
 	d.Set("email", result.User.Email)
 	d.Set("timezone", result.User.Timezone)
 	d.Set("position", result.User.Position)
 	d.Set("department", result.User.Department)
 	d.Set("language", result.User.Language)
 	d.Set("role", result.User.Role)
+	d.Set("shift_color", result.User.ShiftColor)
 
 	return nil
 }
