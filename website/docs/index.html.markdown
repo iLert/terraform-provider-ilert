@@ -29,7 +29,7 @@ resource "ilert_alert_source" "example" {
 
 The following arguments are supported in the `provider` block:
 
-- `api_token` - (Optional) An ilert OAuth / Personal Access Token. When not provided or made available via the `ILERT_API_TOKEN` environment variable, the provider can only access resources available anonymously. Conflicts with `organization`. Make sure to exclude the `Bearer ` prefix.
+- `api_token` - (Optional) An ilert OAuth / Personal Access Token. When not provided or made available via the `ILERT_API_TOKEN` environment variable, the provider can only access resources available anonymously. Conflicts with `organization`. Make sure to exclude the `Bearer` prefix.
 
 - `organization` - (Optional) This is the target ilert organization account to manage. It is optional to provide this value and it can also be sourced from the `ILERT_ORGANIZATION` environment variable. For example, `ilert` is a valid organization. Conflicts with `api_token` and requires `username` and `password`, as the individual account corresponding to provided `username` and `password` will need "owner" privileges for this organization.
 

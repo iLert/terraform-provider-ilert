@@ -28,6 +28,8 @@ The following arguments are supported:
 
 - `id` - The ID of the found user.
 - `email` - The email of the found user.
-- `username` - The name of the found user.
+- `first_name` - The first name of the found user.
+- `last_name` - The last name of the found user.
+- `username` - The username of the found user.
 
 [1]: https://api.ilert.com/api-docs/#tag/Users

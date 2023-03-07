@@ -10,6 +10,8 @@ description: |-
 
 Use this data source to get information about a specific [connection][1].
 
+> WARNING - this data source is deprecated - please use alert-actions - for more information see https://docs.ilert.com/rest-api/api-version-history#renaming-connections-to-alert-actions
+
 ## Example Usage
 
 ```hcl
