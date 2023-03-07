@@ -11,8 +11,9 @@ resource "ilert_user_email_contact" "example" {
   }
 }
 
-resource "ilert_user_subscription_preference" "example" {
+resource "ilert_user_update_preference" "example" {
   method = "EMAIL"
+  type   = "ALERT_ACCEPTED"
   contact {
     id = ilert_user_email_contact.example.id
   }
