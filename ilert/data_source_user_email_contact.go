@@ -66,7 +66,7 @@ func dataSourceUserEmailContactRead(ctx context.Context, d *schema.ResourceData,
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for user contact with email '%s' to be read", searchTarget))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an user contact with email: %s", searchTarget))
+			return resource.NonRetryableError(fmt.Errorf("could not read a user contact with email: %s", searchTarget))
 		}
 
 		found := resp.UserEmailContact

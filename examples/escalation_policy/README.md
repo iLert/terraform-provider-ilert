@@ -1,6 +1,6 @@
-# Alert source example
+# Escalation policy example
 
-This demos [alert sources](https://docs.ilert.com/getting-started/readme#alert-source-aka-inbound-integration).
+This demos [escalation policies](https://docs.ilert.com/getting-started/readme#escalation-policy).
 
 This example will create three different alert sources and its dependencies in the specified organization. See https://registry.terraform.io/providers/iLert/ilert/latest/docs for details on configuring [`providers.tf`](./providers.tf) accordingly.
 

@@ -1,8 +1,7 @@
 resource "ilert_user" "example" {
-  username   = "example1"
   first_name = "example"
   last_name  = "example"
-  email      = "example1@example.com"
+  email      = "example@example.com"
 }
 
 resource "ilert_escalation_policy" "example" {

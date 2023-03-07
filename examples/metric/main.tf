@@ -6,11 +6,6 @@ resource "ilert_metric_data_source" "example_prometheus" {
   name = "example"
   type = "PROMETHEUS"
 
-  team {
-    id   = ilert_team.example.id
-    name = "example"
-  }
-
   metadata {
     auth_type  = "BASIC"
     basic_user = "your prometheus user name"

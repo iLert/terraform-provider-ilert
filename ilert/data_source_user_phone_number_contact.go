@@ -66,7 +66,7 @@ func dataSourceUserPhoneNumberContactRead(ctx context.Context, d *schema.Resourc
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for user contact with phone number '%s' to be read", searchTarget))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an user contact with phone number: %s", searchTarget))
+			return resource.NonRetryableError(fmt.Errorf("could not read a user contact with phone number: %s", searchTarget))
 		}
 
 		found := resp.UserPhoneNumberContact

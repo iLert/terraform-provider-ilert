@@ -2,8 +2,8 @@
 
 ## 20.02.2023, Version 1.11.3
 
-- fix/remove-deprecated-schema in [#46](https://github.com/iLert/terraform-provider-ilert/pull/46)]
-  - addresses issue [[#45](https://github.com/iLert/terraform-provider-ilert/issues/45)]
+- fix/remove-deprecated-schema in [#46](https://github.com/iLert/terraform-provider-ilert/pull/46)
+  - addresses issue [#45](https://github.com/iLert/terraform-provider-ilert/issues/45)
 
 ## 08.02.2023, Version 1.11.2
 
