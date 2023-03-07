@@ -507,7 +507,12 @@ func resourceScheduleRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	d.Set("show_gaps", result.Schedule.ShowGaps)
-	d.Set("default_shift_duration", result.Schedule.DefaultShiftDuration)
+
+	if _, ok := d.GetOk("default_shift_duration"); ok {
+		d.Set("default_shift_duration", result.Schedule.DefaultShiftDuration)
+	} else {
+		d.Set("default_shift_duration", nil)
+	}
 
 	if result.Schedule.CurrentShift != nil {
 		d.Set("current_shift", []interface{}{
