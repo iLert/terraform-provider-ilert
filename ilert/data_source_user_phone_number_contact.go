@@ -13,9 +13,9 @@ import (
 	"github.com/iLert/ilert-go/v3"
 )
 
-func dataSourceUserEmailContact() *schema.Resource {
+func dataSourceUserPhoneNumberContact() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceUserEmailContactRead,
+		ReadContext: dataSourceUserPhoneNumberContactRead,
 
 		Schema: map[string]*schema.Schema{
 			"target": {
@@ -44,10 +44,10 @@ func dataSourceUserEmailContact() *schema.Resource {
 	}
 }
 
-func dataSourceUserEmailContactRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceUserPhoneNumberContactRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading ilert user email contact")
+	log.Printf("[DEBUG] Reading ilert user phone number contact")
 
 	searchTarget := d.Get("target").(string)
 
@@ -60,20 +60,20 @@ func dataSourceUserEmailContactRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.SearchUserEmailContact(&ilert.SearchUserEmailContactInput{UserEmailContactTarget: &searchTarget, UserID: ilert.Int64(userId)})
+		resp, err := client.SearchUserPhoneNumberContact(&ilert.SearchUserPhoneNumberContactInput{UserPhoneNumberContactTarget: &searchTarget, UserID: ilert.Int64(userId)})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user contact with email '%s' to be read", searchTarget))
+				return resource.RetryableError(fmt.Errorf("waiting for user contact with phone number '%s' to be read", searchTarget))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an user contact with email: %s", searchTarget))
+			return resource.NonRetryableError(fmt.Errorf("could not read an user contact with phone number: %s", searchTarget))
 		}
 
-		found := resp.UserEmailContact
+		found := resp.UserPhoneNumberContact
 
 		if found == nil {
 			return resource.NonRetryableError(
-				fmt.Errorf("unable to locate any user contact with the email: %s", searchTarget),
+				fmt.Errorf("unable to locate any user contact with the phone number: %s", searchTarget),
 			)
 		}
 
