@@ -79,6 +79,7 @@ func Provider() *schema.Provider {
 			"ilert_user_alert_preference":        resourceUserAlertPreference(),
 			"ilert_user_duty_preference":         resourceUserDutyPreference(),
 			"ilert_user_subscription_preference": resourceUserSubscriptionPreference(),
+			"ilert_user_update_preference":       resourceUserUpdatePreference(),
 		},
 	}
 	p.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
