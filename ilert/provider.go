@@ -56,6 +56,7 @@ func Provider() *schema.Provider {
 			"ilert_team":               dataSourceTeam(),
 			"ilert_uptime_monitor":     dataSourceUptimeMonitor(),
 			"ilert_user":               dataSourceUser(),
+			"ilert_user_email_contact": dataSourceUserEmailContact(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ilert_alert_action":                 resourceAlertAction(),
