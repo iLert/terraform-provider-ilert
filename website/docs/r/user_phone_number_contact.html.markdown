@@ -36,7 +36,7 @@ The following arguments are supported:
 
 - `target` - (Required) The target phone number of the user phone number contact.
 - `region_code` - (Required) The region code for the target phone number of a user phone number contact.
-- `user` - (Optional) A [user](#user-arguments) block.
+- `user` - (Required) A [user](#user-arguments) block.
 
 #### User Arguments
 

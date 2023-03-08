@@ -26,7 +26,7 @@ data "ilert_user_email_contact" "example" {
 The following arguments are supported:
 
 - `target` - (Required) The target email to use to find an email contact on given user.
-- `user` - (Optional) A [user](#user-arguments) block.
+- `user` - (Required) A [user](#user-arguments) block.
 
 #### User Arguments
 

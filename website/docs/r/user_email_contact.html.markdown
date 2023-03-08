@@ -32,7 +32,7 @@ resource "ilert_user_email_contact" "example" {
 The following arguments are supported:
 
 - `target` - (Required) The target email of the user email contact.
-- `user` - (Optional) The [user](#user-arguments) block.
+- `user` - (Required) A [user](#user-arguments) block.
 
 #### User Arguments
 

@@ -28,7 +28,7 @@ data "ilert_user_phone_number_contact" "example" {
 The following arguments are supported:
 
 - `target` - (Required) The target phone number to use to find an phone number contact on given user.
-- `user` - (Optional) A [user](#user-arguments) block.
+- `user` - (Required) A [user](#user-arguments) block.
 
 #### User Arguments
 
