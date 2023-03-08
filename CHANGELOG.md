@@ -2,17 +2,18 @@
 
 ## 08.03.2023, Version 2.0.0 - API user preference migration: see [migration changes](LINK) for a detailed migration guide
 
-- remove notification settings from user resource
-- add user contacts
-  - email
-  - phone number
-- add user notification preferences
-  - alert (alert creation)
-  - duty (on-call)
-  - subscription (subscriber to incident, service, status page)
-  - update (alert update changes)
-- update all examples, add additional readme's
-- documentation overhaul
+- feature/notification settings 2.0 in [#50](https://github.com/iLert/terraform-provider-ilert/pull/50)
+  - remove notification settings from user resource
+  - add user contacts
+    - email
+    - phone number
+  - add user notification preferences
+    - alert (alert creation)
+    - duty (on-call)
+    - subscription (subscriber to incident, service, status page)
+    - update (alert update changes)
+  - update all examples, add additional readme's
+  - documentation overhaul
 
 ## 03.03.2023, Version 1.11.4
 
