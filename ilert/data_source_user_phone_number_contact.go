@@ -26,6 +26,10 @@ func dataSourceUserPhoneNumberContact() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"region_code": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"user": {
 				Type:     schema.TypeList,
 				Required: true,
@@ -80,6 +84,7 @@ func dataSourceUserPhoneNumberContactRead(ctx context.Context, d *schema.Resourc
 		d.SetId(strconv.FormatInt(found.ID, 10))
 		d.Set("target", found.Target)
 		d.Set("status", found.Status)
+		d.Set("region_code", found.RegionCode)
 
 		usr := make([]interface{}, 0)
 		u := make(map[string]interface{}, 0)

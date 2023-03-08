@@ -3,7 +3,7 @@ layout: "ilert"
 page_title: "ilert: ilert_user"
 sidebar_current: "docs-ilert-data-source-user"
 description: |-
-  Get information about an user that you have created.
+  Get information about a user that you have created.
 ---
 
 # ilert_user

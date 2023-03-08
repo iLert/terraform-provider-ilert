@@ -27,7 +27,6 @@ The following arguments are supported:
 - `first_name` - (Required) The first name of the user.
 - `last_name` - (Required) The last name of the user.
 - `email` - (Required) The user's email address.
-- `username` - (Computed) The username of the user.
 - `timezone` - (Optional) The user's timezone (IANA tz database names) e.g. `America/Los_Angeles` or `Europe/Zurich`.
 - `position` - (Optional) The user's position.
 - `department` - (Optional) The user's department.
