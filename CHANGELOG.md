@@ -1,5 +1,19 @@
 # Changelog
 
+## 08.03.2023, Version 2.0.0 - API user preference migration: see [migration changes](LINK) for a detailed migration guide
+
+- remove notification settings from user resource
+- add user contacts
+  - email
+  - phone number
+- add user notification preferences
+  - alert (alert creation)
+  - duty (on-call)
+  - subscription (subscriber to incident, service, status page)
+  - update (alert update changes)
+- update all examples, add additional readme's
+- documentation overhaul
+
 ## 20.02.2023, Version 1.11.3
 
 - fix/remove-deprecated-schema in [#46](https://github.com/iLert/terraform-provider-ilert/pull/46)
