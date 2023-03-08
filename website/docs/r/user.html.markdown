@@ -3,12 +3,12 @@ layout: "ilert"
 page_title: "ilert: ilert_user"
 sidebar_current: "docs-ilert-resource-user"
 description: |-
-  Creates and manages an user in ilert.
+  Creates and manages a user in ilert.
 ---
 
 # ilert_user
 
-An [user](https://api.ilert.com/api-docs/#tag/Users) is a member of a ilert account that has the ability to interact with alerts and other data on the account.
+A [user](https://api.ilert.com/api-docs/#tag/Users) is a member of a ilert account that has the ability to interact with alerts and other data on the account.
 
 ## Example Usage
 
