@@ -13,25 +13,25 @@ A [status page](https://api.ilert.com/api-docs/#tag/Status-Pages) is connected w
 ## Example Usage
 
 ```hcl
-data "ilert_service" "example" {
+resource "ilert_service" "example" {
   name = "example"
 }
 
-resource "ilert_status_page" "example" {
-  name       = "example"
-  subdomain  = "example.ilerthq.com"
+resource "ilert_status_page" "example_public" {
+  name       = "example_public"
+  subdomain  = "example-public.ilert.io"
   visibility = "PUBLIC"
 
   service {
-    id = data.ilert_service.example.id
+    id = ilert_service.example.id
   }
 }
 
 # private status page with ip whitelist enabled
 
-resource "ilert_status_page" "example" {
-  name         = "example"
-  subdomain    = "example.ilert.io"
+resource "ilert_status_page" "example_private" {
+  name         = "example_private"
+  subdomain    = "example-private.ilert.io"
   visibility   = "PRIVATE"
   ip_whitelist = ["###.###.###.###"]
 

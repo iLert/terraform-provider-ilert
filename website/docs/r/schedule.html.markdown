@@ -14,10 +14,9 @@ A [schedule](https://api.ilert.com/api-docs/#tag/Schedules) is used to dynamical
 
 ```hcl
 resource "ilert_user" "example" {
-  username   = "example1"
-  first_name = "John"
-  last_name  = "Doe"
-  email      = "john.doe@example.com"
+  first_name = "example"
+  last_name  = "example"
+  email      = "example@example.com"
 }
 
 # example for recurring schedule
@@ -27,7 +26,7 @@ resource "ilert_schedule" "example_recurring" {
   type     = "RECURRING"
   schedule_layer {
     name      = "layer1"
-    starts_on = "2022-08-30T00:00"
+    starts_on = "2023-08-30T00:00"
     user {
       id = ilert_user.example.id
     }
@@ -44,9 +43,6 @@ resource "ilert_schedule" "example_recurring" {
       }
     }
   }
-  team {
-    id = 0
-  }
 }
 
 # example for static schedule
@@ -56,13 +52,9 @@ resource "ilert_schedule" "example_static" {
   type     = "STATIC"
   shift {
     user  = ilert_user.example.id
-    start = "2022-09-01T08:00"
-    end   = "2022-09-02T08:00"
+    start = "2023-09-01T08:00"
+    end   = "2023-09-02T08:00"
   }
-  team {
-    id = 0
-  }
-  default_shift_duration = "PT24H"
 }
 ```
 

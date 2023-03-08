@@ -8,7 +8,7 @@ description: |-
 
 # ilert_connector
 
-A [connector](https://docs.ilert.com/getting-started/intro#connectors-and-connections-outbond-integrations) is created globally in ilert and usually contains all the information to connect with the target system.
+A [connector](https://docs.ilert.com/getting-started/readme#connectors-and-alert-actions-aka-outbound-integrations) is created globally in ilert and usually contains all the information to connect with the target system.
 
 ## Example Usage
 
@@ -176,5 +176,5 @@ The following attributes are exported:
 Services can be imported using the `id`, e.g.
 
 ```sh
-$ terraform import ilert_connector.main 5522df22-be11-4412-ad09-5f7afbee4c2
+$ terraform import ilert_connector.main 123456789
 ```

@@ -13,20 +13,34 @@ An [uptime monitor](https://api.ilert.com/api-docs/#tag/Uptime-Monitors) allows 
 ## Example Usage
 
 ```hcl
-data "ilert_escalation_policy" "default" {
-  name = "Default"
+resource "ilert_user" "example" {
+  first_name = "example"
+  last_name  = "example"
+  email      = "example@example.com"
 }
 
-resource "ilert_uptime_monitor" "example" {
-  name              = "example.com"
-  region            = "EU"
-  escalation_policy = data.ilert_escalation_policy.default.id
-  interval_sec      = 900
-  timeout_ms        = 10000
-  check_type        = "http"
+resource "ilert_escalation_policy" "example" {
+  name = "example"
+
+  escalation_rule {
+    escalation_timeout = 15
+    users {
+      id = ilert_user.example.id
+    }
+  }
+}
+
+resource "ilert_uptime_monitor" "terraform" {
+  name                                = "terraform.io"
+  region                              = "EU"
+  escalation_policy                   = ilert_escalation_policy.example.id
+  interval_sec                        = 900
+  timeout_ms                          = 10000
+  create_incident_after_failed_checks = 2
+  check_type                          = "http"
 
   check_params {
-    url = "https://example.com"
+    url = "https://www.terraform.io"
   }
 }
 

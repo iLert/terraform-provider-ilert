@@ -60,7 +60,7 @@ resource "ilert_alert_source" "example_with_support_hours" {
 resource "ilert_alert_source" "example_email" {
   name              = "My Email Integration from terraform"
   integration_type  = "EMAIL"
-  email             = "example@example.com"
+  email             = "example@ 'your tenant' .ilert.eu"
   escalation_policy = ilert_escalation_policy.example.id
 
   alert_creation = "OPEN_RESOLVE_ON_EXTRACTION"

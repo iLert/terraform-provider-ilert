@@ -13,12 +13,10 @@ An [escalation policy](https://api.ilert.com/api-docs/#tag/Escalation-Policies) 
 ## Example Usage
 
 ```hcl
-data "ilert_user" "example" {
-  email = "example@example.com"
-}
-
-data "ilert_schedule" "example" {
-  name = "example"
+resource "ilert_user" "example" {
+  first_name = "example"
+  last_name  = "example"
+  email      = "example@example.com"
 }
 
 resource "ilert_escalation_policy" "example" {
@@ -27,16 +25,9 @@ resource "ilert_escalation_policy" "example" {
   escalation_rule {
     escalation_timeout = 15
     users {
-      id = data.ilert_user.example.id
-    }
-    schedules {
-      id = data.ilert_schedule.example.id
+      id = ilert_user.example.id
     }
   }
-}
-
-data "ilert_user" "example" {
-  email = "example@example.com"
 }
 ```
 
