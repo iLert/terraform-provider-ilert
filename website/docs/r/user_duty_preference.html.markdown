@@ -62,7 +62,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 - `id` - The ID of the user duty preference.
-- `method` - (Required) The method of the user duty preference. Allowed values are `EMAIL`, `SMS`, `VOICE`, `WHATSAPP`, `TELEGRAM`.
+- `method` - (Required) The method of the user duty preference. Allowed values are `EMAIL`, `SMS`, `PUSH`, `WHATSAPP`, `TELEGRAM`.
 - `contact` - (Required) A [contact](#contact-arguments) block.
 - `before_min` - (Required) Determines how many minutes in advance the notification should happen. Allowed values are `0`, `15`, `30`, `60`, `180`, `360`, `720`, `1440`.
 - `type` - (Required) The notification type of the user duty preference. Allowed values are `ON_CALL`.
