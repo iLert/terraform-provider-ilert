@@ -14,6 +14,11 @@
 - update all examples, add additional readme's
 - documentation overhaul
 
+## 03.03.2023, Version 1.11.4
+
+- fix/status-page-missing-field in [#49](https://github.com/iLert/terraform-provider-ilert/pull/49)
+  - addresses issue [#48](https://github.com/iLert/terraform-provider-ilert/issues/48)
+
 ## 20.02.2023, Version 1.11.3
 
 - fix/remove-deprecated-schema in [#46](https://github.com/iLert/terraform-provider-ilert/pull/46)
