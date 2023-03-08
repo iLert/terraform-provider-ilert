@@ -1,5 +1,5 @@
 resource "ilert_user" "this" {
-  email      = "${var.name}@fake.com"
-  first_name = "fake"
-  last_name  = "fake"
+  email      = "${var.name}@example.com"
+  first_name = "example"
+  last_name  = "example"
 }

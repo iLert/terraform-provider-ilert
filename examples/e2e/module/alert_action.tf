@@ -11,7 +11,7 @@ resource "ilert_alert_action" "this" {
   }
 
   github {
-    owner      = "fake"
-    repository = "fake"
+    owner      = "example"
+    repository = "example"
   }
 }

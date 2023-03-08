@@ -8,7 +8,7 @@ resource "ilert_metric_data_source" "this" {
 
   metadata {
     region          = "EU1"
-    api_key         = "fake"
-    application_key = "fake"
+    api_key         = "example"
+    application_key = "example"
   }
 }

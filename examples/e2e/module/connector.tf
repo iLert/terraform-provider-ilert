@@ -3,6 +3,6 @@ resource "ilert_connector" "this" {
   type = "github"
 
   github {
-    api_key = "fake"
+    api_key = "example"
   }
 }

@@ -3,7 +3,7 @@ resource "ilert_metric" "this" {
   aggregation_type = "AVG"
   display_type     = "GRAPH"
   metadata {
-    query = "fake"
+    query = "example"
   }
   data_source {
     id = ilert_metric_data_source.this.id
