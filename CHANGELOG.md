@@ -1,6 +1,6 @@
 # Changelog
 
-## 08.03.2023, Version 2.0.0 - API user preference migration: see [migration changes](LINK) for a detailed migration guide
+## 08.03.2023, Version 2.0.0 - API user preference migration: see [migration changes](https://docs.ilert.com/rest-api/api-version-history/api-user-preference-migration-2023#migrating-ilert-go-and-or-terraform) for a detailed migration guide
 
 - feature/notification settings 2.0 in [#50](https://github.com/iLert/terraform-provider-ilert/pull/50)
   - remove notification settings from user resource
