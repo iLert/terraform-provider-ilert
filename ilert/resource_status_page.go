@@ -75,6 +75,10 @@ func resourceStatusPage() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"activated": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"team": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -236,6 +240,10 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 
 	if val, ok := d.GetOk("logo_redirect_url"); ok {
 		statusPage.LogoRedirectUrl = val.(string)
+	}
+
+	if val, ok := d.GetOk("activated"); ok {
+		statusPage.Activated = val.(bool)
 	}
 
 	if val, ok := d.GetOk("team"); ok {
@@ -434,6 +442,7 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 	d.Set("page_title", result.StatusPage.PageTitle)
 	d.Set("page_description", result.StatusPage.PageDescription)
 	d.Set("logo_redirect_url", result.StatusPage.LogoRedirectUrl)
+	d.Set("activated", result.StatusPage.Activated)
 
 	teams, err := flattenTeamShortList(result.StatusPage.Teams, d)
 	if err != nil {
