@@ -7,8 +7,6 @@ require (
 	github.com/iLert/ilert-go/v3 v3.0.0
 )
 
-replace github.com/iLert/ilert-go/v3 => /Users/markosimon/Documents/workspace/ilert-go
-
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
