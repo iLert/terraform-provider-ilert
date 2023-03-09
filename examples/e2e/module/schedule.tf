@@ -4,8 +4,8 @@ resource "ilert_schedule" "this" {
   type     = "STATIC"
   shift {
     user  = ilert_user.this.id
-    start = "2024-03-07T15:00:00Z"
-    end   = "2024-03-08T15:00:00Z"
+    start = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "730h"))
+    end   = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "754h"))
   }
   default_shift_duration = "PT24H"
 }

@@ -10,8 +10,8 @@ resource "ilert_schedule" "example" {
   type     = "STATIC"
   shift {
     user  = ilert_user.example.id
-    start = "2023-09-01T08:00"
-    end   = "2023-09-02T08:00"
+    start = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "730h"))
+    end   = formatdate("YYYY-MM-DD'T'hh:mm:ss", timeadd(timestamp(), "754h"))
   }
 }
 
