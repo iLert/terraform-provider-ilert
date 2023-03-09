@@ -2,7 +2,7 @@ terraform {
   required_providers {
     ilert = {
       source  = "iLert/ilert"
-      version = "~> 1.7"
+      version = "~> 2.0"
     }
   }
 }
