@@ -1,7 +1,7 @@
 resource "ilert_user_alert_preference" "this" {
   method = "EMAIL"
   contact {
-    id = ilert_user_email_contact.this.id
+    id = data.ilert_user_email_contact.this.id
   }
   delay_min = 0
   type      = "HIGH_PRIORITY"

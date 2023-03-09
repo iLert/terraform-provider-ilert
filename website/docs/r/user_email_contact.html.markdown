@@ -10,6 +10,8 @@ description: |-
 
 A [user email contact](https://api.ilert.com/api-docs/#tag/Contacts) is a subentity of a user and wraps various notification methods which are specifically using an email.
 
+> Note: A user already contains an email contact with user email by default. When creating a new user you have to reference the already existing contact by using a data source, as shown in the example below.
+
 ## Example Usage
 
 ```hcl
@@ -19,8 +21,15 @@ resource "ilert_user" "example" {
   last_name  = "example"
 }
 
-resource "ilert_user_email_contact" "example" {
+data "ilert_user_email_contact" "example" {
   target = "example@example.com"
+  user {
+    id = ilert_user.example.id
+  }
+}
+
+resource "ilert_user_email_contact" "example_new" {
+  target = "example_new@example.com"
   user {
     id = ilert_user.example.id
   }

@@ -4,7 +4,7 @@ resource "ilert_user" "example" {
   last_name  = "example"
 }
 
-resource "ilert_user_email_contact" "example" {
+data "ilert_user_email_contact" "example" {
   target = "example@example.com"
   user {
     id = ilert_user.example.id
@@ -14,10 +14,10 @@ resource "ilert_user_email_contact" "example" {
 resource "ilert_user_alert_preference" "example" {
   method = "EMAIL"
   contact {
-    id = ilert_user_email_contact.example.id
+    id = data.ilert_user_email_contact.example.id
   }
   delay_min = 0
-  type      = "HIGH_PRIORITY"
+  type      = "LOW_PRIORITY"
   user {
     id = ilert_user.example.id
   }

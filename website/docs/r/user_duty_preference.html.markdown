@@ -19,7 +19,7 @@ resource "ilert_user" "example" {
   last_name  = "example"
 }
 
-resource "ilert_user_email_contact" "example" {
+data "ilert_user_email_contact" "example" {
   target = "example@example.com"
   user {
     id = ilert_user.example.id
@@ -29,7 +29,7 @@ resource "ilert_user_email_contact" "example" {
 resource "ilert_user_duty_preference" "example" {
   method = "EMAIL"
   contact {
-    id = ilert_user_email_contact.example.id
+    id = data.ilert_user_email_contact.example.id
   }
   before_min = 0
   type       = "ON_CALL"
