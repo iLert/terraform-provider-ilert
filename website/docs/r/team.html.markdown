@@ -13,12 +13,10 @@ A [team](https://api.ilert.com/api-docs/#tag/Teams) helps you to manage access t
 ## Example Usage
 
 ```hcl
-data "ilert_user" "example" {
-  email = "example@example.com"
-}
-
-data "ilert_escalation_policy" "default" {
-  name = "Default"
+resource "ilert_user" "example" {
+  email      = "example@example.com"
+  first_name = "example"
+  last_name  = "example"
 }
 
 resource "ilert_team" "example" {
@@ -26,20 +24,10 @@ resource "ilert_team" "example" {
   visibility = "PRIVATE"
 
   member {
-    user = data.ilert_user.example.id
+    user = ilert_user.example.id
     role = "STAKEHOLDER"
   }
 }
-
-resource "ilert_alert_source" "example" {
-  name              = "My Grafana Integration"
-  integration_type  = "GRAFANA"
-  escalation_policy = data.ilert_escalation_policy.default.id
-  team {
-    id = ilert_team.example.id
-  }
-}
-
 ```
 
 ## Argument Reference

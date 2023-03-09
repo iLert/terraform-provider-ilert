@@ -1,28 +1,7 @@
 resource "ilert_user" "example" {
   email      = "example@example.com"
-  username   = "example"
   first_name = "example"
   last_name  = "example"
-
-  mobile {
-    region_code = "DE"
-    number      = "+491758250853"
-  }
-
-  high_priority_notification_preference {
-    method = "EMAIL"
-    delay  = 0
-  }
-
-  low_priority_notification_preference {
-    method = "EMAIL"
-    delay  = 0
-  }
-
-  on_call_notification_preference {
-    method     = "EMAIL"
-    before_min = 60
-  }
 }
 
 resource "ilert_escalation_policy" "example" {
@@ -81,7 +60,7 @@ resource "ilert_alert_source" "example_with_support_hours" {
 resource "ilert_alert_source" "example_email" {
   name              = "My Email Integration from terraform"
   integration_type  = "EMAIL"
-  email             = "support2@yacut.ilertnow.com"
+  email             = "example@ 'your tenant' .ilert.eu"
   escalation_policy = ilert_escalation_policy.example.id
 
   alert_creation = "OPEN_RESOLVE_ON_EXTRACTION"
@@ -104,11 +83,4 @@ resource "ilert_alert_source" "example_email" {
     criteria = "CONTAINS_STRING"
     value    = "resolve"
   }
-
-  team {
-    id = 0000
-  }
-
-  # @ deprecated
-  # team = [0000]
 }

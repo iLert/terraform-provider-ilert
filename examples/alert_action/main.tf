@@ -1,8 +1,7 @@
 resource "ilert_user" "example" {
-  username   = "example1"
   first_name = "example"
   last_name  = "example"
-  email      = "example1@example.com"
+  email      = "example@example.com"
 }
 
 resource "ilert_escalation_policy" "example" {
@@ -16,7 +15,7 @@ resource "ilert_escalation_policy" "example" {
 resource "ilert_alert_source" "example" {
   name              = "My Grafana Integration for GitHub"
   integration_type  = "GRAFANA"
-  escalation_policy = ilert_escalation_policy.default.id
+  escalation_policy = ilert_escalation_policy.example.id
 }
 
 resource "ilert_connector" "example" {

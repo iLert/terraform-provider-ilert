@@ -1,4 +1,4 @@
-# Status Page Group Example
+# Status page group example
 
 This demos [status page groups](https://docs.ilert.com/incident-comms-and-status-pages/status-pages).
 

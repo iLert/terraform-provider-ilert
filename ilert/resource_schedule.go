@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/iLert/ilert-go/v2"
+	"github.com/iLert/ilert-go/v3"
 )
 
 func resourceSchedule() *schema.Resource {
@@ -507,7 +507,12 @@ func resourceScheduleRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	d.Set("show_gaps", result.Schedule.ShowGaps)
-	d.Set("default_shift_duration", result.Schedule.DefaultShiftDuration)
+
+	if _, ok := d.GetOk("default_shift_duration"); ok {
+		d.Set("default_shift_duration", result.Schedule.DefaultShiftDuration)
+	} else {
+		d.Set("default_shift_duration", nil)
+	}
 
 	if result.Schedule.CurrentShift != nil {
 		d.Set("current_shift", []interface{}{

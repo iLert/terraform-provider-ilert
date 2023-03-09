@@ -4,8 +4,8 @@
 
 ## Requirements
 
-- [Terraform](https://www.terraform.io/downloads.html) 0.10.x
-- [Go](https://golang.org/doc/install) 1.13 (to build the provider plugin)
+- [Terraform](https://www.terraform.io/downloads.html) 1.3.x
+- [Go](https://golang.org/doc/install) 1.20 (to build the provider plugin)
 
 ## Building The Provider
 
@@ -31,7 +31,7 @@ Detailed documentation for the ilert provider can be found [here](https://regist
 
 ## Developing the Provider
 
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.11+ is _required_). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
+If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.20+ is _required_). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
@@ -68,5 +68,5 @@ Licensed under either of <a href="LICENSE-APACHE">Apache License, Version
 <br>
 
 <sub>
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in ilert-rust by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in terraform-provider-ilert by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
 </sub>

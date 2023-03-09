@@ -3,21 +3,20 @@ layout: "ilert"
 page_title: "ilert: ilert_alert_action"
 sidebar_current: "docs-ilert-resource-alert-action"
 description: |-
-  Creates and manages a alert_action in ilert.
+  Creates and manages an alert action in ilert.
 ---
 
 # ilert_alert_action
 
-An [alert_action](https://docs.ilert.com/getting-started/readme#connectors-and-alert-actions-aka-outbound-integrations) is created at the alert source level and uses its [connector](connector.html) to perform a concrete action.
+An [alert_action](https://docs.ilert.com/getting-started/readme#connectors-and-alert-actions-aka-outbound-integrations) is created at the alert source level and uses its [connector](connector.html) to perform a specified action.
 
 ## Example Usage
 
 ```hcl
 resource "ilert_user" "example" {
-  username   = "example1"
   first_name = "example"
   last_name  = "example"
-  email      = "example1@example.com"
+  email      = "example@example.com"
 }
 
 resource "ilert_escalation_policy" "example" {
@@ -31,7 +30,7 @@ resource "ilert_escalation_policy" "example" {
 resource "ilert_alert_source" "example" {
   name              = "My Grafana Integration for GitHub"
   integration_type  = "GRAFANA"
-  escalation_policy = ilert_escalation_policy.default.id
+  escalation_policy = ilert_escalation_policy.example.id
 }
 
 resource "ilert_connector" "example" {
@@ -70,7 +69,7 @@ The following arguments are supported:
 - `alert_source` - (Required) An [alert source](#alert-source-arguments) block.
 - `connector` - (Required) A [connector](#connector-arguments) block.
 - `trigger_mode` - (Optional) The trigger mode of the alert action. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
-- `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode ) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-resolved`.
+- `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-resolved`.
 - `datadog` - (Optional) A [datadog](#datadog-arguments) block.
 - `jira` - (Optional) A [jira](#jira-arguments) block.
 - `servicenow` - (Optional) A [servicenow](#servicenow-arguments) block.

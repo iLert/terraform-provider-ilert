@@ -13,22 +13,13 @@ A [metric](https://api.ilert.com/api-docs/#tag/Metric) lets you provide addition
 ## Example Usage
 
 ```hcl
-resource "ilert_team" "example" {
-  name = "example"
-}
-
-resource "ilert_metric_data_source" "example_prometheus" {
+resource "ilert_metric_data_source" "example" {
   name = "example"
   type = "PROMETHEUS"
 
-  team {
-    id   = ilert_team.example.id
-    name = "example"
-  }
-
   metadata {
     auth_type  = "BASIC"
-    basic_user = "your prometheus user name"
+    basic_user = "your prometheus username"
     basic_pass = "your prometheus password"
     url        = "your prometheus url"
   }

@@ -13,17 +13,10 @@ A [service](https://api.ilert.com/api-docs/#tag/Services) serves as a starting p
 ## Example Usage
 
 ```hcl
-resource "ilert_team" "example"{
-  name = "example"
-}
-
 resource "ilert_service" "example" {
   name = "example"
   status = "OPERATIONAL"
   description = "example ilert service"
-  team {
-    id = ilert_team.example.id
-  }
 }
 ```
 

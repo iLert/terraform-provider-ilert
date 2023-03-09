@@ -1,20 +1,16 @@
-# Alert Source Example
+# Alert source example
 
-This demos [alert sources](https://docs.ilert.com/getting-started/intro#alert-source-inbound-integration).
+This demos [alert sources](https://docs.ilert.com/getting-started/readme#alert-source-aka-inbound-integration).
 
-This example will create an alert source in the specified organization. See https://registry.terraform.io/providers/iLert/ilert/latest/docs for details on configuring [`providers.tf`](./providers.tf) accordingly.
+This example will create three different alert sources and its dependencies in the specified organization. See https://registry.terraform.io/providers/iLert/ilert/latest/docs for details on configuring [`providers.tf`](./providers.tf) accordingly.
 
 Alternatively, you may use variables passed via command line:
 
 ```sh
-export ILERT_ORGANIZATION=
-export ILERT_USERNAME=
-export ILERT_PASSWORD=
+export ILERT_API_TOKEN=
 ```
 
 ```sh
 terraform apply \
-  -var "organization=${ILERT_ORGANIZATION}" \
-  -var "username=${ILERT_USERNAME}" \
-  -var "password=${ILERT_PASSWORD}"
+  -var "api_token=${ILERT_API_TOKEN}" \
 ```
