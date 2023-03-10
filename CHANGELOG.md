@@ -1,5 +1,9 @@
 # Changelog
 
+## 10.03.2023, Version 2.0.1
+
+- fix/go release 1.20 in [#51](https://github.com/iLert/terraform-provider-ilert/pull/51)
+
 ## 08.03.2023, Version 2.0.0 - API user preference migration: see [migration changes](https://docs.ilert.com/rest-api/api-version-history/api-user-preference-migration-2023#migrating-ilert-go-and-or-terraform) for a detailed migration guide
 
 - feature/notification settings 2.0 in [#50](https://github.com/iLert/terraform-provider-ilert/pull/50)
