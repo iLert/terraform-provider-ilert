@@ -122,6 +122,10 @@ func resourceStatusPage() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"account_wide_view": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"structure": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -290,6 +294,10 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 		} else {
 			return nil, fmt.Errorf("[ERROR] Can't set ip whitelist, as it is only allowed on private status pages")
 		}
+	}
+
+	if val, ok := d.GetOk("account_wide_view"); ok {
+		statusPage.AccountWideView = val.(bool)
 	}
 
 	if val, ok := d.GetOk("structure"); ok {
@@ -463,6 +471,8 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 	if val, ok := d.GetOk("ip_whitelist"); ok && val.([]interface{}) != nil && len(val.([]interface{})) > 0 {
 		d.Set("ip_whitelist", result.StatusPage.IpWhitelist)
 	}
+
+	d.Set("account_wide_view", result.StatusPage.AccountWideView)
 
 	structure, err := flattenStatusPageStructure(result.StatusPage.Structure)
 	if err != nil {
