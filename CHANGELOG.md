@@ -1,5 +1,13 @@
 # Changelog
 
+## 02.05.2023, Version 2.0.3
+
+- fix/status-page-missing-field-1 in [#53](https://github.com/iLert/terraform-provider-ilert/pull/53)
+
+## 10.03.2023, Version 2.0.2
+
+- update goreleaser in [#52](https://github.com/iLert/terraform-provider-ilert/pull/52)
+
 ## 10.03.2023, Version 2.0.1
 
 - fix/go release 1.19 in [#51](https://github.com/iLert/terraform-provider-ilert/pull/51)
