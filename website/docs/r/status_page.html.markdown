@@ -55,13 +55,14 @@ The following arguments are supported:
 - `favicon_url` - (Optional) The favicon of the status page.
 - `logo_url` - (Optional) The logo of the status page.
 - `hidden_from_search` - (Optional) Indicates whether or not the status page is hidden from search.
-- `show_subscribe_action` - (Optional) Indicates whether or not the status page is hidden from search.
+- `show_subscribe_action` - (Optional) Indicates whether or not the status page subscribe action should be shown.
 - `show_incident_history_option` - (Optional) Indicates whether or not the incident history option should be shown.
 - `page_title` - (Optional) The title of the status page.
 - `page_description` - (Optional) The description of the status page.
 - `logo_redirect_url` - (Optional) The redirect url for the status page logo.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 - `ip_whitelist` - (Optional) One or more IP's to whitelist.
+- `account_wide_view` - (Optional) Indicates whether or not the status page should be shown account wide.
 - `structure` - (Optional) A [structure](#structure-arguments) block.
 
 #### Service Arguments
