@@ -62,6 +62,7 @@ The following arguments are supported:
 - `logo_redirect_url` - (Optional) The redirect url for the status page logo.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 - `ip_whitelist` - (Optional) One or more IP's to whitelist.
+- `account_wide_view` - (Optional) Indicates whether or not the status page should be shown account wide.
 - `structure` - (Optional) A [structure](#structure-arguments) block.
 
 #### Service Arguments
