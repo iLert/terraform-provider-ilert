@@ -121,13 +121,6 @@ func resourceAlertAction() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "Task",
-							ValidateFunc: validation.StringInSlice([]string{
-								"Bug",
-								"Epic",
-								"Subtask",
-								"Story",
-								"Task",
-							}, false),
 						},
 						"body_template": {
 							Type:     schema.TypeString,
