@@ -1,5 +1,9 @@
 # Changelog
 
+## 29.09.2023, Version 2.0.4
+
+- fix/alert-action-jira-types in [#54](https://github.com/iLert/terraform-provider-ilert/pull/54)
+
 ## 02.05.2023, Version 2.0.3
 
 - fix/status-page-missing-field-1 in [#53](https://github.com/iLert/terraform-provider-ilert/pull/53)
