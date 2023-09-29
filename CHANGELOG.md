@@ -2,7 +2,7 @@
 
 ## 29.09.2023, Version 2.0.4
 
-- fix/alert-action-jira-types in [#54](https://github.com/iLert/terraform-provider-ilert/pull/54)
+- fix/alert-action-jira-types in [#55](https://github.com/iLert/terraform-provider-ilert/pull/55)
 
 ## 02.05.2023, Version 2.0.3
 
