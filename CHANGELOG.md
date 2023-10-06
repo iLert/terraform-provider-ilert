@@ -1,5 +1,9 @@
 # Changelog
 
+## 06.10.2023, Version 2.1.0
+
+- feature/escalation-policy-new-fields in [#57](https://github.com/iLert/terraform-provider-ilert/pull/57)
+
 ## 29.09.2023, Version 2.0.4
 
 - fix/alert-action-jira-types in [#55](https://github.com/iLert/terraform-provider-ilert/pull/55)
