@@ -6,7 +6,7 @@ replace github.com/iLert/ilert-go/v3 => /Users/markosimon/Documents/workspace/il
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.25.0
-	github.com/iLert/ilert-go/v3 v3.0.2
+	github.com/iLert/ilert-go/v3 v3.1.0
 )
 
 require (
