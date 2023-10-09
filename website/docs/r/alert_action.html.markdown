@@ -66,7 +66,7 @@ resource "ilert_alert_action" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the alert action.
-- `alert_source` - (Required) An [alert source](#alert-source-arguments) block.
+- `alert_source` - (Required) One or more [alert source](#alert-source-arguments) blocks.
 - `connector` - (Required) A [connector](#connector-arguments) block.
 - `trigger_mode` - (Optional) The trigger mode of the alert action. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
 - `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-resolved`.
@@ -91,6 +91,7 @@ The following arguments are supported:
 - `dingtalk_action` - (Optional) A [dingtalk_action](#dingtalk-action-arguments) block.
 - `automation_rule` - (Optional) An [automation_rule](#automation-rule-arguments) block.
 - `alert_filter` - (Optional) An [alert_filter](#alert-filter-arguments) block.
+- `team` - (Optional) One or more [team](#team-arguments) blocks.
 
 #### Alert Source Arguments
 
@@ -261,6 +262,11 @@ The following arguments are supported:
 - `field` - (Required) The field which should be monitored for conditional execution. Allowed values are `ALERT_SUMMARY`, `ALERT_DETAILS`, `ESCALATION_POLICY`, `ALERT_PRIORITY`.
 - `criteria` - (Required) The criteria for the condition. Allowed values are `CONTAINS_ANY_WORDS`, `CONTAINS_NOT_WORDS`, `CONTAINS_STRING`, `CONTAINS_NOT_STRING`, `IS_STRING`, `IS_NOT_STRING`, `MATCHES_REGEX`, `MATCHES_NOT_REGEX`.
 - `value` - (Required) The value for the condition.
+
+#### Team Arguments
+
+- `id` - (Required) The ID of the team.
+- `name` - (Optional) The name of the team.
 
 ## Attributes Reference
 
