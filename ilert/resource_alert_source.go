@@ -51,7 +51,7 @@ func resourceAlertSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    false,
-				Description: "The escalation policy specifies who will be notified when an incident is created by this alert source",
+				Description: "The escalation policy specifies who will be notified when an alert is created by this alert source",
 			},
 			"incident_creation": { // @deprecated
 				Deprecated: "The field incident_creation is deprecated! Please use alert_creation instead.",
@@ -184,12 +184,12 @@ func resourceAlertSource() *schema.Resource {
 				MaxItems:    1,
 				MinItems:    1,
 				ForceNew:    true,
-				Description: "A heartbeat alert source will automatically create an incident if it does not receive a heartbeat signal from your app at regular intervals.",
+				Description: "A heartbeat alert source will automatically create an alert if it does not receive a heartbeat signal from your app at regular intervals.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"summary": {
 							Type:        schema.TypeString,
-							Description: "This text will be used as the incident summary, when incidents are created by this alert source",
+							Description: "This text will be used as the alert summary, when alerts are created by this alert source",
 							Optional:    true,
 						},
 						"interval_sec": {
@@ -207,7 +207,7 @@ func resourceAlertSource() *schema.Resource {
 								7 * 24 * 60 * 60,
 								30 * 24 * 60 * 60,
 							}),
-							Description: "The interval after which the heartbeat alert source will create an incident if it does not receive a ping",
+							Description: "The interval after which the heartbeat alert source will create an alert if it does not receive a ping",
 						},
 						"status": {
 							Type:     schema.TypeString,
