@@ -607,6 +607,24 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
+			"team": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MinItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"name": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringLenBetween(1, 255),
+						},
+					},
+				},
+			},
 		},
 		CreateContext: resourceAlertActionCreate,
 		ReadContext:   resourceAlertActionRead,
@@ -981,6 +999,22 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
+	if val, ok := d.GetOk("team"); ok {
+		vL := val.([]interface{})
+		tms := make([]ilert.TeamShort, 0)
+		for _, m := range vL {
+			v := m.(map[string]interface{})
+			tm := ilert.TeamShort{
+				ID: int64(v["id"].(int)),
+			}
+			if v["name"] != nil && v["name"].(string) != "" {
+				tm.Name = v["name"].(string)
+			}
+			tms = append(tms, tm)
+		}
+		alertAction.Teams = tms
+	}
+
 	return alertAction, nil
 }
 
@@ -1233,6 +1267,29 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 	if err := d.Set("alert_filter", alertFilter); err != nil {
 		return diag.Errorf("error setting alert filter: %s", err)
+	}
+
+	if val, ok := d.GetOk("team"); ok {
+		if val != nil {
+			vL := val.([]interface{})
+			teams := make([]interface{}, 0)
+			for i, item := range result.AlertAction.Teams {
+				team := make(map[string]interface{})
+				v := vL[i].(map[string]interface{})
+				team["id"] = item.ID
+
+				// Means: if server response has a name set, and the user typed in a name too,
+				// only then team name is stored in the terraform state
+				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+					team["name"] = item.Name
+				}
+				teams = append(teams, team)
+			}
+
+			if err := d.Set("team", teams); err != nil {
+				return diag.Errorf("error setting teams: %s", err)
+			}
+		}
 	}
 
 	return nil
