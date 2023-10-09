@@ -440,6 +440,50 @@ func resourceAlertSource() *schema.Resource {
 				Computed:  true,
 				Sensitive: true,
 			},
+			"summary_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"text_template": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"details_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"text_template": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"routing_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"text_template": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"alert_grouping_window": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice(ilert.AlertSourceAlertGroupingWindowsAll, false),
+			},
 		},
 		CreateContext: resourceAlertSourceCreate,
 		ReadContext:   resourceAlertSourceRead,
@@ -488,6 +532,9 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 	}
 	if val, ok := d.GetOk("alert_creation"); ok {
 		alertCreation := val.(string)
+		if _, ok := d.GetOk("alert_grouping_window"); !ok && alertCreation == ilert.AlertSourceAlertCreations.OneAlertGroupedPerWindow {
+			return nil, fmt.Errorf("[ERROR] Can't set alert creation type 'ONE_ALERT_GROUPED_PER_WINDOW' when alert grouping window is not set")
+		}
 		alertSource.AlertCreation = alertCreation
 	}
 	if val, ok := d.GetOk("integration_key"); ok {
@@ -679,6 +726,40 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		}
 		alertSource.EmailResolvePredicates = eps
 	}
+	if val, ok := d.GetOk("summary_template"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertSource.SummaryTemplate = &ilert.Template{
+				TextTemplate: v["text_template"].(string),
+			}
+		}
+	}
+	if val, ok := d.GetOk("details_template"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertSource.DetailsTemplate = &ilert.Template{
+				TextTemplate: v["text_template"].(string),
+			}
+		}
+	}
+	if val, ok := d.GetOk("routing_template"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertSource.RoutingTemplate = &ilert.Template{
+				TextTemplate: v["text_template"].(string),
+			}
+		}
+	}
+	if val, ok := d.GetOk("alert_grouping_window"); ok {
+		if alert_creation, ok := d.GetOk("alert_creation"); !ok || alert_creation.(string) != ilert.AlertSourceAlertCreations.OneAlertGroupedPerWindow {
+			return nil, fmt.Errorf("[ERROR] Can't set alert grouping window when alert creation is not set or not of type 'ONE_ALERT_GROUPED_PER_WINDOW'")
+		}
+		alertGroupingWindow := val.(string)
+		alertSource.AlertGroupingWindow = alertGroupingWindow
+	}
 
 	return alertSource, nil
 }
@@ -774,6 +855,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if result.AlertSource.IntegrationType == "EMAIL" {
 		d.Set("email", result.AlertSource.IntegrationKey)
 	}
+	d.Set("alert_grouping_window", result.AlertSource.AlertGroupingWindow)
 
 	if result.AlertSource.Heartbeat != nil {
 		d.Set("heartbeat", []interface{}{
@@ -809,6 +891,36 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 		})
 	} else {
 		d.Set("resolve_key_extractor", []interface{}{})
+	}
+
+	if result.AlertSource.SummaryTemplate != nil {
+		d.Set("summary_template", []interface{}{
+			map[string]interface{}{
+				"text_template": result.AlertSource.SummaryTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("summary_template", []interface{}{})
+	}
+
+	if result.AlertSource.DetailsTemplate != nil {
+		d.Set("details_template", []interface{}{
+			map[string]interface{}{
+				"text_template": result.AlertSource.DetailsTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("details_template", []interface{}{})
+	}
+
+	if result.AlertSource.RoutingTemplate != nil {
+		d.Set("routing_template", []interface{}{
+			map[string]interface{}{
+				"text_template": result.AlertSource.RoutingTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("routing_template", []interface{}{})
 	}
 
 	if val, ok := d.GetOk("team"); ok {
@@ -1049,15 +1161,3 @@ func flattenSupportHours(supportHours *ilert.SupportHours) ([]interface{}, error
 
 	return results, nil
 }
-
-// func flattenTeamsList(list []ilert.TeamShort) ([]int64, error) {
-// 	if list == nil {
-// 		return make([]int64, 0), nil
-// 	}
-// 	results := make([]int64, 0)
-// 	for _, item := range list {
-// 		results = append(results, item.ID)
-// 	}
-
-// 	return results, nil
-// }
