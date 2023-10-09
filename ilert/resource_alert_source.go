@@ -66,16 +66,10 @@ func resourceAlertSource() *schema.Resource {
 				}, false),
 			},
 			"alert_creation": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "ONE_ALERT_PER_EMAIL",
-				ValidateFunc: validation.StringInSlice([]string{
-					"ONE_ALERT_PER_EMAIL",
-					"ONE_ALERT_PER_EMAIL_SUBJECT",
-					"ONE_PENDING_ALERT_ALLOWED",
-					"ONE_OPEN_ALERT_ALLOWED",
-					"OPEN_RESOLVE_ON_EXTRACTION",
-				}, false),
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "ONE_ALERT_PER_EMAIL",
+				ValidateFunc: validation.StringInSlice(ilert.AlertSourceAlertCreationsAll, false),
 			},
 			"active": {
 				Type:     schema.TypeBool,
@@ -301,11 +295,12 @@ func resourceAlertSource() *schema.Resource {
 				},
 			},
 			"autotask_metadata": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
+				Type:       schema.TypeList,
+				Deprecated: "The field autotask_metadata is deprecated! Please use the web UI to configure autotask metadata.",
+				Optional:   true,
+				MaxItems:   1,
+				MinItems:   1,
+				ForceNew:   true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"username": {
@@ -707,7 +702,7 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m in
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert source, %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not create an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -745,7 +740,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be read", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -903,7 +898,7 @@ func resourceAlertSourceUpdate(ctx context.Context, d *schema.ResourceData, m in
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be updated", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an alert source with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -930,7 +925,7 @@ func resourceAlertSourceDelete(ctx context.Context, d *schema.ResourceData, m in
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be deleted", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an alert source with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -964,7 +959,7 @@ func resourceAlertSourceExists(d *schema.ResourceData, m interface{}) (bool, err
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert source to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
