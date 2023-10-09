@@ -27,7 +27,6 @@ func resourceAlertAction() *schema.Resource {
 			"alert_source": {
 				Type:     schema.TypeList,
 				Required: true,
-				MaxItems: 1,
 				MinItems: 1,
 				ForceNew: false,
 				Elem: &schema.Resource{
@@ -635,16 +634,19 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 
 	if val, ok := d.GetOk("alert_source"); ok {
 		vL := val.([]interface{})
-		aids := make([]int64, 0)
+		als := make([]ilert.AlertSource, 0)
 		for _, m := range vL {
 			v := m.(map[string]interface{})
-			aid, err := strconv.ParseInt(v["id"].(string), 10, 64)
+			asid, err := strconv.ParseInt(v["id"].(string), 10, 64)
 			if err != nil {
 				return nil, unconvertibleIDErr(v["id"].(string), err)
 			}
-			aids = append(aids, aid)
+			as := ilert.AlertSource{
+				ID: asid,
+			}
+			als = append(als, as)
 		}
-		alertAction.AlertSourceIDs = aids
+		alertAction.AlertSources = als
 	}
 
 	if val, ok := d.GetOk("connector"); ok {
@@ -1063,7 +1065,7 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 
 	d.Set("name", result.AlertAction.Name)
 
-	alertSources, err := flattenAlertActionAlertSourceIDList(result.AlertAction.AlertSourceIDs)
+	alertSources, err := flattenAlertActionAlertSourcesList(result.AlertAction.AlertSources)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1325,14 +1327,14 @@ func resourceAlertActionExists(d *schema.ResourceData, m interface{}) (bool, err
 	return result, nil
 }
 
-func flattenAlertActionAlertSourceIDList(list []int64) ([]interface{}, error) {
+func flattenAlertActionAlertSourcesList(list []ilert.AlertSource) ([]interface{}, error) {
 	if list == nil {
 		return make([]interface{}, 0), nil
 	}
 	results := make([]interface{}, 0)
 	for _, item := range list {
 		result := make(map[string]interface{})
-		result["id"] = strconv.FormatInt(item, 10)
+		result["id"] = strconv.FormatInt(item.ID, 10)
 		results = append(results, result)
 	}
 
