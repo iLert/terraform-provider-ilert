@@ -23,26 +23,15 @@ func resourceEscalationPolicy() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 255),
 			},
-			"frequency": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      1,
-				ValidateFunc: validation.IntBetween(1, 9),
-			},
-			"repeating": {
-				Type:     schema.TypeBool,
-				Optional: true,
-			},
 			"escalation_rule": {
 				Type:     schema.TypeList,
-				Optional: true,
+				Required: true,
 				MinItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"escalation_timeout": {
 							Type:         schema.TypeInt,
-							Optional:     true,
-							Default:      0,
+							Required:     true,
 							ValidateFunc: validation.IntBetween(0, 525600),
 						},
 						"user": {
@@ -120,6 +109,26 @@ func resourceEscalationPolicy() *schema.Resource {
 					},
 				},
 			},
+			"repeating": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"frequency": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      1,
+				ValidateFunc: validation.IntBetween(1, 9),
+			},
+			"delay_min": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      0,
+				ValidateFunc: validation.IntBetween(0, 15),
+			},
+			"routing_key": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 		CreateContext: resourceEscalationPolicyCreate,
 		ReadContext:   resourceEscalationPolicyRead,
@@ -140,13 +149,9 @@ func resourceEscalationPolicy() *schema.Resource {
 
 func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, error) {
 	name := d.Get("name").(string)
-	frequency := d.Get("frequency").(int)
-	repeating := d.Get("repeating").(bool)
 
 	escalationPolicy := &ilert.EscalationPolicy{
-		Name:      name,
-		Frequency: frequency,
-		Repeating: repeating,
+		Name: name,
 	}
 
 	if val, ok := d.GetOk("escalation_rule"); ok {
@@ -257,6 +262,22 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 		escalationPolicy.Teams = tms
 	}
 
+	if val, ok := d.GetOk("repeating"); ok {
+		escalationPolicy.Repeating = val.(bool)
+	}
+
+	if val, ok := d.GetOk("frequency"); ok {
+		escalationPolicy.Frequency = val.(int)
+	}
+
+	if val, ok := d.GetOk("delay_min"); ok {
+		escalationPolicy.DelayMin = val.(int)
+	}
+
+	if val, ok := d.GetOk("routing_key"); ok {
+		escalationPolicy.RoutingKey = val.(string)
+	}
+
 	return escalationPolicy, nil
 }
 
@@ -338,8 +359,6 @@ func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	d.Set("name", result.EscalationPolicy.Name)
-	d.Set("frequency", result.EscalationPolicy.Frequency)
-	d.Set("repeating", result.EscalationPolicy.Repeating)
 
 	escalationRules, err := flattenEscalationRulesList(result.EscalationPolicy.EscalationRules, d)
 	if err != nil {
@@ -347,6 +366,22 @@ func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m
 	}
 	if err := d.Set("escalation_rule", escalationRules); err != nil {
 		return diag.Errorf("error setting escalation rules: %s", err)
+	}
+
+	if val, ok := d.GetOk("teams"); ok {
+		if val != nil {
+			teams := make([]interface{}, 0)
+			for _, item := range result.EscalationPolicy.Teams {
+				team := make(map[string]interface{})
+				team["id"] = item.ID
+				teams = append(teams, team)
+			}
+			if err := d.Set("team", teams); err != nil {
+				return diag.Errorf("error setting teams: %s", err)
+			}
+
+			d.Set("teams", nil)
+		}
 	}
 
 	if val, ok := d.GetOk("team"); ok {
@@ -372,21 +407,10 @@ func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	if val, ok := d.GetOk("teams"); ok {
-		if val != nil {
-			teams := make([]interface{}, 0)
-			for _, item := range result.EscalationPolicy.Teams {
-				team := make(map[string]interface{})
-				team["id"] = item.ID
-				teams = append(teams, team)
-			}
-			if err := d.Set("team", teams); err != nil {
-				return diag.Errorf("error setting teams: %s", err)
-			}
-
-			d.Set("teams", nil)
-		}
-	}
+	d.Set("repeating", result.EscalationPolicy.Repeating)
+	d.Set("frequency", result.EscalationPolicy.Frequency)
+	d.Set("delay_min", result.EscalationPolicy.DelayMin)
+	d.Set("routing_key", result.EscalationPolicy.RoutingKey)
 
 	return nil
 }
