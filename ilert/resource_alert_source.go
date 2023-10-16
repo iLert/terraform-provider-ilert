@@ -810,7 +810,9 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	log.Printf("[DEBUG] Reading alert source: %s", d.Id())
 	result := &ilert.GetAlertSourceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		r, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
+		includes := make([]*string, 0)
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"))
+		r, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing alert source %s from state because it no longer exist", d.Id())
@@ -1060,7 +1062,9 @@ func resourceAlertSourceExists(d *schema.ResourceData, m interface{}) (bool, err
 	ctx := context.Background()
 	result := false
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		_, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
+		includes := make([]*string, 0)
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"))
+		_, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				result = false
