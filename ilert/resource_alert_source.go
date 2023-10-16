@@ -51,7 +51,7 @@ func resourceAlertSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    false,
-				Description: "The escalation policy specifies who will be notified when an incident is created by this alert source",
+				Description: "The escalation policy specifies who will be notified when an alert is created by this alert source",
 			},
 			"incident_creation": { // @deprecated
 				Deprecated: "The field incident_creation is deprecated! Please use alert_creation instead.",
@@ -66,16 +66,10 @@ func resourceAlertSource() *schema.Resource {
 				}, false),
 			},
 			"alert_creation": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "ONE_ALERT_PER_EMAIL",
-				ValidateFunc: validation.StringInSlice([]string{
-					"ONE_ALERT_PER_EMAIL",
-					"ONE_ALERT_PER_EMAIL_SUBJECT",
-					"ONE_PENDING_ALERT_ALLOWED",
-					"ONE_OPEN_ALERT_ALLOWED",
-					"OPEN_RESOLVE_ON_EXTRACTION",
-				}, false),
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "ONE_ALERT_PER_EMAIL",
+				ValidateFunc: validation.StringInSlice(ilert.AlertSourceAlertCreationsAll, false),
 			},
 			"active": {
 				Type:     schema.TypeBool,
@@ -184,12 +178,12 @@ func resourceAlertSource() *schema.Resource {
 				MaxItems:    1,
 				MinItems:    1,
 				ForceNew:    true,
-				Description: "A heartbeat alert source will automatically create an incident if it does not receive a heartbeat signal from your app at regular intervals.",
+				Description: "A heartbeat alert source will automatically create an alert if it does not receive a heartbeat signal from your app at regular intervals.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"summary": {
 							Type:        schema.TypeString,
-							Description: "This text will be used as the incident summary, when incidents are created by this alert source",
+							Description: "This text will be used as the alert summary, when alerts are created by this alert source",
 							Optional:    true,
 						},
 						"interval_sec": {
@@ -207,7 +201,7 @@ func resourceAlertSource() *schema.Resource {
 								7 * 24 * 60 * 60,
 								30 * 24 * 60 * 60,
 							}),
-							Description: "The interval after which the heartbeat alert source will create an incident if it does not receive a ping",
+							Description: "The interval after which the heartbeat alert source will create an alert if it does not receive a ping",
 						},
 						"status": {
 							Type:     schema.TypeString,
@@ -301,11 +295,12 @@ func resourceAlertSource() *schema.Resource {
 				},
 			},
 			"autotask_metadata": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
+				Type:       schema.TypeList,
+				Deprecated: "The field autotask_metadata is deprecated! Please use the web UI to configure autotask metadata.",
+				Optional:   true,
+				MaxItems:   1,
+				MinItems:   1,
+				ForceNew:   true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"username": {
@@ -445,6 +440,50 @@ func resourceAlertSource() *schema.Resource {
 				Computed:  true,
 				Sensitive: true,
 			},
+			"summary_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"text_template": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"details_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"text_template": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"routing_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"text_template": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"alert_grouping_window": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice(ilert.AlertSourceAlertGroupingWindowsAll, false),
+			},
 		},
 		CreateContext: resourceAlertSourceCreate,
 		ReadContext:   resourceAlertSourceRead,
@@ -493,6 +532,9 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 	}
 	if val, ok := d.GetOk("alert_creation"); ok {
 		alertCreation := val.(string)
+		if _, ok := d.GetOk("alert_grouping_window"); !ok && alertCreation == ilert.AlertSourceAlertCreations.OneAlertGroupedPerWindow {
+			return nil, fmt.Errorf("[ERROR] Can't set alert creation type 'ONE_ALERT_GROUPED_PER_WINDOW' when alert grouping window is not set")
+		}
 		alertSource.AlertCreation = alertCreation
 	}
 	if val, ok := d.GetOk("integration_key"); ok {
@@ -684,6 +726,40 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		}
 		alertSource.EmailResolvePredicates = eps
 	}
+	if val, ok := d.GetOk("summary_template"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertSource.SummaryTemplate = &ilert.Template{
+				TextTemplate: v["text_template"].(string),
+			}
+		}
+	}
+	if val, ok := d.GetOk("details_template"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertSource.DetailsTemplate = &ilert.Template{
+				TextTemplate: v["text_template"].(string),
+			}
+		}
+	}
+	if val, ok := d.GetOk("routing_template"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertSource.RoutingTemplate = &ilert.Template{
+				TextTemplate: v["text_template"].(string),
+			}
+		}
+	}
+	if val, ok := d.GetOk("alert_grouping_window"); ok {
+		if alert_creation, ok := d.GetOk("alert_creation"); !ok || alert_creation.(string) != ilert.AlertSourceAlertCreations.OneAlertGroupedPerWindow {
+			return nil, fmt.Errorf("[ERROR] Can't set alert grouping window when alert creation is not set or not of type 'ONE_ALERT_GROUPED_PER_WINDOW'")
+		}
+		alertGroupingWindow := val.(string)
+		alertSource.AlertGroupingWindow = alertGroupingWindow
+	}
 
 	return alertSource, nil
 }
@@ -707,7 +783,7 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m in
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert source, %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not create an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -734,7 +810,9 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	log.Printf("[DEBUG] Reading alert source: %s", d.Id())
 	result := &ilert.GetAlertSourceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		r, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
+		includes := make([]*string, 0)
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"))
+		r, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing alert source %s from state because it no longer exist", d.Id())
@@ -745,7 +823,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be read", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -779,6 +857,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if result.AlertSource.IntegrationType == "EMAIL" {
 		d.Set("email", result.AlertSource.IntegrationKey)
 	}
+	d.Set("alert_grouping_window", result.AlertSource.AlertGroupingWindow)
 
 	if result.AlertSource.Heartbeat != nil {
 		d.Set("heartbeat", []interface{}{
@@ -814,6 +893,36 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 		})
 	} else {
 		d.Set("resolve_key_extractor", []interface{}{})
+	}
+
+	if result.AlertSource.SummaryTemplate != nil {
+		d.Set("summary_template", []interface{}{
+			map[string]interface{}{
+				"text_template": result.AlertSource.SummaryTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("summary_template", []interface{}{})
+	}
+
+	if result.AlertSource.DetailsTemplate != nil {
+		d.Set("details_template", []interface{}{
+			map[string]interface{}{
+				"text_template": result.AlertSource.DetailsTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("details_template", []interface{}{})
+	}
+
+	if result.AlertSource.RoutingTemplate != nil {
+		d.Set("routing_template", []interface{}{
+			map[string]interface{}{
+				"text_template": result.AlertSource.RoutingTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("routing_template", []interface{}{})
 	}
 
 	if val, ok := d.GetOk("team"); ok {
@@ -903,7 +1012,7 @@ func resourceAlertSourceUpdate(ctx context.Context, d *schema.ResourceData, m in
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be updated", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an alert source with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -930,7 +1039,7 @@ func resourceAlertSourceDelete(ctx context.Context, d *schema.ResourceData, m in
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be deleted", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an alert source with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -953,7 +1062,9 @@ func resourceAlertSourceExists(d *schema.ResourceData, m interface{}) (bool, err
 	ctx := context.Background()
 	result := false
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		_, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
+		includes := make([]*string, 0)
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"))
+		_, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				result = false
@@ -964,7 +1075,7 @@ func resourceAlertSourceExists(d *schema.ResourceData, m interface{}) (bool, err
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert source to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
@@ -1054,15 +1165,3 @@ func flattenSupportHours(supportHours *ilert.SupportHours) ([]interface{}, error
 
 	return results, nil
 }
-
-// func flattenTeamsList(list []ilert.TeamShort) ([]int64, error) {
-// 	if list == nil {
-// 		return make([]int64, 0), nil
-// 	}
-// 	results := make([]int64, 0)
-// 	for _, item := range list {
-// 		results = append(results, item.ID)
-// 	}
-
-// 	return results, nil
-// }
