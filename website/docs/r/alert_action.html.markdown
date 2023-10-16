@@ -69,7 +69,7 @@ The following arguments are supported:
 - `alert_source` - (Required) An [alert source](#alert-source-arguments) block.
 - `connector` - (Required) A [connector](#connector-arguments) block.
 - `trigger_mode` - (Optional) The trigger mode of the alert action. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
-- `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-resolved`.
+- `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-resolved`, `alert-auto-resolved`, `alert-responder-added`, `alert-responder-removed`, `alert-channel-attached`, `alert-channel-detached`.
 - `datadog` - (Optional) A [datadog](#datadog-arguments) block.
 - `jira` - (Optional) A [jira](#jira-arguments) block.
 - `servicenow` - (Optional) A [servicenow](#servicenow-arguments) block.
