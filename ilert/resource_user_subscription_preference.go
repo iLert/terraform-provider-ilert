@@ -95,6 +95,10 @@ func buildUserSubscriptionPreference(d *schema.ResourceData) (*ilert.UserSubscri
 			contact.ID = int64(cnt["id"].(int))
 		}
 		preference.Contact = contact
+	} else {
+		if preference.Method != "PUSH" {
+			return nil, nil, fmt.Errorf("[ERROR] Field 'contact' must be set when method is 'EMAIL', 'SMS', 'VOICE', 'WHATSAPP' or 'TELEGRAM'")
+		}
 	}
 
 	return preference, ilert.Int64(userId), nil
