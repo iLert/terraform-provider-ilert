@@ -24,7 +24,7 @@ func resourceUserSubscriptionPreference() *schema.Resource {
 			},
 			"contact": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "Either UserEmailContact or UserPhoneNumberContact",
 				MinItems:    1,
 				MaxItems:    1,
@@ -76,20 +76,25 @@ func buildUserSubscriptionPreference(d *schema.ResourceData) (*ilert.UserSubscri
 		Method: method,
 	}
 
-	contactList := d.Get("contact").([]interface{})
-	contact := &ilert.UserContactShort{}
-	if len(contactList) > 0 && contactList[0] != nil {
-		cnt := contactList[0].(map[string]interface{})
-		contact.ID = int64(cnt["id"].(int))
-	}
-	preference.Contact = contact
-
 	user := d.Get("user").([]interface{})
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
 		usr := user[0].(map[string]interface{})
 		id := int64(usr["id"].(int))
 		userId = id
+	}
+
+	if val, ok := d.GetOk("contact"); ok {
+		if preference.Method == "PUSH" {
+			return nil, nil, fmt.Errorf("[ERROR] Field 'contact' must not be set when method is 'PUSH'")
+		}
+		contactList := val.([]interface{})
+		contact := &ilert.UserContactShort{}
+		if len(contactList) > 0 && contactList[0] != nil {
+			cnt := contactList[0].(map[string]interface{})
+			contact.ID = int64(cnt["id"].(int))
+		}
+		preference.Contact = contact
 	}
 
 	return preference, ilert.Int64(userId), nil
