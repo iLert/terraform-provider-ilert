@@ -44,7 +44,7 @@ resource "ilert_user_alert_preference" "example" {
 The following arguments are supported:
 
 - `method` - (Required) The method of the user alert preference. Allowed values are `EMAIL`, `SMS`, `VOICE`, `PUSH`, `WHATSAPP`, `TELEGRAM`.
-- `contact` - (Required) A [contact](#contact-arguments) block.
+- `contact` - (Optional) A [contact](#contact-arguments) block. Required when `method` is `EMAIL`, `SMS`, `VOICE`, `WHATSAPP`, `TELEGRAM`. Must not be set when `method` is `PUSH`.
 - `delay_min` - (Required) The delay of the notification in minutes. Must be a value between `0` and `120` (inclusive).
 - `type` - (Required) The notification type of the user alert preference. Allowed values are `HIGH_PRIORITY`, `LOW_PRIORITY`.
 - `user` - (Required) A [user](#user-arguments) block.

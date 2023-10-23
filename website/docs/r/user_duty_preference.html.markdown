@@ -44,7 +44,7 @@ resource "ilert_user_duty_preference" "example" {
 The following arguments are supported:
 
 - `method` - (Required) The method of the user duty preference. Allowed values are `EMAIL`, `SMS`, `VOICE`, `WHATSAPP`, `TELEGRAM`.
-- `contact` - (Required) A [contact](#contact-arguments) block.
+- `contact` - (Optional) A [contact](#contact-arguments) block. Required when `method` is `EMAIL`, `SMS`, `VOICE`, `WHATSAPP`, `TELEGRAM`. Must not be set when `method` is `PUSH`.
 - `before_min` - (Required) Determines how many minutes in advance the notification should happen. Allowed values are `0`, `15`, `30`, `60`, `180`, `360`, `720`, `1440`.
 - `type` - (Required) The notification type of the user duty preference. Allowed values are `ON_CALL`.
 - `user` - (Required) A [user](#user-arguments) block.
