@@ -2,7 +2,7 @@
 
 ## 23.10.2023, Version 2.1.1
 
-- fix/user-preferences-optional-contact in [#60](https://github.com/iLert/terraform-provider-ilert/pull/60)
+- fix/user-preferences-optional-contact in [#60](https://github.com/iLert/terraform-provider-ilert/pull/61)
 
 ## 09.10.2023, Version 2.1.0
 
