@@ -608,6 +608,11 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
+			"delay_sec": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(0, 7200),
+			},
 		},
 		CreateContext: resourceAlertActionCreate,
 		ReadContext:   resourceAlertActionRead,
@@ -664,9 +669,16 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	if val, ok := d.GetOk("trigger_types"); ok {
 		vL := val.([]interface{})
 		sL := make([]string, 0)
+		_, delaySecIsSet := d.GetOk("delay_sec")
 		for _, m := range vL {
 			v := m.(string)
+			if v == ilert.AlertActionTriggerTypes.AlertEscalationEnded && !delaySecIsSet {
+				return nil, fmt.Errorf("[ERROR] Can't set alert action trigger type 'alert-escalation-ended' when field 'delay_sec' is not set")
+			}
 			sL = append(sL, v)
+		}
+		if !StringSliceContains(sL, "alert-escalation-ended") && delaySecIsSet {
+			return nil, fmt.Errorf("[ERROR] Can't set field 'delay_sec' when trigger types do not include type 'alert-escalation-ended'")
 		}
 		alertAction.TriggerTypes = sL
 	}
@@ -979,6 +991,10 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
+	if val, ok := d.GetOk("delay_sec"); ok {
+		alertAction.DelaySec = val.(int)
+	}
+
 	return alertAction, nil
 }
 
@@ -1232,6 +1248,8 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	if err := d.Set("alert_filter", alertFilter); err != nil {
 		return diag.Errorf("error setting alert filter: %s", err)
 	}
+
+	d.Set("delay_sec", result.AlertAction.DelaySec)
 
 	return nil
 }
