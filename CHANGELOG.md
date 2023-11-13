@@ -1,5 +1,9 @@
 # Changelog
 
+## 13.11.2023, Version 2.2.0
+
+- feature/alert-action-new-trigger-type-delaysec in [#63](https://github.com/iLert/terraform-provider-ilert/pull/63)
+
 ## 23.10.2023, Version 2.1.1
 
 - fix/user-preferences-optional-contact in [#61](https://github.com/iLert/terraform-provider-ilert/pull/61)
