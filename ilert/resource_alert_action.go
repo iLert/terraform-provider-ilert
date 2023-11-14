@@ -608,6 +608,11 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
+			"delay_sec": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(0, 7200),
+			},
 		},
 		CreateContext: resourceAlertActionCreate,
 		ReadContext:   resourceAlertActionRead,
@@ -664,9 +669,16 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	if val, ok := d.GetOk("trigger_types"); ok {
 		vL := val.([]interface{})
 		sL := make([]string, 0)
+		_, delaySecIsSet := d.GetOk("delay_sec")
 		for _, m := range vL {
 			v := m.(string)
+			if v == ilert.AlertActionTriggerTypes.AlertEscalationEnded && !delaySecIsSet {
+				return nil, fmt.Errorf("[ERROR] Can't set alert action trigger type 'alert-escalation-ended' when field 'delay_sec' is not set")
+			}
 			sL = append(sL, v)
+		}
+		if !StringSliceContains(sL, "alert-escalation-ended") && delaySecIsSet {
+			return nil, fmt.Errorf("[ERROR] Can't set field 'delay_sec' when trigger types do not include type 'alert-escalation-ended'")
 		}
 		alertAction.TriggerTypes = sL
 	}
@@ -979,6 +991,10 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
+	if val, ok := d.GetOk("delay_sec"); ok {
+		alertAction.DelaySec = val.(int)
+	}
+
 	return alertAction, nil
 }
 
@@ -1007,7 +1023,7 @@ func resourceAlertActionCreate(ctx context.Context, d *schema.ResourceData, m in
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert action to be created, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an alert action with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not create an alert action with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -1046,7 +1062,7 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be read", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an alert action with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an alert action with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -1233,6 +1249,8 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.Errorf("error setting alert filter: %s", err)
 	}
 
+	d.Set("delay_sec", result.AlertAction.DelaySec)
+
 	return nil
 }
 
@@ -1255,7 +1273,7 @@ func resourceAlertActionUpdate(ctx context.Context, d *schema.ResourceData, m in
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be updated", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an alert action with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an alert action with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -1281,7 +1299,7 @@ func resourceAlertActionDelete(ctx context.Context, d *schema.ResourceData, m in
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be deleted", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an alert action with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete an alert action with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -1313,7 +1331,7 @@ func resourceAlertActionExists(d *schema.ResourceData, m interface{}) (bool, err
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert action to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read an alert action with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
