@@ -609,9 +609,8 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"delay_sec": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ValidateFunc: validation.IntBetween(0, 7200),
+				Type:     schema.TypeInt,
+				Optional: true,
 			},
 		},
 		CreateContext: resourceAlertActionCreate,
@@ -669,7 +668,8 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	if val, ok := d.GetOk("trigger_types"); ok {
 		vL := val.([]interface{})
 		sL := make([]string, 0)
-		_, delaySecIsSet := d.GetOk("delay_sec")
+		delaySec, delaySecExists := d.GetOk("delay_sec")
+		delaySecIsSet := delaySecExists || (delaySec != nil && delaySec.(int) == 0)
 		for _, m := range vL {
 			v := m.(string)
 			if v == ilert.AlertActionTriggerTypes.AlertEscalationEnded && !delaySecIsSet {
@@ -992,6 +992,10 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("delay_sec"); ok {
+		delaySec := val.(int)
+		if delaySec != 0 && (delaySec < 30 || delaySec > 7200) {
+			return nil, fmt.Errorf("[ERROR] Can't set 'delay_sec', value must be either 0 or between 30 and 7200")
+		}
 		alertAction.DelaySec = val.(int)
 	}
 

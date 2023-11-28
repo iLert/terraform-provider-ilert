@@ -1,5 +1,9 @@
 # Changelog
 
+## 27.11.2023, Version 2.2.1
+
+- fix/alert-action-delay-sec-validation in [#65](https://github.com/iLert/terraform-provider-ilert/pull/65)
+
 ## 13.11.2023, Version 2.2.0
 
 - feature/alert-action-new-trigger-type-delaysec in [#63](https://github.com/iLert/terraform-provider-ilert/pull/63)
