@@ -310,8 +310,9 @@ func resourceEscalationPolicyCreate(ctx context.Context, d *schema.ResourceData,
 		log.Printf("[ERROR] Creating ilert escalation policy error %s", err.Error())
 		return diag.FromErr(err)
 	}
+
 	if result == nil || result.EscalationPolicy == nil {
-		log.Printf("[ERROR] Creating ilert escalation policy error: empty response ")
+		log.Printf("[ERROR] Creating ilert escalation policy error: empty response")
 		return diag.Errorf("escalation policy response is empty")
 	}
 
@@ -341,20 +342,21 @@ func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an escalation policy with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an escalation policy with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert escalation policy error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.EscalationPolicy == nil {
-		log.Printf("[ERROR] Reading ilert escalation policy error: empty response ")
+		log.Printf("[ERROR] Reading ilert escalation policy error: empty response")
 		return diag.Errorf("escalation policy response is empty")
 	}
 
@@ -436,9 +438,9 @@ func resourceEscalationPolicyUpdate(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an escalation policy with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an escalation policy with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -466,9 +468,9 @@ func resourceEscalationPolicyDelete(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an escalation policy with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete an escalation policy with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -504,13 +506,14 @@ func resourceEscalationPolicyExists(d *schema.ResourceData, m interface{}) (bool
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for escalation policy to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read an escalation policy with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert escalation policy error: %s", err.Error())
 		return false, err
 	}
 	return result, nil

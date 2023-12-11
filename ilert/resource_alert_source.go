@@ -793,7 +793,7 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 	if result == nil || result.AlertSource == nil {
-		log.Printf("[ERROR] Creating ilert alert source error: empty response ")
+		log.Printf("[ERROR] Creating ilert alert source error: empty response")
 		return diag.Errorf("alert source response is empty")
 	}
 	d.SetId(strconv.FormatInt(result.AlertSource.ID, 10))
@@ -821,7 +821,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
 			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
@@ -830,11 +830,12 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert alert source error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.AlertSource == nil {
-		log.Printf("[ERROR] Reading ilert alert source error: empty response ")
+		log.Printf("[ERROR] Reading ilert alert source error: empty response")
 		return diag.Errorf("alert source response is empty")
 	}
 
@@ -1010,7 +1011,7 @@ func resourceAlertSourceUpdate(ctx context.Context, d *schema.ResourceData, m in
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
 			return resource.NonRetryableError(fmt.Errorf("could not update an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
@@ -1037,7 +1038,7 @@ func resourceAlertSourceDelete(ctx context.Context, d *schema.ResourceData, m in
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
 			return resource.NonRetryableError(fmt.Errorf("could not delete an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
@@ -1082,6 +1083,7 @@ func resourceAlertSourceExists(d *schema.ResourceData, m interface{}) (bool, err
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert alert source error: %s", err.Error())
 		return false, err
 	}
 	return result, nil

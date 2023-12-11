@@ -75,33 +75,35 @@ func buildStatusPageGroup(d *schema.ResourceData) (*ilert.StatusPageGroup, *int6
 func resourceStatusPageGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
-	StatusPageGroup, StatusPageID, err := buildStatusPageGroup(d)
+	statusPageGroup, StatusPageID, err := buildStatusPageGroup(d)
 	if err != nil {
 		log.Printf("[ERROR] Building status page group error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[INFO] Creating status page group %s on status page with ID %d", StatusPageGroup.Name, StatusPageID)
+	log.Printf("[INFO] Creating status page group %s on status page with ID %d", statusPageGroup.Name, StatusPageID)
 
 	result := &ilert.CreateStatusPageGroupOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		r, err := client.CreateStatusPageGroup(&ilert.CreateStatusPageGroupInput{StatusPageGroup: StatusPageGroup, StatusPageID: StatusPageID})
+		r, err := client.CreateStatusPageGroup(&ilert.CreateStatusPageGroupInput{StatusPageGroup: statusPageGroup, StatusPageID: StatusPageID})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for status page group to be created, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not create a status page group with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
+
 	if err != nil {
 		log.Printf("[ERROR] Creating ilert status page group error %s", err.Error())
 		return diag.FromErr(err)
 	}
+
 	if result == nil || result.StatusPageGroup == nil {
-		log.Printf("[ERROR] Creating ilert status page group error: empty response ")
+		log.Printf("[ERROR] Creating ilert status page group error: empty response")
 		return diag.Errorf("status page group response is empty")
 	}
 
@@ -119,22 +121,22 @@ func resourceStatusPageGroupCreate(ctx context.Context, d *schema.ResourceData, 
 func resourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
-	StatusPageGroupID, err := strconv.ParseInt(d.Id(), 10, 64)
+	statusPageGroupID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not parse status page group id %s", err.Error())
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	spL := d.Get("status_page").([]interface{})
-	StatusPageID := int64(-1)
+	statusPageID := int64(-1)
 	if len(spL) > 0 && spL[0] != nil {
 		sp := spL[0].(map[string]interface{})
 		id := int64(sp["id"].(int))
-		StatusPageID = id
+		statusPageID = id
 	}
-	log.Printf("[DEBUG] Reading status page group id %s from status page id %d", d.Id(), StatusPageID)
+	log.Printf("[DEBUG] Reading status page group id %s from status page id %d", d.Id(), statusPageID)
 	result := &ilert.GetStatusPageGroupOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		r, err := client.GetStatusPageGroup(&ilert.GetStatusPageGroupInput{StatusPageGroupID: ilert.Int64(StatusPageGroupID), StatusPageID: ilert.Int64(StatusPageID)})
+		r, err := client.GetStatusPageGroup(&ilert.GetStatusPageGroupInput{StatusPageGroupID: ilert.Int64(statusPageGroupID), StatusPageID: ilert.Int64(statusPageID)})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing status page group %s from state because it no longer exists", d.Id())
@@ -146,18 +148,19 @@ func resourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, m 
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for status page group to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an status page group with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an status page group with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert status page group error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.StatusPageGroup == nil {
-		log.Printf("[ERROR] Reading ilert status page group error: empty response ")
+		log.Printf("[ERROR] Reading ilert status page group error: empty response")
 		return diag.Errorf("status page group response is empty")
 	}
 
@@ -165,7 +168,7 @@ func resourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, m 
 
 	sp := make([]interface{}, 0)
 	s := make(map[string]interface{}, 0)
-	s["id"] = int(StatusPageID)
+	s["id"] = int(statusPageID)
 	sp = append(sp, s)
 	d.Set("status_page", sp)
 
@@ -175,13 +178,13 @@ func resourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, m 
 func resourceStatusPageGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
-	StatusPageGroup, StatusPageID, err := buildStatusPageGroup(d)
+	statusPageGroup, statusPageID, err := buildStatusPageGroup(d)
 	if err != nil {
 		log.Printf("[ERROR] Building status page group error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
-	StatusPageGroupID, err := strconv.ParseInt(d.Id(), 10, 64)
+	statusPageGroupID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not parse status page group id %s", err.Error())
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
@@ -189,13 +192,13 @@ func resourceStatusPageGroupUpdate(ctx context.Context, d *schema.ResourceData, 
 	log.Printf("[DEBUG] Updating status page group: %s", d.Id())
 
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
-		_, err = client.UpdateStatusPageGroup(&ilert.UpdateStatusPageGroupInput{StatusPageGroup: StatusPageGroup, StatusPageGroupID: ilert.Int64(StatusPageGroupID), StatusPageID: StatusPageID})
+		_, err = client.UpdateStatusPageGroup(&ilert.UpdateStatusPageGroupInput{StatusPageGroup: statusPageGroup, StatusPageGroupID: ilert.Int64(statusPageGroupID), StatusPageID: statusPageID})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for status page group with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for status page group with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an status page group with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an status page group with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -211,27 +214,27 @@ func resourceStatusPageGroupUpdate(ctx context.Context, d *schema.ResourceData, 
 func resourceStatusPageGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
-	StatusPageGroupID, err := strconv.ParseInt(d.Id(), 10, 64)
+	statusPageGroupID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not parse status page group id %s", err.Error())
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 	spL := d.Get("status_page").([]interface{})
-	StatusPageID := int64(-1)
+	statusPageID := int64(-1)
 	if len(spL) > 0 && spL[0] != nil {
 		sp := spL[0].(map[string]interface{})
 		id := int64(sp["id"].(int))
-		StatusPageID = id
+		statusPageID = id
 	}
 	log.Printf("[DEBUG] Deleting status page group: %s", d.Id())
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
-		_, err = client.DeleteStatusPageGroup(&ilert.DeleteStatusPageGroupInput{StatusPageGroupID: ilert.Int64(StatusPageGroupID), StatusPageID: ilert.Int64(StatusPageID)})
+		_, err = client.DeleteStatusPageGroup(&ilert.DeleteStatusPageGroupInput{StatusPageGroupID: ilert.Int64(statusPageGroupID), StatusPageID: ilert.Int64(statusPageID)})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for status page group with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for status page group with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an status page group with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete a status page group with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -247,23 +250,23 @@ func resourceStatusPageGroupDelete(ctx context.Context, d *schema.ResourceData, 
 func resourceStatusPageGroupExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	client := m.(*ilert.Client)
 
-	StatusPageGroupID, err := strconv.ParseInt(d.Id(), 10, 64)
+	statusPageGroupID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not parse status page group id %s", err.Error())
 		return false, unconvertibleIDErr(d.Id(), err)
 	}
 	spL := d.Get("status_page").([]interface{})
-	StatusPageID := int64(-1)
+	statusPageID := int64(-1)
 	if len(spL) > 0 && spL[0] != nil {
 		sp := spL[0].(map[string]interface{})
 		id := int64(sp["id"].(int))
-		StatusPageID = id
+		statusPageID = id
 	}
 	log.Printf("[DEBUG] Reading status page group: %s", d.Id())
 	ctx := context.Background()
 	result := false
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		_, err := client.GetStatusPageGroup(&ilert.GetStatusPageGroupInput{StatusPageGroupID: ilert.Int64(StatusPageGroupID), StatusPageID: ilert.Int64(StatusPageID)})
+		_, err := client.GetStatusPageGroup(&ilert.GetStatusPageGroupInput{StatusPageGroupID: ilert.Int64(statusPageGroupID), StatusPageID: ilert.Int64(statusPageID)})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				result = false
@@ -274,13 +277,14 @@ func resourceStatusPageGroupExists(d *schema.ResourceData, m interface{}) (bool,
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for status page group to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read a status page group with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert status page group error: %s", err.Error())
 		return false, err
 	}
 	return result, nil

@@ -138,7 +138,7 @@ func resourceUserDutyPreferenceCreate(ctx context.Context, d *schema.ResourceDat
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for user duty preference to be created, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not create a user duty preference with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -148,7 +148,7 @@ func resourceUserDutyPreferenceCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 	if result == nil || result.UserDutyPreference == nil {
-		log.Printf("[ERROR] Creating ilert user duty preference error: empty response ")
+		log.Printf("[ERROR] Creating ilert user duty preference error: empty response")
 		return diag.Errorf("user duty preference response is empty")
 	}
 
@@ -189,20 +189,21 @@ func resourceUserDutyPreferenceRead(ctx context.Context, d *schema.ResourceData,
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user duty preference with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for user duty preference with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an user duty preference with id %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an user duty preference with id %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert user duty preference error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.UserDutyPreference == nil {
-		log.Printf("[ERROR] Reading ilert user duty preference error: empty response ")
+		log.Printf("[ERROR] Reading ilert user duty preference error: empty response")
 		return diag.Errorf("user duty preference response is empty")
 	}
 
@@ -248,9 +249,9 @@ func resourceUserDutyPreferenceUpdate(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user duty preference with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for user duty preference with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an user duty preference with id %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update a user duty preference with id %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -283,9 +284,9 @@ func resourceUserDutyPreferenceDelete(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user duty preference with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for user duty preference with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an user duty preference with id %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete a user duty preference with id %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -327,13 +328,14 @@ func resourceUserDutyPreferenceExists(d *schema.ResourceData, m interface{}) (bo
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for user duty preference to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read a user duty preference with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert user duty preference error: %s", err.Error())
 		return false, err
 	}
 	return result, nil
