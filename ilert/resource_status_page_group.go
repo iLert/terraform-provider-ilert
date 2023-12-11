@@ -75,17 +75,17 @@ func buildStatusPageGroup(d *schema.ResourceData) (*ilert.StatusPageGroup, *int6
 func resourceStatusPageGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
-	statusPageGroup, StatusPageID, err := buildStatusPageGroup(d)
+	statusPageGroup, statusPageID, err := buildStatusPageGroup(d)
 	if err != nil {
 		log.Printf("[ERROR] Building status page group error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[INFO] Creating status page group %s on status page with ID %d", statusPageGroup.Name, StatusPageID)
+	log.Printf("[INFO] Creating status page group %s on status page with ID %d", statusPageGroup.Name, statusPageID)
 
 	result := &ilert.CreateStatusPageGroupOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		r, err := client.CreateStatusPageGroup(&ilert.CreateStatusPageGroupInput{StatusPageGroup: statusPageGroup, StatusPageID: StatusPageID})
+		r, err := client.CreateStatusPageGroup(&ilert.CreateStatusPageGroupInput{StatusPageGroup: statusPageGroup, StatusPageID: statusPageID})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
@@ -111,7 +111,7 @@ func resourceStatusPageGroupCreate(ctx context.Context, d *schema.ResourceData, 
 
 	sp := make([]interface{}, 0)
 	s := make(map[string]interface{}, 0)
-	s["id"] = int(*StatusPageID)
+	s["id"] = int(*statusPageID)
 	sp = append(sp, s)
 	d.Set("status_page", sp)
 
