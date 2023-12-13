@@ -612,13 +612,9 @@ func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m inte
 		log.Printf("[ERROR] Creating ilert connector error %s", err.Error())
 		return diag.FromErr(err)
 	}
-	if result == nil {
-		log.Printf("[ERROR] Creating ilert connector error: empty response ")
-		return diag.Errorf("connector response is empty")
-	}
 
 	if result == nil || result.Connector == nil {
-		log.Printf("[ERROR] Reading ilert connector error: empty response ")
+		log.Printf("[ERROR] Creating ilert connector error: empty response")
 		return diag.Errorf("connector response is empty")
 	}
 
@@ -644,20 +640,21 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for connector with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for connector with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an connector with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an connector with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert connector error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.Connector == nil {
-		log.Printf("[ERROR] Reading ilert connector error: empty response ")
+		log.Printf("[ERROR] Reading ilert connector error: empty response")
 		return diag.Errorf("connector response is empty")
 	}
 
@@ -793,9 +790,9 @@ func resourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for connector with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for connector with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an connector with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an connector with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -818,9 +815,9 @@ func resourceConnectorDelete(ctx context.Context, d *schema.ResourceData, m inte
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for connector with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for connector with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an connector with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete an connector with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -851,13 +848,14 @@ func resourceConnectorExists(d *schema.ResourceData, m interface{}) (bool, error
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for connector to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read a connector with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert connector error: %s", err.Error())
 		return false, err
 	}
 	return result, nil

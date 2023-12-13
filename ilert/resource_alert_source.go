@@ -479,6 +479,73 @@ func resourceAlertSource() *schema.Resource {
 					},
 				},
 			},
+			"link_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"text": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"href_template": {
+							Type:     schema.TypeList,
+							Required: true,
+							MinItems: 1,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"text_template": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"priority_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"value_template": {
+							Type:     schema.TypeList,
+							Required: true,
+							MinItems: 1,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"text_template": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+						"mapping": {
+							Type:     schema.TypeList,
+							Required: true,
+							MinItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"value": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"priority": {
+										Type:         schema.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringInSlice(ilert.AlertPrioritiesAll, false),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"alert_grouping_window": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -753,6 +820,61 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 			}
 		}
 	}
+	if val, ok := d.GetOk("link_template"); ok {
+		vL := val.([]interface{})
+		ltmps := make([]ilert.LinkTemplate, 0)
+		for _, m := range vL {
+			v := m.(map[string]interface{})
+			ltmp := ilert.LinkTemplate{}
+			if v["text"] != nil && v["text"].(string) != "" {
+				ltmp.Text = v["text"].(string)
+			}
+			htmp := ilert.Template{}
+			if v["href_template"] != nil && len(v["href_template"].([]interface{})) > 0 {
+				htL := v["href_template"].([]interface{})
+				h := htL[0].(map[string]interface{})
+				htmp.TextTemplate = h["text_template"].(string)
+
+			}
+			ltmp.HrefTemplate = &htmp
+			ltmps = append(ltmps, ltmp)
+		}
+		alertSource.LinkTemplates = ltmps
+	}
+	if val, ok := d.GetOk("priority_template"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			ptmp := ilert.PriorityTemplate{}
+
+			vtmp := ilert.Template{}
+			if v["value_template"] != nil && len(v["value_template"].([]interface{})) > 0 {
+				htL := v["value_template"].([]interface{})
+				h := htL[0].(map[string]interface{})
+				vtmp.TextTemplate = h["text_template"].(string)
+			}
+			ptmp.ValueTemplate = &vtmp
+
+			if v["mapping"] != nil {
+				mL := v["mapping"].([]interface{})
+				mpgs := make([]ilert.Mapping, 0)
+
+				for _, m := range mL {
+					mpg := ilert.Mapping{}
+					mp := m.(map[string]interface{})
+					if mp["value"] != nil && mp["value"].(string) != "" {
+						mpg.Value = mp["value"].(string)
+					}
+					if mp["priority"] != nil && mp["priority"].(string) != "" {
+						mpg.Priority = mp["priority"].(string)
+					}
+					mpgs = append(mpgs, mpg)
+				}
+				ptmp.Mappings = mpgs
+			}
+			alertSource.PriorityTemplate = &ptmp
+		}
+	}
 	if val, ok := d.GetOk("alert_grouping_window"); ok {
 		if alert_creation, ok := d.GetOk("alert_creation"); !ok || alert_creation.(string) != ilert.AlertSourceAlertCreations.OneAlertGroupedPerWindow {
 			return nil, fmt.Errorf("[ERROR] Can't set alert grouping window when alert creation is not set or not of type 'ONE_ALERT_GROUPED_PER_WINDOW'")
@@ -793,7 +915,7 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 	if result == nil || result.AlertSource == nil {
-		log.Printf("[ERROR] Creating ilert alert source error: empty response ")
+		log.Printf("[ERROR] Creating ilert alert source error: empty response")
 		return diag.Errorf("alert source response is empty")
 	}
 	d.SetId(strconv.FormatInt(result.AlertSource.ID, 10))
@@ -811,7 +933,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	result := &ilert.GetAlertSourceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"))
 		r, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
@@ -821,7 +943,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
 			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
@@ -830,11 +952,12 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert alert source error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.AlertSource == nil {
-		log.Printf("[ERROR] Reading ilert alert source error: empty response ")
+		log.Printf("[ERROR] Reading ilert alert source error: empty response")
 		return diag.Errorf("alert source response is empty")
 	}
 
@@ -925,6 +1048,22 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 		d.Set("routing_template", []interface{}{})
 	}
 
+	linkTemplates, err := flattenLinkTemplatesList(result.AlertSource.LinkTemplates)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("link_template", linkTemplates); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting link templates: %s", err))
+	}
+
+	priorityTemplate, err := flattenPriorityTemplate(result.AlertSource.PriorityTemplate)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("priority_template", priorityTemplate); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting priority template: %s", err))
+	}
+
 	if val, ok := d.GetOk("team"); ok {
 		if val != nil {
 			vL := val.([]interface{})
@@ -1010,7 +1149,7 @@ func resourceAlertSourceUpdate(ctx context.Context, d *schema.ResourceData, m in
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
 			return resource.NonRetryableError(fmt.Errorf("could not update an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
@@ -1037,7 +1176,7 @@ func resourceAlertSourceDelete(ctx context.Context, d *schema.ResourceData, m in
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
 			return resource.NonRetryableError(fmt.Errorf("could not delete an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
@@ -1063,7 +1202,7 @@ func resourceAlertSourceExists(d *schema.ResourceData, m interface{}) (bool, err
 	result := false
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"))
 		_, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
@@ -1082,6 +1221,7 @@ func resourceAlertSourceExists(d *schema.ResourceData, m interface{}) (bool, err
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert alert source error: %s", err.Error())
 		return false, err
 	}
 	return result, nil
@@ -1160,6 +1300,60 @@ func flattenSupportHours(supportHours *ilert.SupportHours) ([]interface{}, error
 	}
 	supportDays = append(supportDays, supportDaysItem)
 	result["support_days"] = supportDays
+
+	results = append(results, result)
+
+	return results, nil
+}
+
+func flattenLinkTemplatesList(linkTemplatesList []ilert.LinkTemplate) ([]interface{}, error) {
+	if linkTemplatesList == nil {
+		return make([]interface{}, 0), nil
+	}
+	results := make([]interface{}, 0)
+	for _, linkTemplate := range linkTemplatesList {
+		result := make(map[string]interface{})
+		result["text"] = linkTemplate.Text
+
+		hrefTemplates := make([]interface{}, 0)
+		hrefTemplate := make(map[string]interface{})
+		hrefTemplate["text_template"] = linkTemplate.HrefTemplate.TextTemplate
+
+		hrefTemplates = append(hrefTemplates, hrefTemplate)
+		result["href_template"] = hrefTemplates
+
+		results = append(results, result)
+	}
+
+	return results, nil
+}
+
+func flattenPriorityTemplate(priorityTemplate *ilert.PriorityTemplate) ([]interface{}, error) {
+	if priorityTemplate == nil {
+		return make([]interface{}, 0), nil
+	}
+	results := make([]interface{}, 0)
+
+	result := make(map[string]interface{})
+
+	valueTemplates := make([]interface{}, 0)
+	valueTemplate := make(map[string]interface{})
+	valueTemplate["text_template"] = priorityTemplate.ValueTemplate.TextTemplate
+
+	valueTemplates = append(valueTemplates, valueTemplate)
+	result["value_template"] = valueTemplates
+
+	mappings := make([]interface{}, 0)
+	for _, priorityMapping := range priorityTemplate.Mappings {
+		mapping := make(map[string]interface{})
+
+		mapping["value"] = priorityMapping.Value
+		mapping["priority"] = priorityMapping.Priority
+
+		mappings = append(mappings, mapping)
+	}
+
+	result["mapping"] = mappings
 
 	results = append(results, result)
 

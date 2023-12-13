@@ -46,9 +46,9 @@ func dataSourceMetricRead(ctx context.Context, d *schema.ResourceData, meta inte
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for metric with name '%s' to be read", searchName))
+				return resource.RetryableError(fmt.Errorf("waiting for metric with name '%s' to be read, error: %s", searchName, err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read a metric with name: %s", searchName))
+			return resource.NonRetryableError(fmt.Errorf("could not read a metric with name: %s, error: %s", searchName, err.Error()))
 		}
 
 		found := resp.Metric

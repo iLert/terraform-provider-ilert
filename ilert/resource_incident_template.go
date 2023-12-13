@@ -136,7 +136,7 @@ func resourceIncidentTemplateCreate(ctx context.Context, d *schema.ResourceData,
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for incident template to be created, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not create an incident template with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -146,7 +146,7 @@ func resourceIncidentTemplateCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 	if result == nil || result.IncidentTemplate == nil {
-		log.Printf("[ERROR] Creating ilert incident template error: empty response ")
+		log.Printf("[ERROR] Creating ilert incident template error: empty response")
 		return diag.Errorf("incident template response is empty")
 	}
 
@@ -175,20 +175,21 @@ func resourceIncidentTemplateRead(ctx context.Context, d *schema.ResourceData, m
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for incident template with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for incident template with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an incident template with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an incident template with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert incident template error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.IncidentTemplate == nil {
-		log.Printf("[ERROR] Reading ilert incident template error: empty response ")
+		log.Printf("[ERROR] Reading ilert incident template error: empty response")
 		return diag.Errorf("incident template response is empty")
 	}
 
@@ -230,9 +231,9 @@ func resourceIncidentTemplateUpdate(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for incident template with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for incident template with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an incident template with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an incident template with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -259,9 +260,9 @@ func resourceIncidentTemplateDelete(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for incident template with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for incident template with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an incident template with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete an incident template with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -304,6 +305,7 @@ func resourceIncidentTemplateExists(d *schema.ResourceData, m interface{}) (bool
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert incident template error: %s", err.Error())
 		return false, err
 	}
 	return result, nil
