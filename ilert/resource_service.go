@@ -150,7 +150,7 @@ func resourceServiceCreate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 	if result == nil || result.Service == nil {
-		log.Printf("[ERROR] Creating ilert service error: empty response ")
+		log.Printf("[ERROR] Creating ilert service error: empty response")
 		return diag.Errorf("service response is empty")
 	}
 
@@ -179,20 +179,21 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, m interfac
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for service with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for service with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an service with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an service with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert service error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.Service == nil {
-		log.Printf("[ERROR] Reading ilert service error: empty response ")
+		log.Printf("[ERROR] Reading ilert service error: empty response")
 		return diag.Errorf("service response is empty")
 	}
 
@@ -234,9 +235,9 @@ func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for service with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for service with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an service with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an service with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -263,9 +264,9 @@ func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, m interf
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for service with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for service with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an service with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete an service with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -301,13 +302,14 @@ func resourceServiceExists(d *schema.ResourceData, m interface{}) (bool, error) 
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for service to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read a service with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert service error: %s", err.Error())
 		return false, err
 	}
 	return result, nil

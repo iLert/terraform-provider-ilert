@@ -157,7 +157,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 	if result == nil || result.User == nil {
-		log.Printf("[ERROR] Creating ilert user error: empty response ")
+		log.Printf("[ERROR] Creating ilert user error: empty response")
 		return diag.Errorf("user response is empty")
 	}
 
@@ -186,20 +186,21 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for user with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an user with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an user with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert user error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.User == nil {
-		log.Printf("[ERROR] Reading ilert user error: empty response ")
+		log.Printf("[ERROR] Reading ilert user error: empty response")
 		return diag.Errorf("user response is empty")
 	}
 
@@ -237,9 +238,9 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for user with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an user with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update a user with id %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -266,9 +267,9 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for user with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an user with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete a user with id %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -304,13 +305,14 @@ func resourceUserExists(d *schema.ResourceData, m interface{}) (bool, error) {
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for user to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read a user with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert user error: %s", err.Error())
 		return false, err
 	}
 	return result, nil

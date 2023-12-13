@@ -1,5 +1,9 @@
 # Changelog
 
+## 11.12.2023, Version 2.3.0
+
+- feature/improve-error-logging in [#71](https://github.com/iLert/terraform-provider-ilert/pull/71)
+
 ## 27.11.2023, Version 2.2.1
 
 - fix/alert-action-delay-sec-validation in [#65](https://github.com/iLert/terraform-provider-ilert/pull/65)

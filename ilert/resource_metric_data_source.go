@@ -211,7 +211,7 @@ func resourceMetricDataSourceCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 	if result == nil || result.MetricDataSource == nil {
-		log.Printf("[ERROR] Creating ilert metric data source error: empty response ")
+		log.Printf("[ERROR] Creating ilert metric data source error: empty response")
 		return diag.Errorf("metric data source response is empty")
 	}
 
@@ -240,20 +240,21 @@ func resourceMetricDataSourceRead(ctx context.Context, d *schema.ResourceData, m
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for metric data source with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for metric data source with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an metric data source with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an metric data source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert metric data source error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.MetricDataSource == nil {
-		log.Printf("[ERROR] Reading ilert metric data source error: empty response ")
+		log.Printf("[ERROR] Reading ilert metric data source error: empty response")
 		return diag.Errorf("metric data source response is empty")
 	}
 
@@ -284,31 +285,31 @@ func resourceMetricDataSourceUpdate(ctx context.Context, d *schema.ResourceData,
 
 	metricdatasource, err := buildMetricDataSource(d)
 	if err != nil {
-		log.Printf("[ERROR] Building metricdatasource error %s", err.Error())
+		log.Printf("[ERROR] Building metric data source error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	metricdatasourceID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		log.Printf("[ERROR] Could not parse metricdatasource id %s", err.Error())
+		log.Printf("[ERROR] Could not parse metric data source id %s", err.Error())
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
-	log.Printf("[DEBUG] Updating metricdatasource: %s", d.Id())
+	log.Printf("[DEBUG] Updating metric data source: %s", d.Id())
 
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
 		_, err = client.UpdateMetricDataSource(&ilert.UpdateMetricDataSourceInput{MetricDataSource: metricdatasource, MetricDataSourceID: ilert.Int64(metricdatasourceID)})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for metricdatasource with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for metric data source with id '%s' to be updated", d.Id()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an metricdatasource with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an metric data source with ID %s", d.Id()))
 		}
 		return nil
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Updating ilert metricdatasource error %s", err.Error())
+		log.Printf("[ERROR] Updating ilert metric data source error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -320,23 +321,23 @@ func resourceMetricDataSourceDelete(ctx context.Context, d *schema.ResourceData,
 
 	metricdatasourceID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		log.Printf("[ERROR] Could not parse metricdatasource id %s", err.Error())
+		log.Printf("[ERROR] Could not parse metric data source id %s", err.Error())
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
-	log.Printf("[DEBUG] Deleting metricdatasource: %s", d.Id())
+	log.Printf("[DEBUG] Deleting metric data source: %s", d.Id())
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		_, err = client.DeleteMetricDataSource(&ilert.DeleteMetricDataSourceInput{MetricDataSourceID: ilert.Int64(metricdatasourceID)})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for metricdatasource with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for metric data source with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an metricdatasource with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete an metric data source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Deleting ilert metricdatasource error %s", err.Error())
+		log.Printf("[ERROR] Deleting ilert metric data source error %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -349,10 +350,10 @@ func resourceMetricDataSourceExists(d *schema.ResourceData, m interface{}) (bool
 
 	metricdatasourceID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
-		log.Printf("[ERROR] Could not parse metricdatasource id %s", err.Error())
+		log.Printf("[ERROR] Could not parse metric data source id %s", err.Error())
 		return false, unconvertibleIDErr(d.Id(), err)
 	}
-	log.Printf("[DEBUG] Reading metricdatasource: %s", d.Id())
+	log.Printf("[DEBUG] Reading metric data source: %s", d.Id())
 	ctx := context.Background()
 	result := false
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
@@ -363,17 +364,18 @@ func resourceMetricDataSourceExists(d *schema.ResourceData, m interface{}) (bool
 				return nil
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading ilert metricdatasource error '%s', so retry again", err.Error())
+				log.Printf("[ERROR] Reading ilert metric data source error '%s', so retry again", err.Error())
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for metricdatasource to be read, error: %s", err.Error()))
+				return resource.RetryableError(fmt.Errorf("waiting for metric data source to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read a metric data source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert metric data source error: %s", err.Error())
 		return false, err
 	}
 	return result, nil
