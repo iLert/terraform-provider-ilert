@@ -57,9 +57,11 @@ The following arguments are supported:
 - `heartbeat` - (Optional) A [heartbeat](#heartbeat-arguments) block. This option is required if `integration_type` is `HEARTBEAT`.
 - `support_hours` - (Optional) A [support_hours](#support-hours-arguments) block. This option is allowed if `alert_priority_rule` is `HIGH_DURING_SUPPORT_HOURS` or `LOW_DURING_SUPPORT_HOURS`.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
-- `summary_template` - (Optional) A summary [template](#template-arguments) blocks.
-- `details_template` - (Optional) A details [template](#template-arguments) blocks.
-- `routing_template` - (Optional) A routing [template](#template-arguments) blocks.
+- `summary_template` - (Optional) A summary [template](#template-arguments) block.
+- `details_template` - (Optional) A details [template](#template-arguments) block.
+- `routing_template` - (Optional) A routing [template](#template-arguments) block.
+- `link_template` - (Optional) One or more [link template](#link-template-arguments) block.
+- `priority_template` - (Optional) A [priority template](#priority-template-arguments) block.
 - `alert_grouping_window` - (Optional) The alert grouping time frame. Any alerts triggered within this time frame will be grouped together. This field has to be defined when `alert_creation` is set to `ONE_ALERT_GROUPED_PER_WINDOW`.
 
 #### Heartbeat Arguments
@@ -114,6 +116,21 @@ The following arguments are supported:
 #### Template Arguments
 
 - `text_template` - (Required) The content of the template. It is recommended to use the exact content as generated via blocks in the web UI to prevent inconsistencies between the ilert API and Terraform.
+
+#### Link template Arguments
+
+- `text` - (Required) The display name for the link.
+- `href_template` - (Required) A [template](#template-arguments) block.
+
+#### Priority template Arguments
+
+- `value_template` - (Required) A [template](#template-arguments) block.
+- `mapping` - (Required) One or more [mapping](#mapping-arguments) blocks.
+
+#### Mapping Arguments
+
+- `value` - (Required) The value that should be extracted from the alerts payload.
+- `priority` - (Required) The priority the alert should be mapped to. Allowed values are `HIGH` and `LOW`.
 
 ### Support Hours Example
 
