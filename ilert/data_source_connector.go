@@ -41,9 +41,9 @@ func dataSourceConnectorRead(ctx context.Context, d *schema.ResourceData, meta i
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for connector with name '%s' to be read", searchName))
+				return resource.RetryableError(fmt.Errorf("waiting for connector with name '%s' to be read, error: %s", searchName, err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read a connector with name: %s", searchName))
+			return resource.NonRetryableError(fmt.Errorf("could not read a connector with name: %s, error: %s", searchName, err.Error()))
 		}
 
 		found := resp.Connector

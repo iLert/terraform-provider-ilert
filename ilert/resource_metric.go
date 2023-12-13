@@ -225,7 +225,7 @@ func resourceMetricCreate(ctx context.Context, d *schema.ResourceData, m interfa
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for metric to be created, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not create a metric with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -234,8 +234,9 @@ func resourceMetricCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		log.Printf("[ERROR] Creating ilert metric error %s", err.Error())
 		return diag.FromErr(err)
 	}
+
 	if result == nil || result.Metric == nil {
-		log.Printf("[ERROR] Creating ilert metric error: empty response ")
+		log.Printf("[ERROR] Creating ilert metric error: empty response")
 		return diag.Errorf("metric response is empty")
 	}
 
@@ -264,20 +265,21 @@ func resourceMetricRead(ctx context.Context, d *schema.ResourceData, m interface
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for metric with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for metric with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an metric with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an metric with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert metric error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.Metric == nil {
-		log.Printf("[ERROR] Reading ilert metric error: empty response ")
+		log.Printf("[ERROR] Reading ilert metric error: empty response")
 		return diag.Errorf("metric response is empty")
 	}
 
@@ -330,9 +332,9 @@ func resourceMetricUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for metric with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for metric with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an metric with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an metric with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -359,9 +361,9 @@ func resourceMetricDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for metric with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for metric with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an metric with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete an metric with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -397,13 +399,14 @@ func resourceMetricExists(d *schema.ResourceData, m interface{}) (bool, error) {
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for metric to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read a metric with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert metric error: %s", err.Error())
 		return false, err
 	}
 	return result, nil

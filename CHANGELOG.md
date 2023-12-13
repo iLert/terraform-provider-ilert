@@ -2,6 +2,7 @@
 
 ## 12.12.2023, Version 2.3.0
 
+- feature/improve-error-logging in [#71](https://github.com/iLert/terraform-provider-ilert/pull/71)
 - feature/alert-source-link-priority-templates in [#73](https://github.com/iLert/terraform-provider-ilert/pull/73)
 
 ## 27.11.2023, Version 2.2.1

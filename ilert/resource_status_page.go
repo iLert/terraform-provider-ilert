@@ -372,7 +372,7 @@ func resourceStatusPageCreate(ctx context.Context, d *schema.ResourceData, m int
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for status page to be created, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not create a status page with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -382,7 +382,7 @@ func resourceStatusPageCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 	if result == nil || result.StatusPage == nil {
-		log.Printf("[ERROR] Creating ilert status page error: empty response ")
+		log.Printf("[ERROR] Creating ilert status page error: empty response")
 		return diag.Errorf("status page response is empty")
 	}
 
@@ -411,20 +411,21 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for status page with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for status page with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an status page with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an status page with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert status page error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.StatusPage == nil {
-		log.Printf("[ERROR] Reading ilert status page error: empty response ")
+		log.Printf("[ERROR] Reading ilert status page error: empty response")
 		return diag.Errorf("status page response is empty")
 	}
 
@@ -506,9 +507,9 @@ func resourceStatusPageUpdate(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for status page with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for status page with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an status page with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an status page with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -535,9 +536,9 @@ func resourceStatusPageDelete(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for status page with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for status page with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an status page with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete an status page with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -573,13 +574,14 @@ func resourceStatusPageExists(d *schema.ResourceData, m interface{}) (bool, erro
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for status page to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read a status page with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert status page error: %s", err.Error())
 		return false, err
 	}
 	return result, nil

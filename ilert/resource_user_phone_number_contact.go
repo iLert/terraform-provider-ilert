@@ -102,7 +102,7 @@ func resourceUserPhoneNumberContactCreate(ctx context.Context, d *schema.Resourc
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for user phone number contact to be created, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not create a user phone number contact with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -112,7 +112,7 @@ func resourceUserPhoneNumberContactCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 	if result == nil || result.UserPhoneNumberContact == nil {
-		log.Printf("[ERROR] Creating ilert user phone number contact error: empty response ")
+		log.Printf("[ERROR] Creating ilert user phone number contact error: empty response")
 		return diag.Errorf("user phone number contact response is empty")
 	}
 
@@ -153,20 +153,21 @@ func resourceUserPhoneNumberContactRead(ctx context.Context, d *schema.ResourceD
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user phone number contact with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for user phone number contact with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an user phone number contact with id %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read a user phone number contact with id %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert user phone number contact error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.UserPhoneNumberContact == nil {
-		log.Printf("[ERROR] Reading ilert user phone number contact error: empty response ")
+		log.Printf("[ERROR] Reading ilert user phone number contact error: empty response")
 		return diag.Errorf("user phone number contact response is empty")
 	}
 
@@ -203,9 +204,9 @@ func resourceUserPhoneNumberContactUpdate(ctx context.Context, d *schema.Resourc
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user phone number contact with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for user phone number contact with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an user phone number contact with id %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update a user phone number contact with id %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -238,9 +239,9 @@ func resourceUserPhoneNumberContactDelete(ctx context.Context, d *schema.Resourc
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user phone number contact with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for user phone number contact with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an user phone number contact with id %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete a user phone number contact with id %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -282,13 +283,14 @@ func resourceUserPhoneNumberContactExists(d *schema.ResourceData, m interface{})
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for user phone number contact to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read a user phone number contact with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert user phone number contact error: %s", err.Error())
 		return false, err
 	}
 	return result, nil

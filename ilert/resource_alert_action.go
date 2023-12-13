@@ -1034,11 +1034,12 @@ func resourceAlertActionCreate(ctx context.Context, d *schema.ResourceData, m in
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Creating ilert alert action error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.AlertAction == nil {
-		log.Printf("[ERROR] Creating ilert alert action error: empty response ")
+		log.Printf("[ERROR] Creating ilert alert action error: empty response")
 		return diag.FromErr(fmt.Errorf("alert action response is empty"))
 	}
 
@@ -1064,7 +1065,7 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
 			return resource.NonRetryableError(fmt.Errorf("could not read an alert action with ID %s, error: %s", d.Id(), err.Error()))
 		}
@@ -1073,11 +1074,12 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert alert action error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.AlertAction == nil {
-		log.Printf("[ERROR] Reading ilert alert action error: empty response ")
+		log.Printf("[ERROR] Reading ilert alert action error: empty response")
 		return diag.Errorf("alert action response is empty")
 	}
 
@@ -1275,7 +1277,7 @@ func resourceAlertActionUpdate(ctx context.Context, d *schema.ResourceData, m in
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
 			return resource.NonRetryableError(fmt.Errorf("could not update an alert action with ID %s, error: %s", d.Id(), err.Error()))
 		}
@@ -1301,7 +1303,7 @@ func resourceAlertActionDelete(ctx context.Context, d *schema.ResourceData, m in
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert action with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
 			return resource.NonRetryableError(fmt.Errorf("could not delete an alert action with ID %s, error: %s", d.Id(), err.Error()))
 		}
@@ -1342,6 +1344,7 @@ func resourceAlertActionExists(d *schema.ResourceData, m interface{}) (bool, err
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert alert action error: %s", err.Error())
 		return false, err
 	}
 	return result, nil
