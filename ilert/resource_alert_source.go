@@ -211,11 +211,12 @@ func resourceAlertSource() *schema.Resource {
 				},
 			},
 			"support_hours": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
+				Deprecated: "The field support_hours is deprecated! Please use the standalone resource support hours instead.",
+				Type:       schema.TypeList,
+				Optional:   true,
+				MaxItems:   1,
+				MinItems:   1,
+				ForceNew:   true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"timezone": {
