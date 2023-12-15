@@ -668,17 +668,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	if val, ok := d.GetOk("trigger_types"); ok {
 		vL := val.([]interface{})
 		sL := make([]string, 0)
-		delaySec, delaySecExists := d.GetOk("delay_sec")
-		delaySecIsSet := delaySecExists || (delaySec != nil && delaySec.(int) == 0)
 		for _, m := range vL {
 			v := m.(string)
-			if v == ilert.AlertActionTriggerTypes.AlertEscalationEnded && !delaySecIsSet {
-				return nil, fmt.Errorf("[ERROR] Can't set alert action trigger type 'alert-escalation-ended' when field 'delay_sec' is not set")
-			}
 			sL = append(sL, v)
-		}
-		if !StringSliceContains(sL, "alert-escalation-ended") && delaySecIsSet {
-			return nil, fmt.Errorf("[ERROR] Can't set field 'delay_sec' when trigger types do not include type 'alert-escalation-ended'")
 		}
 		alertAction.TriggerTypes = sL
 	}
