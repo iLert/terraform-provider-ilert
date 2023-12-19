@@ -1,5 +1,9 @@
 # Changelog
 
+## 19.12.2023, Version 2.4.0
+
+- feature/support-hours-resource in [#77](https://github.com/iLert/terraform-provider-ilert/pull/77)
+
 ## 15.12.2023, Version 2.3.1
 
 - fix/alert-action-delay-sec-restrictions in [#75](https://github.com/iLert/terraform-provider-ilert/pull/75)
