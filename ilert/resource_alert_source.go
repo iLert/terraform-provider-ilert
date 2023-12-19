@@ -217,35 +217,37 @@ func resourceAlertSource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:          schema.TypeInt,
+							Optional:      true,
+							ConflictsWith: []string{"support_hours.0.timezone", "support_hours.0.auto_raise_incidents", "support_hours.0.auto_raise_alerts", "support_hours.0.support_days"},
 						},
 						"name": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							RequiredWith: []string{"support_hours.0.timezone", "support_hours.0.support_days"},
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 						"timezone": {
 							Type:         schema.TypeString,
+							Deprecated:   "The field `timezone` is deprecated! Please use the support hour resource instead and reference it via field `id`.",
 							Optional:     true,
-							RequiredWith: []string{"support_hours.0.name", "support_hours.0.support_days"},
+							RequiredWith: []string{"support_hours.0.support_days"},
 						},
 						"auto_raise_incidents": { // @deprecated
-							Deprecated: "The field auto_raise_incidents is deprecated! Please use auto_raise_alerts instead.",
+							Deprecated: "The field `auto_raise_incidents` is deprecated! Please use auto_raise_alerts instead.",
 							Type:       schema.TypeBool,
 							Optional:   true,
 						},
 						"auto_raise_alerts": {
-							Type:     schema.TypeBool,
-							Optional: true,
-						},
+							Type:       schema.TypeBool,
+							Optional:   true,
+							Deprecated: "The field `auto_raise_alerts` is deprecated! Please use the support hour resource instead and reference it via field `id`."},
 						"support_days": {
 							Type:         schema.TypeList,
 							Optional:     true,
 							MaxItems:     1,
 							MinItems:     1,
 							ForceNew:     false,
-							RequiredWith: []string{"support_hours.0.name", "support_hours.0.timezone"},
+							RequiredWith: []string{"support_hours.0.timezone"},
+							Deprecated:   "The field `support_days` is deprecated! Please use the support hour resource instead and reference it via field `id`.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"monday": {
@@ -682,7 +684,7 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			if id, err := strconv.ParseInt(v["id"].(string), 10, 64); id > 0 {
+			if id := int64(v["id"].(int)); id > 0 {
 				if err != nil {
 					log.Printf("[ERROR] Could not parse support hours id %s", err.Error())
 					return nil, err
@@ -1267,25 +1269,27 @@ func flattenEmailPredicateList(predicateList []ilert.EmailPredicate) ([]interfac
 }
 
 func flattenSupportHoursInterface(supportHoursInterface interface{}) ([]interface{}, error) {
-	switch supportHoursInterface := supportHoursInterface.(type) {
-	case ilert.SupportHour:
-		supportHours, err := flattenSupportHours(&supportHoursInterface)
-		if err != nil {
-			return nil, err
-		}
-		return supportHours, nil
-	case ilert.SupportHours:
-		supportHours, err := flattenSupportHoursLegacy(&supportHoursInterface)
-		if err != nil {
-			return nil, err
-		}
-		return supportHours, nil
-	default:
-		return make([]interface{}, 0), nil
+	supportHoursMap, ok := supportHoursInterface.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("[ERROR] Could not convert support hours to map")
 	}
+
+	if supportHoursMap["id"] != nil {
+		supportHours, err := flattenSupportHours(supportHoursMap)
+		if err != nil {
+			return nil, err
+		}
+		return supportHours, nil
+	}
+
+	supportHours, err := flattenSupportHoursLegacy(supportHoursMap)
+	if err != nil {
+		return nil, err
+	}
+	return supportHours, nil
 }
 
-func flattenSupportHoursLegacy(supportHours *ilert.SupportHours) ([]interface{}, error) {
+func flattenSupportHours(supportHours map[string]interface{}) ([]interface{}, error) {
 	if supportHours == nil {
 		return make([]interface{}, 0), nil
 	}
@@ -1293,11 +1297,30 @@ func flattenSupportHoursLegacy(supportHours *ilert.SupportHours) ([]interface{},
 	results := make([]interface{}, 0)
 	result := make(map[string]interface{})
 
-	result["timezone"] = supportHours.Timezone
-	result["auto_raise_incidents"] = supportHours.AutoRaiseIncidents
-	result["auto_raise_alerts"] = supportHours.AutoRaiseAlerts
+	result["id"] = supportHours["id"]
 
-	supportDays, err := flattenSupportDays(&supportHours.SupportDays)
+	results = append(results, result)
+
+	return results, nil
+}
+
+func flattenSupportHoursLegacy(supportHours map[string]interface{}) ([]interface{}, error) {
+	if supportHours == nil {
+		return make([]interface{}, 0), nil
+	}
+
+	results := make([]interface{}, 0)
+	result := make(map[string]interface{})
+
+	result["timezone"] = supportHours["timezone"]
+	result["auto_raise_incidents"] = supportHours["autoRaiseIncidents"]
+	result["auto_raise_alerts"] = supportHours["autoRaiseAlerts"]
+
+	supportDaysMap, ok := supportHours["supportDays"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("[ERROR] Could not convert support days to map")
+	}
+	supportDays, err := flattenSupportDays(supportDaysMap)
 	if err != nil {
 		return nil, err
 	}
@@ -1308,69 +1331,61 @@ func flattenSupportHoursLegacy(supportHours *ilert.SupportHours) ([]interface{},
 	return results, nil
 }
 
-func flattenSupportHours(supportHours *ilert.SupportHour) ([]interface{}, error) {
-	if supportHours == nil {
-		return make([]interface{}, 0), nil
-	}
-
+func flattenSupportDays(supportDays map[string]interface{}) ([]interface{}, error) {
 	results := make([]interface{}, 0)
 	result := make(map[string]interface{})
 
-	result["id"] = strconv.FormatInt(supportHours.ID, 10)
-
+	if supportDays["MONDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["MONDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["monday"] = []interface{}{supportDay}
+	}
+	if supportDays["TUESDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["TUESDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["tuesday"] = []interface{}{supportDay}
+	}
+	if supportDays["WEDNESDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["WEDNESDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["wednesday"] = []interface{}{supportDay}
+	}
+	if supportDays["THURSDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["THURSDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["thursday"] = []interface{}{supportDay}
+	}
+	if supportDays["FRIDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["FRIDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["friday"] = []interface{}{supportDay}
+	}
+	if supportDays["SATURDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["SATURDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["saturday"] = []interface{}{supportDay}
+	}
+	if supportDays["SUNDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["SUNDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["sunday"] = []interface{}{supportDay}
+	}
 	results = append(results, result)
-
 	return results, nil
-}
-
-func flattenSupportDays(supportDays *ilert.SupportDays) ([]interface{}, error) {
-	days := make([]interface{}, 0)
-	supportDaysItem := make(map[string]interface{})
-
-	if supportDays.MONDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportDays.MONDAY.Start
-		supportDay["end"] = supportDays.MONDAY.End
-		supportDaysItem["monday"] = []interface{}{supportDay}
-	}
-	if supportDays.TUESDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportDays.TUESDAY.Start
-		supportDay["end"] = supportDays.TUESDAY.End
-		supportDaysItem["tuesday"] = []interface{}{supportDay}
-	}
-	if supportDays.WEDNESDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportDays.WEDNESDAY.Start
-		supportDay["end"] = supportDays.WEDNESDAY.End
-		supportDaysItem["wednesday"] = []interface{}{supportDay}
-	}
-	if supportDays.THURSDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportDays.THURSDAY.Start
-		supportDay["end"] = supportDays.THURSDAY.End
-		supportDaysItem["thursday"] = []interface{}{supportDay}
-	}
-	if supportDays.FRIDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportDays.FRIDAY.Start
-		supportDay["end"] = supportDays.FRIDAY.End
-		supportDaysItem["friday"] = []interface{}{supportDay}
-	}
-	if supportDays.SATURDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportDays.SATURDAY.Start
-		supportDay["end"] = supportDays.SATURDAY.End
-		supportDaysItem["saturday"] = []interface{}{supportDay}
-	}
-	if supportDays.SUNDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportDays.SUNDAY.Start
-		supportDay["end"] = supportDays.SUNDAY.End
-		supportDaysItem["sunday"] = []interface{}{supportDay}
-	}
-	days = append(days, supportDaysItem)
-	return days, nil
 }
 
 func flattenLinkTemplatesList(linkTemplatesList []ilert.LinkTemplate) ([]interface{}, error) {
