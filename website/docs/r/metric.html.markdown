@@ -8,7 +8,7 @@ description: |-
 
 # ilert_metric
 
-A [metric](https://api.ilert.com/api-docs/#tag/Metric) lets you provide additional information about the health of your services in status pages.
+A [metric](https://api.ilert.com/api-docs/#tag/Metrics) lets you provide additional information about the health of your services in status pages.
 
 ## Example Usage
 
