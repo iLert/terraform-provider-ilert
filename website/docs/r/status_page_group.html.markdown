@@ -6,7 +6,7 @@ description: |-
   Creates and manages a status page group in ilert.
 ---
 
-# ilert_status_group
+# ilert_status_page_group
 
 A [status page group](https://api.ilert.com/api-docs/#tag/Status-Pages) helps you organize and structure entities in your status page in collapsable containers.
 
