@@ -1320,7 +1320,7 @@ func flattenSupportHoursLegacy(supportHours map[string]interface{}) ([]interface
 	if !ok {
 		return nil, fmt.Errorf("[ERROR] Could not convert support days to map")
 	}
-	supportDays, err := flattenSupportDays(supportDaysMap)
+	supportDays, err := flattenSupportDaysMap(supportDaysMap)
 	if err != nil {
 		return nil, err
 	}
@@ -1331,7 +1331,7 @@ func flattenSupportHoursLegacy(supportHours map[string]interface{}) ([]interface
 	return results, nil
 }
 
-func flattenSupportDays(supportDays map[string]interface{}) ([]interface{}, error) {
+func flattenSupportDaysMap(supportDays map[string]interface{}) ([]interface{}, error) {
 	results := make([]interface{}, 0)
 	result := make(map[string]interface{})
 
