@@ -1,5 +1,6 @@
 resource "ilert_support_hour" "example" {
-  name = "example"
+  name     = "example"
+  timezone = "Europe/Berlin"
   support_days {
     monday {
       start = "08:00"

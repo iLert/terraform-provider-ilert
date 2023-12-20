@@ -14,7 +14,8 @@ A [support hour](https://api.ilert.com/api-docs/#tag/Support-Hours) lets you def
 
 ```hcl
 resource "ilert_support_hour" "example" {
-  name = "example"
+  name     = "example"
+  timezone = "Europe/Berlin"
   support_days {
     monday {
       start = "08:00"
@@ -50,7 +51,7 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the support hour.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
-- `timezone` - (Optional) The timezone of the support hours (IANA tz database names) e.g. `America/Los_Angeles` or `Europe/Zurich`.
+- `timezone` - (Required) The timezone of the support hours (IANA tz database names) e.g. `America/Los_Angeles` or `Europe/Zurich`.
 - `support_days` - The [support days](#support-days-arguments) block of the support hours.
 
 #### Team Arguments

@@ -42,7 +42,7 @@ func resourceSupportHour() *schema.Resource {
 			},
 			"timezone": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 			"support_days": {
 				Type:     schema.TypeList,
@@ -150,58 +150,79 @@ func buildSupportHour(d *schema.ResourceData) (*ilert.SupportHour, error) {
 
 	if val, ok := d.GetOk("support_days"); ok {
 		vL := val.([]interface{})
-		if len(vL) > 0 {
+		days := ilert.SupportDays{}
+		if len(vL) > 0 && vL[0] != nil {
 			v := vL[0].(map[string]interface{})
 			for d, sd := range v {
 				s := sd.([]interface{})
 				if len(s) > 0 && s[0] != nil {
-					v := s[0].(map[string]interface{})
+					ds := s[0].(map[string]interface{})
 					if d == "monday" {
-						supportHour.SupportDays.MONDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+						day := ilert.SupportDay{
+							Start: ds["start"].(string),
+							End:   ds["end"].(string),
 						}
+						days.MONDAY = &day
 					}
 					if d == "tuesday" {
-						supportHour.SupportDays.TUESDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+						day := ilert.SupportDay{
+							Start: ds["start"].(string),
+							End:   ds["end"].(string),
 						}
+						days.TUESDAY = &day
 					}
 					if d == "wednesday" {
-						supportHour.SupportDays.WEDNESDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+						day := ilert.SupportDay{
+							Start: ds["start"].(string),
+							End:   ds["end"].(string),
 						}
+						days.WEDNESDAY = &day
 					}
 					if d == "thursday" {
-						supportHour.SupportDays.THURSDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+						day := ilert.SupportDay{
+							Start: ds["start"].(string),
+							End:   ds["end"].(string),
 						}
+						days.THURSDAY = &day
 					}
 					if d == "friday" {
-						supportHour.SupportDays.FRIDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+						day := ilert.SupportDay{
+							Start: ds["start"].(string),
+							End:   ds["end"].(string),
 						}
+						days.FRIDAY = &day
 					}
 					if d == "saturday" {
-						supportHour.SupportDays.SATURDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+						day := ilert.SupportDay{
+							Start: ds["start"].(string),
+							End:   ds["end"].(string),
 						}
+						days.SATURDAY = &day
 					}
 					if d == "sunday" {
-						supportHour.SupportDays.SUNDAY = &ilert.SupportDay{
-							Start: v["start"].(string),
-							End:   v["end"].(string),
+						day := ilert.SupportDay{
+							Start: ds["start"].(string),
+							End:   ds["end"].(string),
 						}
+						days.SUNDAY = &day
 					}
 				}
 			}
 		}
+		supportHour.SupportDays = &days
 	}
+
+	// if val, ok := d.GetOk("support_days"); ok {
+	// 	vL := val.([]interface{})
+	// 	if len(vL) > 0 && vL[0] != nil {
+	// 		dL := vL[0].(map[string]interface{})
+	// 		for day, times := range dL {
+	// 			if
+
+	// 		}
+
+	// 	}
+	// }
 
 	return supportHour, nil
 }
