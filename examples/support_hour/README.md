@@ -1,8 +1,8 @@
-# Service example
+# Support hours example
 
-This demos [services](https://docs.ilert.com/incident-comms-and-status-pages/services).
+This demos [support hours](https://docs.ilert.com/alerting/support-hours).
 
-This example will create a service in the specified organization. See https://registry.terraform.io/providers/iLert/ilert/latest/docs for details on configuring [`providers.tf`](./providers.tf) accordingly.
+This example will create a support hours resource in the specified organization. See https://registry.terraform.io/providers/iLert/ilert/latest/docs for details on configuring [`providers.tf`](./providers.tf) accordingly.
 
 Alternatively, you may use variables passed via command line:
 
