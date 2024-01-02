@@ -71,6 +71,11 @@ func resourceStatusPage() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"page_layout": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice(ilert.StatusPageLayoutAll, false),
+			},
 			"logo_redirect_url": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -149,6 +154,14 @@ func resourceStatusPage() *schema.Resource {
 										Required:     true,
 										ValidateFunc: validation.StringInSlice(ilert.StatusPageElementTypeAll, false),
 									},
+									"options": {
+										Type:     schema.TypeList,
+										Optional: true,
+										Elem: &schema.Schema{
+											Type:         schema.TypeString,
+											ValidateFunc: validation.StringInSlice(ilert.StatusPageElementOptionAll, false),
+										},
+									},
 									"child": {
 										Type:     schema.TypeList,
 										Optional: true,
@@ -164,6 +177,14 @@ func resourceStatusPage() *schema.Resource {
 													Required:     true,
 													ValidateFunc: validation.StringInSlice([]string{ilert.StatusPageElementTypeAll[0]}, false),
 												},
+												"options": {
+													Type:     schema.TypeList,
+													Optional: true,
+													Elem: &schema.Schema{
+														Type:         schema.TypeString,
+														ValidateFunc: validation.StringInSlice(ilert.StatusPageElementOptionAll, false),
+													},
+												},
 											},
 										},
 									},
@@ -172,6 +193,12 @@ func resourceStatusPage() *schema.Resource {
 						},
 					},
 				},
+			},
+			"theme_mode": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "LIGHT",
+				ValidateFunc: validation.StringInSlice(ilert.StatusPageThemeModeAll, false),
 			},
 		},
 		CreateContext: resourceStatusPageCreate,
@@ -240,6 +267,10 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 
 	if val, ok := d.GetOk("page_description"); ok {
 		statusPage.PageDescription = val.(string)
+	}
+
+	if val, ok := d.GetOk("page_layout"); ok {
+		statusPage.PageLayout = val.(string)
 	}
 
 	if val, ok := d.GetOk("logo_redirect_url"); ok {
@@ -318,6 +349,15 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 						ID:   eid,
 						Type: v["type"].(string),
 					}
+					if len(v["options"].([]interface{})) > 0 {
+						optionsList := v["options"].([]interface{})
+						options := make([]string, 0)
+						for _, value := range optionsList {
+							option := value.(string)
+							options = append(options, option)
+						}
+						el.Options = options
+					}
 					if v["child"] != nil {
 						cdr := make([]ilert.StatusPageElement, 0)
 						cL := v["child"].([]interface{})
@@ -331,6 +371,15 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 							ch := ilert.StatusPageElement{
 								ID:   cid,
 								Type: v["type"].(string),
+							}
+							if len(v["options"].([]interface{})) > 0 {
+								optionsList := v["options"].([]interface{})
+								options := make([]string, 0)
+								for _, value := range optionsList {
+									option := value.(string)
+									options = append(options, option)
+								}
+								ch.Options = options
 							}
 							if v["child"] != nil && ch.Type == "SERVICE" {
 								log.Printf("[ERROR] Could not set child, as no children are allowed on type service %s", err.Error())
@@ -346,6 +395,10 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 				statusPage.Structure = &st
 			}
 		}
+	}
+
+	if val, ok := d.GetOk("theme_mode"); ok {
+		statusPage.ThemeMode = val.(string)
 	}
 
 	return statusPage, nil
@@ -450,6 +503,7 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 	d.Set("show_incident_history_option", result.StatusPage.ShowIncidentHistoryOption)
 	d.Set("page_title", result.StatusPage.PageTitle)
 	d.Set("page_description", result.StatusPage.PageDescription)
+	d.Set("page_layout", result.StatusPage.PageLayout)
 	d.Set("logo_redirect_url", result.StatusPage.LogoRedirectUrl)
 	d.Set("activated", result.StatusPage.Activated)
 
@@ -482,6 +536,8 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err := d.Set("structure", structure); err != nil {
 		return diag.Errorf("error setting structure: %s", err)
 	}
+
+	d.Set("theme_mode", result.StatusPage.ThemeMode)
 
 	return nil
 }
@@ -622,12 +678,29 @@ func flattenStatusPageStructure(structure *ilert.StatusPageStructure) ([]interfa
 			el["id"] = strconv.FormatInt(e.ID, 10)
 			el["type"] = e.Type
 
+			if e.Options != nil && len(e.Options) > 0 {
+				options := make([]interface{}, 0)
+				for _, option := range e.Options {
+					options = append(options, option)
+				}
+				el["options"] = options
+			}
+
 			if e.Children != nil && len(e.Children) > 0 {
 				chd := make([]interface{}, 0)
 				for _, c := range e.Children {
 					ch := make(map[string]interface{})
 					ch["id"] = strconv.FormatInt(c.ID, 10)
 					ch["type"] = c.Type
+
+					if c.Options != nil && len(c.Options) > 0 {
+						options := make([]interface{}, 0)
+						for _, option := range c.Options {
+							options = append(options, option)
+						}
+						ch["options"] = options
+					}
+
 					chd = append(chd, ch)
 				}
 				el["child"] = chd
