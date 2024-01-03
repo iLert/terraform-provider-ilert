@@ -37,7 +37,7 @@ func resourceStatusPage() *schema.Resource {
 			"custom_css": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Dont use this field yet.",
+				Description: "Don't use this field yet.",
 			},
 			"favicon_url": {
 				Type:     schema.TypeString,
