@@ -85,7 +85,7 @@ The following arguments are supported:
 
 - `id` - (Required) The ID of the element. Can be either an id of a service or a status page group.
 - `type` - (Required) The type of the element. Allowed values are `SERVICE` and `GROUP`.
-- `options` - (Optional) One or more options to provide for the element. Allowed values are `expand` and `no-graph`.
+- `options` - (Optional) One or more options to provide for the element. Allowed values for type `GROUP` are `expand`. Allowed values for type `SERVICE` are `no-graph`.
 - `child` - (Optional) One or more [child](#child-arguments) blocks.
 
 #### Child Arguments
