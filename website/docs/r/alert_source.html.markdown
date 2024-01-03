@@ -71,24 +71,7 @@ The following arguments are supported:
 
 #### Support Hours Arguments
 
-- `timezone` - The timezone of the support hours (IANA tz database names) e.g. `America/Los_Angeles` or `Europe/Zurich`.
-- `auto_raise_alerts` - Raise priority of all pending alerts for this alert source to 'high' when support hours begin.
-- `support_days` - The [support days](#support-days-arguments) block of the support hours.
-
-#### Support Days Arguments
-
-- `monday` - The [support day](#support-day-arguments) block of the support days.
-- `tuesday` - The [support day](#support-day-arguments) block of the support days.
-- `wednesday` - The [support day](#support-day-arguments) block of the support days.
-- `thursday` - The [support day](#support-day-arguments) block of the support days.
-- `friday` - The [support day](#support-day-arguments) block of the support days.
-- `saturday` - The [support day](#support-day-arguments) block of the support days.
-- `sunday` - The [support day](#support-day-arguments) block of the support days.
-
-#### Support Day Arguments
-
-- `start` - The start time of the support day.
-- `end` - The end time of the support day.
+- `id` - The id of the support hour given as reference.
 
 #### Resolve Key Extractor Arguments
 
@@ -135,6 +118,36 @@ The following arguments are supported:
 ### Support Hours Example
 
 ```hcl
+resource "ilert_support_hour" "example" {
+  name = "example"
+  support_days {
+    monday {
+      start = "08:00"
+      end   = "17:00"
+    }
+
+    tuesday {
+      start = "08:00"
+      end   = "17:00"
+    }
+
+    wednesday {
+      start = "08:00"
+      end   = "17:00"
+    }
+
+    thursday {
+      start = "08:00"
+      end   = "17:00"
+    }
+
+    friday {
+      start = "08:00"
+      end   = "17:00"
+    }
+  }
+}
+
 resource "ilert_alert_source" "example_with_support_hours" {
   name                = "My Grafana Integration from terraform with support hours"
   integration_type    = "GRAFANA"
@@ -142,34 +155,7 @@ resource "ilert_alert_source" "example_with_support_hours" {
   alert_priority_rule = "HIGH_DURING_SUPPORT_HOURS"
 
   support_hours {
-    timezone = "Europe/Berlin"
-
-    support_days {
-      monday {
-        start = "08:00"
-        end   = "17:00"
-      }
-
-      tuesday {
-        start = "08:00"
-        end   = "17:00"
-      }
-
-      wednesday {
-        start = "08:00"
-        end   = "17:00"
-      }
-
-      thursday {
-        start = "08:00"
-        end   = "17:00"
-      }
-
-      friday {
-        start = "08:00"
-        end   = "17:00"
-      }
-    }
+    id = ilert_support_hour.example.id
   }
 }
 ```
@@ -218,7 +204,7 @@ The following attributes are exported:
 
 ## Import
 
-Services can be imported using the `id`, e.g.
+Alert sources can be imported using the `id`, e.g.
 
 ```sh
 $ terraform import ilert_alert_source.main 123456789
