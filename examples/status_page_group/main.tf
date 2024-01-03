@@ -32,9 +32,11 @@ resource "ilert_status_page" "example" {
   #   element {
   #     id   = ilert_status_page_group.example.id
   #     type = "GROUP"
+  #     options = ["expand"]
   #     child {
   #       id   = ilert_service.example.id
   #       type = "SERVICE"
+  #       options = ["no-graph"]
   #     }
   #   }
   #   element {
