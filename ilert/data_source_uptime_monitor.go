@@ -13,6 +13,7 @@ import (
 	"github.com/iLert/ilert-go/v3"
 )
 
+// Legacy API - this resource is deprecated and will be removed in the next major version of the provider
 func dataSourceUptimeMonitor() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceUptimeMonitorRead,

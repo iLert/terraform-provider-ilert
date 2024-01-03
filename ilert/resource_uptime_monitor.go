@@ -14,8 +14,10 @@ import (
 	"github.com/iLert/ilert-go/v3"
 )
 
+// Legacy API - this resource is deprecated and will be removed in the next major version of the provider
 func resourceUptimeMonitor() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: "The resource uptime monitor is deprecated!",
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
