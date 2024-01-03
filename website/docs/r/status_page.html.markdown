@@ -51,7 +51,7 @@ The following arguments are supported:
 - `service` - (Required) One or more [service](#service-arguments) blocks.
 - `domain` - (Optional) The custom domain of the status page.
 - `timezone` - (Optional) The timezone of the status page. In timezone format, e.g. `Europe/Berlin`, `America/New_York`, `America/Los_Angeles`, `Asia/Istanbul`.
-- `custom_css` - (Optional) Custom CSS Styles for the status page.
+- `custom_css` - (Optional) Custom CSS Styles for the status page. NOTE: Dont use this field yet.
 - `favicon_url` - (Optional) The favicon of the status page.
 - `logo_url` - (Optional) The logo of the status page.
 - `hidden_from_search` - (Optional) Indicates whether or not the status page is hidden from search.

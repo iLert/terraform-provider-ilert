@@ -35,8 +35,9 @@ func resourceStatusPage() *schema.Resource {
 				Optional: true,
 			},
 			"custom_css": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Dont use this field yet.",
 			},
 			"favicon_url": {
 				Type:     schema.TypeString,
@@ -74,6 +75,7 @@ func resourceStatusPage() *schema.Resource {
 			"page_layout": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Default:      ilert.StatusPageLayout.SingleColumn,
 				ValidateFunc: validation.StringInSlice(ilert.StatusPageLayoutAll, false),
 			},
 			"logo_redirect_url": {
@@ -197,7 +199,7 @@ func resourceStatusPage() *schema.Resource {
 			"theme_mode": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "LIGHT",
+				Default:      ilert.StatusPageThemeMode.Light,
 				ValidateFunc: validation.StringInSlice(ilert.StatusPageThemeModeAll, false),
 			},
 		},
