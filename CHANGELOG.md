@@ -1,7 +1,10 @@
 # Changelog
 
-## 02.01.2024, Version 2.4.0
+## 03.01.2024, Version 2.4.0
 
+- fix/deprecate-uptime-monitors in [#74](https://github.com/iLert/terraform-provider-ilert/pull/74)
+- feature/support-hours-resource in [#77](https://github.com/iLert/terraform-provider-ilert/pull/77)
+  - fixes issue [#76](https://github.com/iLert/terraform-provider-ilert/issues/76)
 - feature/status-page-layout-fields in [#78](https://github.com/iLert/terraform-provider-ilert/pull/78)
 
 ## 15.12.2023, Version 2.3.1
