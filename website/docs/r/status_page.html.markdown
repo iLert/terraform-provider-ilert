@@ -65,7 +65,7 @@ The following arguments are supported:
 - `ip_whitelist` - (Optional) One or more IP's to whitelist.
 - `account_wide_view` - (Optional) Indicates whether or not the status page should be shown account wide.
 - `structure` - (Optional) A [structure](#structure-arguments) block.
-- `theme_mode` - (Optional) The theme mode of the status page. Allowed values are `LIGHT` and `DARK`.
+- `appearance` - (Optional) The appearance of the status page. Allowed values are `LIGHT` and `DARK`.
 
 #### Service Arguments
 
