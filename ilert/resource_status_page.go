@@ -199,7 +199,6 @@ func resourceStatusPage() *schema.Resource {
 			"theme_mode": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Default:       ilert.StatusPageAppearance.Light,
 				ValidateFunc:  validation.StringInSlice(ilert.StatusPageAppearanceAll, false),
 				Description:   "Please use `appearance` instead.",
 				ConflictsWith: []string{"appearance"},
@@ -207,7 +206,6 @@ func resourceStatusPage() *schema.Resource {
 			"appearance": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Default:       ilert.StatusPageAppearance.Light,
 				ValidateFunc:  validation.StringInSlice(ilert.StatusPageAppearanceAll, false),
 				ConflictsWith: []string{"theme_mode"},
 			},
@@ -552,8 +550,13 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.Errorf("error setting structure: %s", err)
 	}
 
-	d.Set("theme_mode", result.StatusPage.Appearance)
-	d.Set("appearance", result.StatusPage.Appearance)
+	if _, ok := d.GetOk("theme_mode"); ok {
+		d.Set("theme_mode", result.StatusPage.Appearance)
+	}
+
+	if _, ok := d.GetOk("appearance"); ok {
+		d.Set("appearance", result.StatusPage.Appearance)
+	}
 
 	return nil
 }
