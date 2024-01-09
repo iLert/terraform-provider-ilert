@@ -197,10 +197,17 @@ func resourceStatusPage() *schema.Resource {
 				},
 			},
 			"theme_mode": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      ilert.StatusPageThemeMode.Light,
-				ValidateFunc: validation.StringInSlice(ilert.StatusPageThemeModeAll, false),
+				Type:          schema.TypeString,
+				Optional:      true,
+				ValidateFunc:  validation.StringInSlice(ilert.StatusPageAppearanceAll, false),
+				Description:   "Please use `appearance` instead.",
+				ConflictsWith: []string{"appearance"},
+			},
+			"appearance": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ValidateFunc:  validation.StringInSlice(ilert.StatusPageAppearanceAll, false),
+				ConflictsWith: []string{"theme_mode"},
 			},
 		},
 		CreateContext: resourceStatusPageCreate,
@@ -400,7 +407,11 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 	}
 
 	if val, ok := d.GetOk("theme_mode"); ok {
-		statusPage.ThemeMode = val.(string)
+		statusPage.Appearance = val.(string)
+	}
+
+	if val, ok := d.GetOk("appearance"); ok {
+		statusPage.Appearance = val.(string)
 	}
 
 	return statusPage, nil
@@ -539,7 +550,13 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.Errorf("error setting structure: %s", err)
 	}
 
-	d.Set("theme_mode", result.StatusPage.ThemeMode)
+	if _, ok := d.GetOk("theme_mode"); ok {
+		d.Set("theme_mode", result.StatusPage.Appearance)
+	}
+
+	if _, ok := d.GetOk("appearance"); ok {
+		d.Set("appearance", result.StatusPage.Appearance)
+	}
 
 	return nil
 }
