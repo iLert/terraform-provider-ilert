@@ -1,5 +1,9 @@
 # Changelog
 
+## 12.01.2024, Version 2.5.0
+
+- feature/add-telegram-alert-action-type in [#80](https://github.com/iLert/terraform-provider-ilert/pull/80)
+
 ## 05.01.2024, Version 2.4.1
 
 - fix/status-page-theme-mode-field in [#79](https://github.com/iLert/terraform-provider-ilert/pull/79)
