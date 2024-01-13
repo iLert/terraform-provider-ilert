@@ -561,7 +561,22 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
-
+			"telegram": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Telegram),
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"channel_id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 			"created_at": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -960,6 +975,16 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
+	if val, ok := d.GetOk("telegram"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertAction.Params = &ilert.AlertActionParamsTelegram{
+				ChannelID: v["channel_id"].(string),
+			}
+		}
+	}
+
 	if val, ok := d.GetOk("alert_filter"); ok {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
@@ -1235,6 +1260,12 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 				"template_id":       result.AlertAction.Params.TemplateId,
 				"send_notification": result.AlertAction.Params.SendNotification,
 				"service_ids":       result.AlertAction.Params.ServiceIds,
+			},
+		})
+	case ilert.ConnectorTypes.Telegram:
+		d.Set("telegram", []interface{}{
+			map[string]interface{}{
+				"channel_id": result.AlertAction.Params.ChannelID,
 			},
 		})
 	}

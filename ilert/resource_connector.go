@@ -15,7 +15,7 @@ import (
 
 func resourceConnector() *schema.Resource {
 	// include only type that schema supports
-	connectorTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Email, ilert.ConnectorTypes.MicrosoftTeams, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.ZoomChat, ilert.ConnectorTypes.ZoomMeeting, ilert.ConnectorTypes.Webex, ilert.ConnectorTypes.Slack, ilert.ConnectorTypes.Webhook, ilert.ConnectorTypes.Zapier, ilert.ConnectorTypes.DingTalkAction, ilert.ConnectorTypes.AutomationRule)
+	connectorTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Email, ilert.ConnectorTypes.MicrosoftTeams, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.ZoomChat, ilert.ConnectorTypes.ZoomMeeting, ilert.ConnectorTypes.Webex, ilert.ConnectorTypes.Slack, ilert.ConnectorTypes.Webhook, ilert.ConnectorTypes.Zapier, ilert.ConnectorTypes.DingTalkAction, ilert.ConnectorTypes.AutomationRule, ilert.ConnectorTypes.Telegram)
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {

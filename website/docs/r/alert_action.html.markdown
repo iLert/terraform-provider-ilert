@@ -91,6 +91,7 @@ The following arguments are supported:
 - `dingtalk` - (Optional) A [dingtalk](#dingtalk-arguments) block.
 - `dingtalk_action` - (Optional) A [dingtalk_action](#dingtalk-action-arguments) block.
 - `automation_rule` - (Optional) An [automation_rule](#automation-rule-arguments) block.
+- `telegram` - (Optional) An [telegram](#telegram-arguments) block.
 - `alert_filter` - (Optional) An [alert_filter](#alert-filter-arguments) block.
 
 #### Alert Source Arguments
@@ -251,6 +252,12 @@ The following arguments are supported:
 - `template_id` - (Optional) The ID of the incident template.
 - `resolve_incident` - (Optional, requires `template_id`) Determines whether an incident should be resolved or not. Default: `false`
 - `send_notification` - (Optional, requires `template_id`) Determines whether notifications should be sent or not. Default: `false`
+
+#### Telegram Arguments
+
+> See [the Telegram integration documentation](https://docs.ilert.com/integrations/telegram) for more details.
+
+- `channel_id` - (Required) The Telegram channel id.
 
 #### Alert Filter Arguments
 
