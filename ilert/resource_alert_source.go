@@ -1144,12 +1144,15 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(fmt.Errorf("error setting email resolve predicates: %s", err))
 	}
 
-	supportHours, err := flattenSupportHoursInterface(result.AlertSource.SupportHours)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("support_hours", supportHours); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting support hours: %s", err))
+	// never set support hours when user doesn't define them, even if server returns some
+	if _, ok := d.GetOk("support_hours"); ok {
+		supportHours, err := flattenSupportHoursInterface(result.AlertSource.SupportHours)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err := d.Set("support_hours", supportHours); err != nil {
+			return diag.FromErr(fmt.Errorf("error setting support hours: %s", err))
+		}
 	}
 
 	return nil
@@ -1271,7 +1274,7 @@ func flattenEmailPredicateList(predicateList []ilert.EmailPredicate) ([]interfac
 func flattenSupportHoursInterface(supportHoursInterface interface{}) ([]interface{}, error) {
 	supportHoursMap, ok := supportHoursInterface.(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("[ERROR] Could not convert support hours to map")
+		return make([]interface{}, 0), nil
 	}
 
 	if supportHoursMap["id"] != nil {
@@ -1318,7 +1321,7 @@ func flattenSupportHoursLegacy(supportHours map[string]interface{}) ([]interface
 
 	supportDaysMap, ok := supportHours["supportDays"].(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("[ERROR] Could not convert support days to map")
+		return make([]interface{}, 0), nil
 	}
 	supportDays, err := flattenSupportDaysMap(supportDaysMap)
 	if err != nil {
