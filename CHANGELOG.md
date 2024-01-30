@@ -2,7 +2,7 @@
 
 ## 30.01.2024, Version 2.5.1
 
-- fix/alert-source-support-hours-response in [#81](https://github.com/iLert/terraform-provider-ilert/pull/81)
+- fix/alert-source-support-hours-response in [#82](https://github.com/iLert/terraform-provider-ilert/pull/82)
 
 ## 12.01.2024, Version 2.5.0
 
