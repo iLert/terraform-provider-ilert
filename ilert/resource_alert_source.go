@@ -682,7 +682,7 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 	}
 	if val, ok := d.GetOk("support_hours"); ok {
 		vL := val.([]interface{})
-		if len(vL) > 0 {
+		if len(vL) > 0 && vL[0] != nil {
 			v := vL[0].(map[string]interface{})
 			if id := int64(v["id"].(int)); id > 0 {
 				if err != nil {
