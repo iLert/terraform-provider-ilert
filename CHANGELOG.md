@@ -1,5 +1,9 @@
 # Changelog
 
+## 30.01.2024, Version 2.5.1
+
+- fix/alert-source-support-hours-response in [#81](https://github.com/iLert/terraform-provider-ilert/pull/81)
+
 ## 12.01.2024, Version 2.5.0
 
 - feature/add-telegram-alert-action-type in [#80](https://github.com/iLert/terraform-provider-ilert/pull/80)
