@@ -1,11 +1,48 @@
 # Changelog
 
-## 16.10.2023, Version 2.1.0
+- feature/alert-actions-v2 in [#60](https://github.com/iLert/terraform-provider-ilert/pull/60)
+
+## 12.01.2024, Version 2.5.0
+
+- feature/add-telegram-alert-action-type in [#80](https://github.com/iLert/terraform-provider-ilert/pull/80)
+
+## 05.01.2024, Version 2.4.1
+
+- fix/status-page-theme-mode-field in [#79](https://github.com/iLert/terraform-provider-ilert/pull/79)
+
+## 03.01.2024, Version 2.4.0
+
+- fix/deprecate-uptime-monitors in [#74](https://github.com/iLert/terraform-provider-ilert/pull/74)
+- feature/support-hours-resource in [#77](https://github.com/iLert/terraform-provider-ilert/pull/77)
+  - fixes issue [#76](https://github.com/iLert/terraform-provider-ilert/issues/76)
+- feature/status-page-layout-fields in [#78](https://github.com/iLert/terraform-provider-ilert/pull/78)
+
+## 15.12.2023, Version 2.3.1
+
+- fix/alert-action-delay-sec-restrictions in [#75](https://github.com/iLert/terraform-provider-ilert/pull/75)
+
+## 12.12.2023, Version 2.3.0
+
+- feature/improve-error-logging in [#71](https://github.com/iLert/terraform-provider-ilert/pull/71)
+- feature/alert-source-link-priority-templates in [#73](https://github.com/iLert/terraform-provider-ilert/pull/73)
+
+## 27.11.2023, Version 2.2.1
+
+- fix/alert-action-delay-sec-validation in [#65](https://github.com/iLert/terraform-provider-ilert/pull/65)
+
+## 13.11.2023, Version 2.2.0
+
+- feature/alert-action-new-trigger-type-delaysec in [#63](https://github.com/iLert/terraform-provider-ilert/pull/63)
+
+## 23.10.2023, Version 2.1.1
+
+- fix/user-preferences-optional-contact in [#61](https://github.com/iLert/terraform-provider-ilert/pull/61)
+
+## 09.10.2023, Version 2.1.0
 
 - feature/escalation-policy-new-fields in [#57](https://github.com/iLert/terraform-provider-ilert/pull/57)
 - feature/alert-source-new-fields in [#58](https://github.com/iLert/terraform-provider-ilert/pull/58)
 - feature/alert-action-new-fields in [#59](https://github.com/iLert/terraform-provider-ilert/pull/59)
-- feature/alert-actions-v2 in [#60](https://github.com/iLert/terraform-provider-ilert/pull/60)
 
 ## 29.09.2023, Version 2.0.4
 

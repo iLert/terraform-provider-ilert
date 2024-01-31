@@ -424,7 +424,7 @@ func resourceScheduleCreate(ctx context.Context, d *schema.ResourceData, m inter
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for schedule to be created, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not create a schedule with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -434,7 +434,7 @@ func resourceScheduleCreate(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 	if result == nil || result.Schedule == nil {
-		log.Printf("[ERROR] Creating ilert schedule error: empty response ")
+		log.Printf("[ERROR] Creating ilert schedule error: empty response")
 		return diag.Errorf("schedule response is empty")
 	}
 
@@ -469,20 +469,21 @@ func resourceScheduleRead(ctx context.Context, d *schema.ResourceData, m interfa
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for schedule with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for schedule with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an schedule with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an schedule with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert schedule error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.Schedule == nil {
-		log.Printf("[ERROR] Reading ilert schedule error: empty response ")
+		log.Printf("[ERROR] Reading ilert schedule error: empty response")
 		return diag.Errorf("schedule response is empty")
 	}
 
@@ -587,9 +588,9 @@ func resourceScheduleUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for schedule with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for schedule with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an schedule with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an schedule with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -616,9 +617,9 @@ func resourceScheduleDelete(ctx context.Context, d *schema.ResourceData, m inter
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for schedule with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for schedule with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an schedule with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete an schedule with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -654,13 +655,14 @@ func resourceScheduleExists(d *schema.ResourceData, m interface{}) (bool, error)
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for schedule to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read a schedule with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert schedule error: %s", err.Error())
 		return false, err
 	}
 	return result, nil

@@ -10,6 +10,8 @@ description: |-
 
 Use this data source to get information about a specific [uptime monitor][1].
 
+> WARNING - this data source is deprecated and will be removed in the next major version of the provider
+
 ## Example Usage
 
 ```hcl

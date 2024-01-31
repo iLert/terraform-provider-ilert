@@ -42,7 +42,7 @@ The following arguments are supported:
 - `name` - (Required) The name of the alert source.
 - `integration_type` - (Required) The integration type of the alert source. Allowed values are `NAGIOS`, `ICINGA`, `EMAIL`, `SMS`, `API`, `CRN`, `HEARTBEAT`, `PRTG`, `PINGDOM`, `CLOUDWATCH`, `AWSPHD`, `STACKDRIVER`, `INSTANA`, `ZABBIX`, `SOLARWINDS`, `PROMETHEUS`, `NEWRELIC`, `GRAFANA`, `GITHUB`, `DATADOG`, `UPTIMEROBOT`, `APPDYNAMICS`, `DYNATRACE`, `TOPDESK`, `STATUSCAKE`, `MONITOR`, `TOOL`, `CHECKMK`, `AUTOTASK`, `AWSBUDGET`, `KENTIXAM`, `JIRA`, `CONSUL`, `ZAMMAD`, `SIGNALFX`, `SPLUNK`, `KUBERNETES`, `SEMATEXT`, `SENTRY`, `SUMOLOGIC`, `RAYGUN`, `MXTOOLBOX`, `ESWATCHER`, `AMAZONSNS`, `KAPACITOR`, `CORTEXXSOAR`, `SYSDIG`, `SERVERDENSITY`, `ZAPIER`, `SERVICENOW`, `SEARCHGUARD`, `AZUREALERTS`, `TERRAFORMCLOUD`, `ZENDESK`, `AUVIK`, `SENSU`, `NCENTRAL`, `JUMPCLOUD`, `SALESFORCE`, `GUARDDUTY`, `STATUSHUB`, `IXON`, `APIFORTRESS`, `FRESHSERVICE`, `APPSIGNAL`, `LIGHTSTEP`, `IBMCLOUDFUNCTIONS`, `CROWDSTRIKE`, `HUMIO`, `OHDEAR`, `MONGODBATLAS`, `GITLAB`.
 - `escalation_policy` - (Required) The escalation policy id used by this alert source.
-- `alert_creation` - (Optional) ilert receives events from your monitoring systems and can then create alerts in different ways. This option is recommended. Allowed values are `ONE_ALERT_PER_EMAIL`, `ONE_ALERT_PER_EMAIL_SUBJECT`, `ONE_PENDING_ALERT_ALLOWED`, `ONE_OPEN_ALERT_ALLOWED`, `OPEN_RESOLVE_ON_EXTRACTION`.
+- `alert_creation` - (Optional) ilert receives events from your monitoring systems and can then create alerts in different ways. This option is recommended. Allowed values are `ONE_ALERT_PER_EMAIL`, `ONE_ALERT_PER_EMAIL_SUBJECT`, `ONE_PENDING_ALERT_ALLOWED`, `ONE_OPEN_ALERT_ALLOWED`, `OPEN_RESOLVE_ON_EXTRACTION`, `ONE_ALERT_GROUPED_PER_WINDOW`. `alert_grouping_window` must be defined when this field is set to `ONE_ALERT_GROUPED_PER_WINDOW`.
 - `active` - (Optional) The state of the alert source. Default: `true`.
 - `alert_priority_rule` - (Optional) The alert priority rule. This option is recommended. Allowed values are `HIGH`, `LOW`, `HIGH_DURING_SUPPORT_HOURS`, `LOW_DURING_SUPPORT_HOURS`.
 - `auto_resolution_timeout` - (Optional) The auto resolution timeout. Allowed values are `PT10M`, `PT20M`, `PT30M`, `PT40M`, `PT50M`, `PT60M`, `PT90M`, `PT2H`, `PT3H`, `PT4H`, `PT5H`, `PT6H`, `PT12H`, `PT24H` (`H` means hour and `M` means minute).
@@ -56,8 +56,13 @@ The following arguments are supported:
 - `email_resolve_predicate` - (Optional) One or more [email resolve predicate](#email-resolve-predicate-arguments) blocks. This option is required if `integration_type` is `EMAIL`.
 - `heartbeat` - (Optional) A [heartbeat](#heartbeat-arguments) block. This option is required if `integration_type` is `HEARTBEAT`.
 - `support_hours` - (Optional) A [support_hours](#support-hours-arguments) block. This option is allowed if `alert_priority_rule` is `HIGH_DURING_SUPPORT_HOURS` or `LOW_DURING_SUPPORT_HOURS`.
-- `autotask_metadata` - (Optional) An [autotask metadata](#autotask-metadata-arguments) block. This option is required if `integration_type` is `AUTOTASK`.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `summary_template` - (Optional) A summary [template](#template-arguments) block.
+- `details_template` - (Optional) A details [template](#template-arguments) block.
+- `routing_template` - (Optional) A routing [template](#template-arguments) block.
+- `link_template` - (Optional) One or more [link template](#link-template-arguments) block.
+- `priority_template` - (Optional) A [priority template](#priority-template-arguments) block.
+- `alert_grouping_window` - (Optional) The alert grouping time frame. Any alerts triggered within this time frame will be grouped together. This field has to be defined when `alert_creation` is set to `ONE_ALERT_GROUPED_PER_WINDOW`.
 
 #### Heartbeat Arguments
 
@@ -66,30 +71,7 @@ The following arguments are supported:
 
 #### Support Hours Arguments
 
-- `timezone` - The timezone of the support hours (IANA tz database names) e.g. `America/Los_Angeles` or `Europe/Zurich`.
-- `auto_raise_alerts` - Raise priority of all pending alerts for this alert source to 'high' when support hours begin.
-- `support_days` - The [support days](#support-days-arguments) block of the support hours.
-
-#### Support Days Arguments
-
-- `monday` - The [support day](#support-day-arguments) block of the support days.
-- `tuesday` - The [support day](#support-day-arguments) block of the support days.
-- `wednesday` - The [support day](#support-day-arguments) block of the support days.
-- `thursday` - The [support day](#support-day-arguments) block of the support days.
-- `friday` - The [support day](#support-day-arguments) block of the support days.
-- `saturday` - The [support day](#support-day-arguments) block of the support days.
-- `sunday` - The [support day](#support-day-arguments) block of the support days.
-
-#### Support Day Arguments
-
-- `start` - The start time of the support day.
-- `end` - The end time of the support day.
-
-#### Autotask Metadata Arguments
-
-- `username` - The username of the autotask api user.
-- `secret` - The secret of the autotask api user.
-- `web_server` - The Autotask API server URL. Default: `https://webservices2.autotask.net`
+- `id` - The id of the support hour given as reference.
 
 #### Resolve Key Extractor Arguments
 
@@ -114,9 +96,58 @@ The following arguments are supported:
 - `id` - (Required) The ID of the team.
 - `name` - (Optional) The name of the team.
 
+#### Template Arguments
+
+- `text_template` - (Required) The content of the template. It is recommended to use the exact content as generated via blocks in the web UI to prevent inconsistencies between the ilert API and Terraform.
+
+#### Link template Arguments
+
+- `text` - (Required) The display name for the link.
+- `href_template` - (Required) A [template](#template-arguments) block.
+
+#### Priority template Arguments
+
+- `value_template` - (Required) A [template](#template-arguments) block.
+- `mapping` - (Required) One or more [mapping](#mapping-arguments) blocks.
+
+#### Mapping Arguments
+
+- `value` - (Required) The value that should be extracted from the alerts payload.
+- `priority` - (Required) The priority the alert should be mapped to. Allowed values are `HIGH` and `LOW`.
+
 ### Support Hours Example
 
 ```hcl
+resource "ilert_support_hour" "example" {
+  name = "example"
+  support_days {
+    monday {
+      start = "08:00"
+      end   = "17:00"
+    }
+
+    tuesday {
+      start = "08:00"
+      end   = "17:00"
+    }
+
+    wednesday {
+      start = "08:00"
+      end   = "17:00"
+    }
+
+    thursday {
+      start = "08:00"
+      end   = "17:00"
+    }
+
+    friday {
+      start = "08:00"
+      end   = "17:00"
+    }
+  }
+}
+
 resource "ilert_alert_source" "example_with_support_hours" {
   name                = "My Grafana Integration from terraform with support hours"
   integration_type    = "GRAFANA"
@@ -124,34 +155,7 @@ resource "ilert_alert_source" "example_with_support_hours" {
   alert_priority_rule = "HIGH_DURING_SUPPORT_HOURS"
 
   support_hours {
-    timezone = "Europe/Berlin"
-
-    support_days {
-      monday {
-        start = "08:00"
-        end   = "17:00"
-      }
-
-      tuesday {
-        start = "08:00"
-        end   = "17:00"
-      }
-
-      wednesday {
-        start = "08:00"
-        end   = "17:00"
-      }
-
-      thursday {
-        start = "08:00"
-        end   = "17:00"
-      }
-
-      friday {
-        start = "08:00"
-        end   = "17:00"
-      }
-    }
+    id = ilert_support_hour.example.id
   }
 }
 ```
@@ -200,7 +204,7 @@ The following attributes are exported:
 
 ## Import
 
-Services can be imported using the `id`, e.g.
+Alert sources can be imported using the `id`, e.g.
 
 ```sh
 $ terraform import ilert_alert_source.main 123456789

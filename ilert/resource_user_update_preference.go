@@ -24,7 +24,7 @@ func resourceUserUpdatePreference() *schema.Resource {
 			},
 			"contact": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "Either UserEmailContact or UserPhoneNumberContact",
 				MinItems:    1,
 				MaxItems:    1,
@@ -83,20 +83,29 @@ func buildUserUpdatePreference(d *schema.ResourceData) (*ilert.UserUpdatePrefere
 		Type:   updateType,
 	}
 
-	contactList := d.Get("contact").([]interface{})
-	contact := &ilert.UserContactShort{}
-	if len(contactList) > 0 && contactList[0] != nil {
-		cnt := contactList[0].(map[string]interface{})
-		contact.ID = int64(cnt["id"].(int))
-	}
-	preference.Contact = contact
-
 	user := d.Get("user").([]interface{})
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
 		usr := user[0].(map[string]interface{})
 		id := int64(usr["id"].(int))
 		userId = id
+	}
+
+	if val, ok := d.GetOk("contact"); ok {
+		if preference.Method == "PUSH" {
+			return nil, nil, fmt.Errorf("[ERROR] Field 'contact' must not be set when method is 'PUSH'")
+		}
+		contactList := val.([]interface{})
+		contact := &ilert.UserContactShort{}
+		if len(contactList) > 0 && contactList[0] != nil {
+			cnt := contactList[0].(map[string]interface{})
+			contact.ID = int64(cnt["id"].(int))
+		}
+		preference.Contact = contact
+	} else {
+		if preference.Method != "PUSH" {
+			return nil, nil, fmt.Errorf("[ERROR] Field 'contact' must be set when method is 'EMAIL', 'SMS', 'VOICE', 'WHATSAPP' or 'TELEGRAM'")
+		}
 	}
 
 	return preference, ilert.Int64(userId), nil
@@ -122,7 +131,7 @@ func resourceUserUpdatePreferenceCreate(ctx context.Context, d *schema.ResourceD
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for user update preference to be created, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not create a user update preference with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -132,7 +141,7 @@ func resourceUserUpdatePreferenceCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 	if result == nil || result.UserUpdatePreference == nil {
-		log.Printf("[ERROR] Creating ilert user update preference error: empty response ")
+		log.Printf("[ERROR] Creating ilert user update preference error: empty response")
 		return diag.Errorf("user update preference response is empty")
 	}
 
@@ -173,20 +182,21 @@ func resourceUserUpdatePreferenceRead(ctx context.Context, d *schema.ResourceDat
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user update preference with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for user update preference with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an user update preference with id %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read a user update preference with id %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert user update preference error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.UserUpdatePreference == nil {
-		log.Printf("[ERROR] Reading ilert user update preference error: empty response ")
+		log.Printf("[ERROR] Reading ilert user update preference error: empty response")
 		return diag.Errorf("user update preference response is empty")
 	}
 
@@ -230,9 +240,9 @@ func resourceUserUpdatePreferenceUpdate(ctx context.Context, d *schema.ResourceD
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user update preference with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for user update preference with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an user update preference with id %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update a user update preference with id %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -265,9 +275,9 @@ func resourceUserUpdatePreferenceDelete(ctx context.Context, d *schema.ResourceD
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for user update preference with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for user update preference with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an user update preference with id %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete a user update preference with id %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -309,13 +319,14 @@ func resourceUserUpdatePreferenceExists(d *schema.ResourceData, m interface{}) (
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for user update preference to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read a user update preference with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert user update preference error: %s", err.Error())
 		return false, err
 	}
 	return result, nil

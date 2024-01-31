@@ -51,7 +51,7 @@ func resourceAlertSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    false,
-				Description: "The escalation policy specifies who will be notified when an incident is created by this alert source",
+				Description: "The escalation policy specifies who will be notified when an alert is created by this alert source",
 			},
 			"incident_creation": { // @deprecated
 				Deprecated: "The field incident_creation is deprecated! Please use alert_creation instead.",
@@ -66,16 +66,10 @@ func resourceAlertSource() *schema.Resource {
 				}, false),
 			},
 			"alert_creation": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "ONE_ALERT_PER_EMAIL",
-				ValidateFunc: validation.StringInSlice([]string{
-					"ONE_ALERT_PER_EMAIL",
-					"ONE_ALERT_PER_EMAIL_SUBJECT",
-					"ONE_PENDING_ALERT_ALLOWED",
-					"ONE_OPEN_ALERT_ALLOWED",
-					"OPEN_RESOLVE_ON_EXTRACTION",
-				}, false),
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "ONE_ALERT_PER_EMAIL",
+				ValidateFunc: validation.StringInSlice(ilert.AlertSourceAlertCreationsAll, false),
 			},
 			"active": {
 				Type:     schema.TypeBool,
@@ -184,12 +178,12 @@ func resourceAlertSource() *schema.Resource {
 				MaxItems:    1,
 				MinItems:    1,
 				ForceNew:    true,
-				Description: "A heartbeat alert source will automatically create an incident if it does not receive a heartbeat signal from your app at regular intervals.",
+				Description: "A heartbeat alert source will automatically create an alert if it does not receive a heartbeat signal from your app at regular intervals.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"summary": {
 							Type:        schema.TypeString,
-							Description: "This text will be used as the incident summary, when incidents are created by this alert source",
+							Description: "This text will be used as the alert summary, when alerts are created by this alert source",
 							Optional:    true,
 						},
 						"interval_sec": {
@@ -207,7 +201,7 @@ func resourceAlertSource() *schema.Resource {
 								7 * 24 * 60 * 60,
 								30 * 24 * 60 * 60,
 							}),
-							Description: "The interval after which the heartbeat alert source will create an incident if it does not receive a ping",
+							Description: "The interval after which the heartbeat alert source will create an alert if it does not receive a ping",
 						},
 						"status": {
 							Type:     schema.TypeString,
@@ -220,29 +214,40 @@ func resourceAlertSource() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"timezone": {
+						"id": {
+							Type:          schema.TypeInt,
+							Optional:      true,
+							ConflictsWith: []string{"support_hours.0.timezone", "support_hours.0.auto_raise_incidents", "support_hours.0.auto_raise_alerts", "support_hours.0.support_days"},
+						},
+						"name": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
+						},
+						"timezone": {
+							Type:         schema.TypeString,
+							Deprecated:   "The field `timezone` is deprecated! Please use the support hour resource instead and reference it via field `id`.",
+							Optional:     true,
+							RequiredWith: []string{"support_hours.0.support_days"},
 						},
 						"auto_raise_incidents": { // @deprecated
-							Deprecated: "The field auto_raise_incidents is deprecated! Please use auto_raise_alerts instead.",
+							Deprecated: "The field `auto_raise_incidents` is deprecated! Please use auto_raise_alerts instead.",
 							Type:       schema.TypeBool,
 							Optional:   true,
 						},
 						"auto_raise_alerts": {
-							Type:     schema.TypeBool,
-							Optional: true,
-						},
+							Type:       schema.TypeBool,
+							Optional:   true,
+							Deprecated: "The field `auto_raise_alerts` is deprecated! Please use the support hour resource instead and reference it via field `id`."},
 						"support_days": {
-							Type:     schema.TypeList,
-							Optional: true,
-							MaxItems: 1,
-							MinItems: 1,
-							ForceNew: false,
+							Type:         schema.TypeList,
+							Optional:     true,
+							MaxItems:     1,
+							MinItems:     1,
+							ForceNew:     false,
+							RequiredWith: []string{"support_hours.0.timezone"},
+							Deprecated:   "The field `support_days` is deprecated! Please use the support hour resource instead and reference it via field `id`.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"monday": {
@@ -301,11 +306,12 @@ func resourceAlertSource() *schema.Resource {
 				},
 			},
 			"autotask_metadata": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
-				ForceNew: true,
+				Type:       schema.TypeList,
+				Deprecated: "The field autotask_metadata is deprecated! Please use the web UI to configure autotask metadata.",
+				Optional:   true,
+				MaxItems:   1,
+				MinItems:   1,
+				ForceNew:   true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"username": {
@@ -445,6 +451,117 @@ func resourceAlertSource() *schema.Resource {
 				Computed:  true,
 				Sensitive: true,
 			},
+			"summary_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"text_template": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"details_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"text_template": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"routing_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"text_template": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"link_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"text": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"href_template": {
+							Type:     schema.TypeList,
+							Required: true,
+							MinItems: 1,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"text_template": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"priority_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"value_template": {
+							Type:     schema.TypeList,
+							Required: true,
+							MinItems: 1,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"text_template": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+						"mapping": {
+							Type:     schema.TypeList,
+							Required: true,
+							MinItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"value": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"priority": {
+										Type:         schema.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringInSlice(ilert.AlertPrioritiesAll, false),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"alert_grouping_window": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice(ilert.AlertSourceAlertGroupingWindowsAll, false),
+			},
 		},
 		CreateContext: resourceAlertSourceCreate,
 		ReadContext:   resourceAlertSourceRead,
@@ -493,6 +610,9 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 	}
 	if val, ok := d.GetOk("alert_creation"); ok {
 		alertCreation := val.(string)
+		if _, ok := d.GetOk("alert_grouping_window"); !ok && alertCreation == ilert.AlertSourceAlertCreations.OneAlertGroupedPerWindow {
+			return nil, fmt.Errorf("[ERROR] Can't set alert creation type 'ONE_ALERT_GROUPED_PER_WINDOW' when alert grouping window is not set")
+		}
 		alertSource.AlertCreation = alertCreation
 	}
 	if val, ok := d.GetOk("integration_key"); ok {
@@ -564,64 +684,78 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
-			supportHours := &ilert.SupportHours{
-				Timezone:           v["timezone"].(string),
-				AutoRaiseIncidents: v["auto_raise_incidents"].(bool),
-				AutoRaiseAlerts:    v["auto_raise_alerts"].(bool),
-			}
-			sdA := v["support_days"].([]interface{})
-			if len(vL) > 0 {
-				sds := sdA[0].(map[string]interface{})
-				for d, sd := range sds {
-					s := sd.([]interface{})
-					if len(s) > 0 {
-						v := s[0].(map[string]interface{})
-						if d == "monday" {
-							supportHours.SupportDays.MONDAY = &ilert.SupportDay{
-								Start: v["start"].(string),
-								End:   v["end"].(string),
+			if id := int64(v["id"].(int)); id > 0 {
+				if err != nil {
+					log.Printf("[ERROR] Could not parse support hours id %s", err.Error())
+					return nil, err
+				}
+				alertSource.SupportHours = &ilert.SupportHour{
+					ID: id,
+				}
+			} else {
+				// legacy
+				supportHours := &ilert.SupportHours{
+					Timezone:           v["timezone"].(string),
+					AutoRaiseIncidents: v["auto_raise_incidents"].(bool),
+					AutoRaiseAlerts:    v["auto_raise_alerts"].(bool),
+				}
+				sdA := v["support_days"].([]interface{})
+				if len(sdA) > 0 {
+					if sdA[0] == nil {
+						return nil, fmt.Errorf("[ERROR] Can't set support hours, support days needs at least one day to be defined")
+					}
+					sds := sdA[0].(map[string]interface{})
+					for d, sd := range sds {
+						s := sd.([]interface{})
+						if len(s) > 0 && s[0] != nil {
+							v := s[0].(map[string]interface{})
+							if d == "monday" {
+								supportHours.SupportDays.MONDAY = &ilert.SupportDay{
+									Start: v["start"].(string),
+									End:   v["end"].(string),
+								}
 							}
-						}
-						if d == "tuesday" {
-							supportHours.SupportDays.TUESDAY = &ilert.SupportDay{
-								Start: v["start"].(string),
-								End:   v["end"].(string),
+							if d == "tuesday" {
+								supportHours.SupportDays.TUESDAY = &ilert.SupportDay{
+									Start: v["start"].(string),
+									End:   v["end"].(string),
+								}
 							}
-						}
-						if d == "wednesday" {
-							supportHours.SupportDays.WEDNESDAY = &ilert.SupportDay{
-								Start: v["start"].(string),
-								End:   v["end"].(string),
+							if d == "wednesday" {
+								supportHours.SupportDays.WEDNESDAY = &ilert.SupportDay{
+									Start: v["start"].(string),
+									End:   v["end"].(string),
+								}
 							}
-						}
-						if d == "thursday" {
-							supportHours.SupportDays.THURSDAY = &ilert.SupportDay{
-								Start: v["start"].(string),
-								End:   v["end"].(string),
+							if d == "thursday" {
+								supportHours.SupportDays.THURSDAY = &ilert.SupportDay{
+									Start: v["start"].(string),
+									End:   v["end"].(string),
+								}
 							}
-						}
-						if d == "friday" {
-							supportHours.SupportDays.FRIDAY = &ilert.SupportDay{
-								Start: v["start"].(string),
-								End:   v["end"].(string),
+							if d == "friday" {
+								supportHours.SupportDays.FRIDAY = &ilert.SupportDay{
+									Start: v["start"].(string),
+									End:   v["end"].(string),
+								}
 							}
-						}
-						if d == "saturday" {
-							supportHours.SupportDays.SATURDAY = &ilert.SupportDay{
-								Start: v["start"].(string),
-								End:   v["end"].(string),
+							if d == "saturday" {
+								supportHours.SupportDays.SATURDAY = &ilert.SupportDay{
+									Start: v["start"].(string),
+									End:   v["end"].(string),
+								}
 							}
-						}
-						if d == "sunday" {
-							supportHours.SupportDays.SUNDAY = &ilert.SupportDay{
-								Start: v["start"].(string),
-								End:   v["end"].(string),
+							if d == "sunday" {
+								supportHours.SupportDays.SUNDAY = &ilert.SupportDay{
+									Start: v["start"].(string),
+									End:   v["end"].(string),
+								}
 							}
 						}
 					}
 				}
+				alertSource.SupportHours = supportHours
 			}
-			alertSource.SupportHours = supportHours
 		}
 	}
 	if val, ok := d.GetOk("heartbeat"); ok {
@@ -684,6 +818,95 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		}
 		alertSource.EmailResolvePredicates = eps
 	}
+	if val, ok := d.GetOk("summary_template"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertSource.SummaryTemplate = &ilert.Template{
+				TextTemplate: v["text_template"].(string),
+			}
+		}
+	}
+	if val, ok := d.GetOk("details_template"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertSource.DetailsTemplate = &ilert.Template{
+				TextTemplate: v["text_template"].(string),
+			}
+		}
+	}
+	if val, ok := d.GetOk("routing_template"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertSource.RoutingTemplate = &ilert.Template{
+				TextTemplate: v["text_template"].(string),
+			}
+		}
+	}
+	if val, ok := d.GetOk("link_template"); ok {
+		vL := val.([]interface{})
+		ltmps := make([]ilert.LinkTemplate, 0)
+		for _, m := range vL {
+			v := m.(map[string]interface{})
+			ltmp := ilert.LinkTemplate{}
+			if v["text"] != nil && v["text"].(string) != "" {
+				ltmp.Text = v["text"].(string)
+			}
+			htmp := ilert.Template{}
+			if v["href_template"] != nil && len(v["href_template"].([]interface{})) > 0 {
+				htL := v["href_template"].([]interface{})
+				h := htL[0].(map[string]interface{})
+				htmp.TextTemplate = h["text_template"].(string)
+
+			}
+			ltmp.HrefTemplate = &htmp
+			ltmps = append(ltmps, ltmp)
+		}
+		alertSource.LinkTemplates = ltmps
+	}
+	if val, ok := d.GetOk("priority_template"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			ptmp := ilert.PriorityTemplate{}
+
+			vtmp := ilert.Template{}
+			if v["value_template"] != nil && len(v["value_template"].([]interface{})) > 0 {
+				htL := v["value_template"].([]interface{})
+				h := htL[0].(map[string]interface{})
+				vtmp.TextTemplate = h["text_template"].(string)
+			}
+			ptmp.ValueTemplate = &vtmp
+
+			if v["mapping"] != nil {
+				mL := v["mapping"].([]interface{})
+				mpgs := make([]ilert.Mapping, 0)
+
+				for _, m := range mL {
+					mpg := ilert.Mapping{}
+					mp := m.(map[string]interface{})
+					if mp["value"] != nil && mp["value"].(string) != "" {
+						mpg.Value = mp["value"].(string)
+					}
+					if mp["priority"] != nil && mp["priority"].(string) != "" {
+						mpg.Priority = mp["priority"].(string)
+					}
+					mpgs = append(mpgs, mpg)
+				}
+				ptmp.Mappings = mpgs
+			}
+			alertSource.PriorityTemplate = &ptmp
+		}
+	}
+	if val, ok := d.GetOk("alert_grouping_window"); ok {
+		if alert_creation, ok := d.GetOk("alert_creation"); !ok || alert_creation.(string) != ilert.AlertSourceAlertCreations.OneAlertGroupedPerWindow {
+			return nil, fmt.Errorf("[ERROR] Can't set alert grouping window when alert creation is not set or not of type 'ONE_ALERT_GROUPED_PER_WINDOW'")
+		}
+		alertGroupingWindow := val.(string)
+		alertSource.AlertGroupingWindow = alertGroupingWindow
+	}
 
 	return alertSource, nil
 }
@@ -707,7 +930,7 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m in
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert source, %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not create an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
@@ -717,7 +940,7 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 	if result == nil || result.AlertSource == nil {
-		log.Printf("[ERROR] Creating ilert alert source error: empty response ")
+		log.Printf("[ERROR] Creating ilert alert source error: empty response")
 		return diag.Errorf("alert source response is empty")
 	}
 	d.SetId(strconv.FormatInt(result.AlertSource.ID, 10))
@@ -734,7 +957,9 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	log.Printf("[DEBUG] Reading alert source: %s", d.Id())
 	result := &ilert.GetAlertSourceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		r, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
+		includes := make([]*string, 0)
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"))
+		r, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing alert source %s from state because it no longer exist", d.Id())
@@ -743,20 +968,21 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be read", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be read, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = r
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert alert source error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
 	if result == nil || result.AlertSource == nil {
-		log.Printf("[ERROR] Reading ilert alert source error: empty response ")
+		log.Printf("[ERROR] Reading ilert alert source error: empty response")
 		return diag.Errorf("alert source response is empty")
 	}
 
@@ -779,6 +1005,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	if result.AlertSource.IntegrationType == "EMAIL" {
 		d.Set("email", result.AlertSource.IntegrationKey)
 	}
+	d.Set("alert_grouping_window", result.AlertSource.AlertGroupingWindow)
 
 	if result.AlertSource.Heartbeat != nil {
 		d.Set("heartbeat", []interface{}{
@@ -814,6 +1041,52 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 		})
 	} else {
 		d.Set("resolve_key_extractor", []interface{}{})
+	}
+
+	if result.AlertSource.SummaryTemplate != nil {
+		d.Set("summary_template", []interface{}{
+			map[string]interface{}{
+				"text_template": result.AlertSource.SummaryTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("summary_template", []interface{}{})
+	}
+
+	if result.AlertSource.DetailsTemplate != nil {
+		d.Set("details_template", []interface{}{
+			map[string]interface{}{
+				"text_template": result.AlertSource.DetailsTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("details_template", []interface{}{})
+	}
+
+	if result.AlertSource.RoutingTemplate != nil {
+		d.Set("routing_template", []interface{}{
+			map[string]interface{}{
+				"text_template": result.AlertSource.RoutingTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("routing_template", []interface{}{})
+	}
+
+	linkTemplates, err := flattenLinkTemplatesList(result.AlertSource.LinkTemplates)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("link_template", linkTemplates); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting link templates: %s", err))
+	}
+
+	priorityTemplate, err := flattenPriorityTemplate(result.AlertSource.PriorityTemplate)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("priority_template", priorityTemplate); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting priority template: %s", err))
 	}
 
 	if val, ok := d.GetOk("team"); ok {
@@ -871,7 +1144,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(fmt.Errorf("error setting email resolve predicates: %s", err))
 	}
 
-	supportHours, err := flattenSupportHours(result.AlertSource.SupportHours)
+	supportHours, err := flattenSupportHoursInterface(result.AlertSource.SupportHours)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -901,9 +1174,9 @@ func resourceAlertSourceUpdate(ctx context.Context, d *schema.ResourceData, m in
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be updated", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be updated, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an alert source with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not update an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -928,9 +1201,9 @@ func resourceAlertSourceDelete(ctx context.Context, d *schema.ResourceData, m in
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be deleted", d.Id()))
+				return resource.RetryableError(fmt.Errorf("waiting for alert source with id '%s' to be deleted, error: %s", d.Id(), err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an alert source with ID %s", d.Id()))
+			return resource.NonRetryableError(fmt.Errorf("could not delete an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		return nil
 	})
@@ -953,7 +1226,9 @@ func resourceAlertSourceExists(d *schema.ResourceData, m interface{}) (bool, err
 	ctx := context.Background()
 	result := false
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		_, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID)})
+		includes := make([]*string, 0)
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"))
+		_, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				result = false
@@ -964,13 +1239,14 @@ func resourceAlertSourceExists(d *schema.ResourceData, m interface{}) (bool, err
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for alert source to be read, error: %s", err.Error()))
 			}
-			return resource.NonRetryableError(err)
+			return resource.NonRetryableError(fmt.Errorf("could not read an alert source with ID %s, error: %s", d.Id(), err.Error()))
 		}
 		result = true
 		return nil
 	})
 
 	if err != nil {
+		log.Printf("[ERROR] Reading ilert alert source error: %s", err.Error())
 		return false, err
 	}
 	return result, nil
@@ -992,62 +1268,62 @@ func flattenEmailPredicateList(predicateList []ilert.EmailPredicate) ([]interfac
 	return results, nil
 }
 
-func flattenSupportHours(supportHours *ilert.SupportHours) ([]interface{}, error) {
+func flattenSupportHoursInterface(supportHoursInterface interface{}) ([]interface{}, error) {
+	supportHoursMap, ok := supportHoursInterface.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("[ERROR] Could not convert support hours to map")
+	}
+
+	if supportHoursMap["id"] != nil {
+		supportHours, err := flattenSupportHours(supportHoursMap)
+		if err != nil {
+			return nil, err
+		}
+		return supportHours, nil
+	}
+
+	supportHours, err := flattenSupportHoursLegacy(supportHoursMap)
+	if err != nil {
+		return nil, err
+	}
+	return supportHours, nil
+}
+
+func flattenSupportHours(supportHours map[string]interface{}) ([]interface{}, error) {
 	if supportHours == nil {
 		return make([]interface{}, 0), nil
 	}
+
 	results := make([]interface{}, 0)
-
 	result := make(map[string]interface{})
-	result["timezone"] = supportHours.Timezone
-	result["auto_raise_incidents"] = supportHours.AutoRaiseIncidents
-	result["auto_raise_alerts"] = supportHours.AutoRaiseAlerts
 
-	supportDays := make([]interface{}, 0)
-	supportDaysItem := make(map[string]interface{})
-	if supportHours.SupportDays.MONDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportHours.SupportDays.MONDAY.Start
-		supportDay["end"] = supportHours.SupportDays.MONDAY.End
-		supportDaysItem["monday"] = []interface{}{supportDay}
+	result["id"] = supportHours["id"]
+
+	results = append(results, result)
+
+	return results, nil
+}
+
+func flattenSupportHoursLegacy(supportHours map[string]interface{}) ([]interface{}, error) {
+	if supportHours == nil {
+		return make([]interface{}, 0), nil
 	}
-	if supportHours.SupportDays.TUESDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportHours.SupportDays.TUESDAY.Start
-		supportDay["end"] = supportHours.SupportDays.TUESDAY.End
-		supportDaysItem["tuesday"] = []interface{}{supportDay}
+
+	results := make([]interface{}, 0)
+	result := make(map[string]interface{})
+
+	result["timezone"] = supportHours["timezone"]
+	result["auto_raise_incidents"] = supportHours["autoRaiseIncidents"]
+	result["auto_raise_alerts"] = supportHours["autoRaiseAlerts"]
+
+	supportDaysMap, ok := supportHours["supportDays"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("[ERROR] Could not convert support days to map")
 	}
-	if supportHours.SupportDays.WEDNESDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportHours.SupportDays.WEDNESDAY.Start
-		supportDay["end"] = supportHours.SupportDays.WEDNESDAY.End
-		supportDaysItem["wednesday"] = []interface{}{supportDay}
+	supportDays, err := flattenSupportDaysMap(supportDaysMap)
+	if err != nil {
+		return nil, err
 	}
-	if supportHours.SupportDays.THURSDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportHours.SupportDays.THURSDAY.Start
-		supportDay["end"] = supportHours.SupportDays.THURSDAY.End
-		supportDaysItem["thursday"] = []interface{}{supportDay}
-	}
-	if supportHours.SupportDays.FRIDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportHours.SupportDays.FRIDAY.Start
-		supportDay["end"] = supportHours.SupportDays.FRIDAY.End
-		supportDaysItem["friday"] = []interface{}{supportDay}
-	}
-	if supportHours.SupportDays.SATURDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportHours.SupportDays.SATURDAY.Start
-		supportDay["end"] = supportHours.SupportDays.SATURDAY.End
-		supportDaysItem["saturday"] = []interface{}{supportDay}
-	}
-	if supportHours.SupportDays.SUNDAY != nil {
-		supportDay := make(map[string]interface{})
-		supportDay["start"] = supportHours.SupportDays.SUNDAY.Start
-		supportDay["end"] = supportHours.SupportDays.SUNDAY.End
-		supportDaysItem["sunday"] = []interface{}{supportDay}
-	}
-	supportDays = append(supportDays, supportDaysItem)
 	result["support_days"] = supportDays
 
 	results = append(results, result)
@@ -1055,14 +1331,113 @@ func flattenSupportHours(supportHours *ilert.SupportHours) ([]interface{}, error
 	return results, nil
 }
 
-// func flattenTeamsList(list []ilert.TeamShort) ([]int64, error) {
-// 	if list == nil {
-// 		return make([]int64, 0), nil
-// 	}
-// 	results := make([]int64, 0)
-// 	for _, item := range list {
-// 		results = append(results, item.ID)
-// 	}
+func flattenSupportDaysMap(supportDays map[string]interface{}) ([]interface{}, error) {
+	results := make([]interface{}, 0)
+	result := make(map[string]interface{})
 
-// 	return results, nil
-// }
+	if supportDays["MONDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["MONDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["monday"] = []interface{}{supportDay}
+	}
+	if supportDays["TUESDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["TUESDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["tuesday"] = []interface{}{supportDay}
+	}
+	if supportDays["WEDNESDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["WEDNESDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["wednesday"] = []interface{}{supportDay}
+	}
+	if supportDays["THURSDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["THURSDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["thursday"] = []interface{}{supportDay}
+	}
+	if supportDays["FRIDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["FRIDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["friday"] = []interface{}{supportDay}
+	}
+	if supportDays["SATURDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["SATURDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["saturday"] = []interface{}{supportDay}
+	}
+	if supportDays["SUNDAY"] != nil {
+		supportDay := make(map[string]interface{})
+		day := supportDays["SUNDAY"].(map[string]interface{})
+		supportDay["start"] = day["start"]
+		supportDay["end"] = day["end"]
+		result["sunday"] = []interface{}{supportDay}
+	}
+	results = append(results, result)
+	return results, nil
+}
+
+func flattenLinkTemplatesList(linkTemplatesList []ilert.LinkTemplate) ([]interface{}, error) {
+	if linkTemplatesList == nil {
+		return make([]interface{}, 0), nil
+	}
+	results := make([]interface{}, 0)
+	for _, linkTemplate := range linkTemplatesList {
+		result := make(map[string]interface{})
+		result["text"] = linkTemplate.Text
+
+		hrefTemplates := make([]interface{}, 0)
+		hrefTemplate := make(map[string]interface{})
+		hrefTemplate["text_template"] = linkTemplate.HrefTemplate.TextTemplate
+
+		hrefTemplates = append(hrefTemplates, hrefTemplate)
+		result["href_template"] = hrefTemplates
+
+		results = append(results, result)
+	}
+
+	return results, nil
+}
+
+func flattenPriorityTemplate(priorityTemplate *ilert.PriorityTemplate) ([]interface{}, error) {
+	if priorityTemplate == nil {
+		return make([]interface{}, 0), nil
+	}
+	results := make([]interface{}, 0)
+
+	result := make(map[string]interface{})
+
+	valueTemplates := make([]interface{}, 0)
+	valueTemplate := make(map[string]interface{})
+	valueTemplate["text_template"] = priorityTemplate.ValueTemplate.TextTemplate
+
+	valueTemplates = append(valueTemplates, valueTemplate)
+	result["value_template"] = valueTemplates
+
+	mappings := make([]interface{}, 0)
+	for _, priorityMapping := range priorityTemplate.Mappings {
+		mapping := make(map[string]interface{})
+
+		mapping["value"] = priorityMapping.Value
+		mapping["priority"] = priorityMapping.Priority
+
+		mappings = append(mappings, mapping)
+	}
+
+	result["mapping"] = mappings
+
+	results = append(results, result)
+
+	return results, nil
+}

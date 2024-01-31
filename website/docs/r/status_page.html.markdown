@@ -51,7 +51,7 @@ The following arguments are supported:
 - `service` - (Required) One or more [service](#service-arguments) blocks.
 - `domain` - (Optional) The custom domain of the status page.
 - `timezone` - (Optional) The timezone of the status page. In timezone format, e.g. `Europe/Berlin`, `America/New_York`, `America/Los_Angeles`, `Asia/Istanbul`.
-- `custom_css` - (Optional) Custom CSS Styles for the status page.
+- `custom_css` - (Optional) Custom CSS Styles for the status page. NOTE: Don't use this field yet.
 - `favicon_url` - (Optional) The favicon of the status page.
 - `logo_url` - (Optional) The logo of the status page.
 - `hidden_from_search` - (Optional) Indicates whether or not the status page is hidden from search.
@@ -59,11 +59,13 @@ The following arguments are supported:
 - `show_incident_history_option` - (Optional) Indicates whether or not the incident history option should be shown.
 - `page_title` - (Optional) The title of the status page.
 - `page_description` - (Optional) The description of the status page.
+- `page_layout` - (Optional) The layout of the status page. Allowed values are `SINGLE_COLUMN` and `RESPONSIVE`.
 - `logo_redirect_url` - (Optional) The redirect url for the status page logo.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 - `ip_whitelist` - (Optional) One or more IP's to whitelist.
 - `account_wide_view` - (Optional) Indicates whether or not the status page should be shown account wide.
 - `structure` - (Optional) A [structure](#structure-arguments) block.
+- `appearance` - (Optional) The appearance of the status page. Allowed values are `LIGHT` and `DARK`.
 
 #### Service Arguments
 
@@ -83,12 +85,14 @@ The following arguments are supported:
 
 - `id` - (Required) The ID of the element. Can be either an id of a service or a status page group.
 - `type` - (Required) The type of the element. Allowed values are `SERVICE` and `GROUP`.
+- `options` - (Optional) One or more options to provide for the element. Allowed values for type `GROUP` are `expand`. Allowed values for type `SERVICE` are `no-graph`.
 - `child` - (Optional) One or more [child](#child-arguments) blocks.
 
 #### Child Arguments
 
 - `id` - (Required) The ID of the child. Must be a status page group id.
 - `type` - (Required) The type of the child. Allowed values are `SERVICE`.
+- `options` - (Optional) One or more options to provide for the child. Allowed values are `no-graph`.
 
 ## Attributes Reference
 
@@ -101,7 +105,7 @@ The following attributes are exported:
 
 ## Import
 
-Services can be imported using the `id`, e.g.
+Status pages can be imported using the `id`, e.g.
 
 ```sh
 $ terraform import ilert_status_page.main 123456789

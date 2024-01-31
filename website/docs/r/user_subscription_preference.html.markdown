@@ -42,7 +42,7 @@ resource "ilert_user_subscription_preference" "example" {
 The following arguments are supported:
 
 - `method` - (Required) The method of the user subscription preference. Allowed values are `EMAIL`, `SMS`, `PUSH`.
-- `contact` - (Required) A [contact](#contact-arguments) block.
+- `contact` - (Optional) A [contact](#contact-arguments) block. Required when `method` is `EMAIL`, `SMS`, `VOICE`, `WHATSAPP`, `TELEGRAM`. Must not be set when `method` is `PUSH`.
 - `user` - (Required) A [user](#user-arguments) block.
 
 #### User Arguments

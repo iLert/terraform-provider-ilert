@@ -69,7 +69,8 @@ The following arguments are supported:
 - `alert_source` - (Required) One or more [alert source](#alert-source-arguments) blocks.
 - `connector` - (Required) A [connector](#connector-arguments) block.
 - `trigger_mode` - (Optional) The trigger mode of the alert action. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
-- `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-resolved`.
+- `delay_sec` - (Optional) The number of seconds the alert action will be delayed when reaching end of escalation. Can only be set when one of `trigger_types` is set to `alert-escalation-ended`. Must be either `0` or a value between `30` and `7200`.
+- `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-escalation-ended`, `alert-resolved`, `alert-auto-resolved`, `alert-responder-added`, `alert-responder-removed`, `alert-channel-attached`, `alert-channel-detached`.
 - `datadog` - (Optional) A [datadog](#datadog-arguments) block.
 - `jira` - (Optional) A [jira](#jira-arguments) block.
 - `servicenow` - (Optional) A [servicenow](#servicenow-arguments) block.
@@ -90,6 +91,7 @@ The following arguments are supported:
 - `dingtalk` - (Optional) A [dingtalk](#dingtalk-arguments) block.
 - `dingtalk_action` - (Optional) A [dingtalk_action](#dingtalk-action-arguments) block.
 - `automation_rule` - (Optional) An [automation_rule](#automation-rule-arguments) block.
+- `telegram` - (Optional) An [telegram](#telegram-arguments) block.
 - `alert_filter` - (Optional) An [alert_filter](#alert-filter-arguments) block.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 
@@ -251,6 +253,12 @@ The following arguments are supported:
 - `template_id` - (Optional) The ID of the incident template.
 - `resolve_incident` - (Optional, requires `template_id`) Determines whether an incident should be resolved or not. Default: `false`
 - `send_notification` - (Optional, requires `template_id`) Determines whether notifications should be sent or not. Default: `false`
+
+#### Telegram Arguments
+
+> See [the Telegram integration documentation](https://docs.ilert.com/integrations/telegram) for more details.
+
+- `channel_id` - (Required) The Telegram channel id.
 
 #### Alert Filter Arguments
 

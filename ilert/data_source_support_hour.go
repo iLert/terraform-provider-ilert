@@ -13,9 +13,9 @@ import (
 	"github.com/iLert/ilert-go/v3"
 )
 
-func dataSourceEscalationPolicy() *schema.Resource {
+func dataSourceSupportHour() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceEscalationPolicyRead,
+		ReadContext: dataSourceSupportHourRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -26,28 +26,28 @@ func dataSourceEscalationPolicy() *schema.Resource {
 	}
 }
 
-func dataSourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceSupportHourRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
-	log.Printf("[DEBUG] Reading ilert escalation policy")
+	log.Printf("[DEBUG] Reading ilert support hour")
 
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.SearchEscalationPolicy(&ilert.SearchEscalationPolicyInput{EscalationPolicyName: &searchName})
+		resp, err := client.SearchSupportHour(&ilert.SearchSupportHourInput{SupportHourName: &searchName})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for escalation policy with name '%s' to be read, error: %s", searchName, err.Error()))
+				return resource.RetryableError(fmt.Errorf("waiting for support hour with name '%s' to be read, error: %s", searchName, err.Error()))
 			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an escalation policy with name: %s, error: %s", searchName, err.Error()))
+			return resource.NonRetryableError(fmt.Errorf("could not read a support hour with name: %s, error: %s", searchName, err.Error()))
 		}
 
-		found := resp.EscalationPolicy
+		found := resp.SupportHour
 
 		if found == nil {
 			return resource.NonRetryableError(
-				fmt.Errorf("unable to locate any escalation policy with the name: %s", searchName),
+				fmt.Errorf("unable to locate any support hour with the name: %s", searchName),
 			)
 		}
 

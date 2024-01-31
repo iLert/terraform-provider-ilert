@@ -10,6 +10,8 @@ description: |-
 
 An [uptime monitor](https://api.ilert.com/api-docs/#tag/Uptime-Monitors) allows you to quickly setup monitoring for any kind of exposed service e.g. HTTP (e.g. websites), ICMP (ping) or TCP and UDP servers.
 
+> WARNING - this resource is deprecated and will be removed in the next major version of the provider
+
 ## Example Usage
 
 ```hcl
