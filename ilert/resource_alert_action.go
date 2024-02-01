@@ -27,7 +27,6 @@ func resourceAlertAction() *schema.Resource {
 			"alert_source": {
 				Type:     schema.TypeList,
 				Required: true,
-				MaxItems: 1,
 				MinItems: 1,
 				ForceNew: false,
 				Elem: &schema.Resource{
@@ -623,6 +622,24 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
+			"team": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MinItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"name": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringLenBetween(1, 255),
+						},
+					},
+				},
+			},
 			"delay_sec": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -654,16 +671,19 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 
 	if val, ok := d.GetOk("alert_source"); ok {
 		vL := val.([]interface{})
-		aids := make([]int64, 0)
+		als := make([]ilert.AlertSource, 0)
 		for _, m := range vL {
 			v := m.(map[string]interface{})
-			aid, err := strconv.ParseInt(v["id"].(string), 10, 64)
+			asid, err := strconv.ParseInt(v["id"].(string), 10, 64)
 			if err != nil {
 				return nil, unconvertibleIDErr(v["id"].(string), err)
 			}
-			aids = append(aids, aid)
+			as := ilert.AlertSource{
+				ID: asid,
+			}
+			als = append(als, as)
 		}
-		alertAction.AlertSourceIDs = aids
+		alertAction.AlertSources = als
 	}
 
 	if val, ok := d.GetOk("connector"); ok {
@@ -1008,6 +1028,22 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
+	if val, ok := d.GetOk("team"); ok {
+		vL := val.([]interface{})
+		tms := make([]ilert.TeamShort, 0)
+		for _, m := range vL {
+			v := m.(map[string]interface{})
+			tm := ilert.TeamShort{
+				ID: int64(v["id"].(int)),
+			}
+			if v["name"] != nil && v["name"].(string) != "" {
+				tm.Name = v["name"].(string)
+			}
+			tms = append(tms, tm)
+		}
+		alertAction.Teams = tms
+	}
+
 	if val, ok := d.GetOk("delay_sec"); ok {
 		delaySec := val.(int)
 		if delaySec != 0 && (delaySec < 30 || delaySec > 7200) {
@@ -1102,7 +1138,7 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 
 	d.Set("name", result.AlertAction.Name)
 
-	alertSources, err := flattenAlertActionAlertSourceIDList(result.AlertAction.AlertSourceIDs)
+	alertSources, err := flattenAlertActionAlertSourcesList(result.AlertAction.AlertSources)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1278,6 +1314,29 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.Errorf("error setting alert filter: %s", err)
 	}
 
+	if val, ok := d.GetOk("team"); ok {
+		if val != nil {
+			vL := val.([]interface{})
+			teams := make([]interface{}, 0)
+			for i, item := range result.AlertAction.Teams {
+				team := make(map[string]interface{})
+				v := vL[i].(map[string]interface{})
+				team["id"] = item.ID
+
+				// Means: if server response has a name set, and the user typed in a name too,
+				// only then team name is stored in the terraform state
+				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+					team["name"] = item.Name
+				}
+				teams = append(teams, team)
+			}
+
+			if err := d.Set("team", teams); err != nil {
+				return diag.Errorf("error setting teams: %s", err)
+			}
+		}
+	}
+
 	d.Set("delay_sec", result.AlertAction.DelaySec)
 
 	return nil
@@ -1373,14 +1432,14 @@ func resourceAlertActionExists(d *schema.ResourceData, m interface{}) (bool, err
 	return result, nil
 }
 
-func flattenAlertActionAlertSourceIDList(list []int64) ([]interface{}, error) {
+func flattenAlertActionAlertSourcesList(list []ilert.AlertSource) ([]interface{}, error) {
 	if list == nil {
 		return make([]interface{}, 0), nil
 	}
 	results := make([]interface{}, 0)
 	for _, item := range list {
 		result := make(map[string]interface{})
-		result["id"] = strconv.FormatInt(item, 10)
+		result["id"] = strconv.FormatInt(item.ID, 10)
 		results = append(results, result)
 	}
 
