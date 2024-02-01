@@ -1,5 +1,7 @@
 # Changelog
 
+## 01.02.2024, Version 2.6.0
+
 - feature/alert-actions-v2 in [#60](https://github.com/iLert/terraform-provider-ilert/pull/60)
 
 ## 30.01.2024, Version 2.5.1
