@@ -18,6 +18,12 @@ resource "ilert_alert_source" "example" {
   escalation_policy = ilert_escalation_policy.example.id
 }
 
+resource "ilert_alert_source" "example_api" {
+  name              = "My API integration from terraform"
+  integration_type  = "API"
+  escalation_policy = ilert_escalation_policy.example.id
+}
+
 resource "ilert_connector" "example" {
   name = "My GitHub Connector"
   type = "github"
@@ -32,6 +38,10 @@ resource "ilert_alert_action" "example" {
 
   alert_source {
     id = ilert_alert_source.example.id
+  }
+
+  alert_source {
+    id = ilert_alert_source.example_api.id
   }
 
   connector {
