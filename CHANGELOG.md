@@ -3,9 +3,11 @@
 ## 20.02.2024, Version 2.6.1
 
 - fix/alert-actions-teams in [#84](https://github.com/iLert/terraform-provider-ilert/pull/84)
+  - ensures existing scripts using one alert source with no team explicitly set to use legacy api without breaking
 
 ## 01.02.2024, Version 2.6.0
 
+- we dont recommend using this version if you use are managing alert actions, please upgrade to at least v2.6.1
 - feature/alert-actions-v2 in [#60](https://github.com/iLert/terraform-provider-ilert/pull/60)
 
 ## 30.01.2024, Version 2.5.1
