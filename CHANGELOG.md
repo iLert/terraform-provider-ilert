@@ -2,7 +2,7 @@
 
 ## 20.02.2024, Version 2.6.1
 
-- fix/alert-actions-teams in [#61](https://github.com/iLert/terraform-provider-ilert/pull/61)
+- fix/alert-actions-teams in [#84](https://github.com/iLert/terraform-provider-ilert/pull/84)
 
 ## 01.02.2024, Version 2.6.0
 
