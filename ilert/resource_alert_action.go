@@ -683,7 +683,7 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 			}
 			als = append(als, as)
 		}
-		alertAction.AlertSources = als
+		alertAction.AlertSources = &als
 	}
 
 	if val, ok := d.GetOk("connector"); ok {
@@ -1041,7 +1041,7 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 			}
 			tms = append(tms, tm)
 		}
-		alertAction.Teams = tms
+		alertAction.Teams = &tms
 	}
 
 	if val, ok := d.GetOk("delay_sec"); ok {
@@ -1109,7 +1109,13 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 
 	result := &ilert.GetAlertActionOutput{}
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		r, err := client.GetAlertAction(&ilert.GetAlertActionInput{AlertActionID: ilert.String(alertActionID)})
+		version := 2
+		if val, ok := d.GetOk("alert_source"); ok && len(val.([]interface{})) == 1 {
+			if val, ok := d.GetOk("team"); !ok || len(val.([]interface{})) == 0 {
+				version = 1
+			}
+		}
+		r, err := client.GetAlertAction(&ilert.GetAlertActionInput{AlertActionID: ilert.String(alertActionID), Version: ilert.Int(version)})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing alert action %s from state because it no longer exist", d.Id())
@@ -1138,12 +1144,14 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 
 	d.Set("name", result.AlertAction.Name)
 
-	alertSources, err := flattenAlertActionAlertSourcesList(result.AlertAction.AlertSources)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("alert_source", alertSources); err != nil {
-		return diag.Errorf("error setting alert sources: %s", err)
+	if _, ok := d.GetOk("alert_source"); ok && result.AlertAction.AlertSources != nil {
+		alertSources, err := flattenAlertActionAlertSourcesList(*result.AlertAction.AlertSources)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err := d.Set("alert_source", alertSources); err != nil {
+			return diag.Errorf("error setting alert sources: %s", err)
+		}
 	}
 
 	connector := map[string]interface{}{}
@@ -1315,11 +1323,14 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	if val, ok := d.GetOk("team"); ok {
-		if val != nil {
+		if val != nil && result.AlertAction.Teams != nil {
 			vL := val.([]interface{})
 			teams := make([]interface{}, 0)
-			for i, item := range result.AlertAction.Teams {
+			for i, item := range *result.AlertAction.Teams {
 				team := make(map[string]interface{})
+				if i >= len(vL) {
+					break
+				}
 				v := vL[i].(map[string]interface{})
 				team["id"] = item.ID
 
@@ -1338,6 +1349,19 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	d.Set("delay_sec", result.AlertAction.DelaySec)
+
+	if val, ok := d.GetOk("alert_source"); ok && len(val.([]interface{})) == 1 {
+		if v, ok := d.GetOk("team"); !ok || len(v.([]interface{})) == 0 {
+			sourceId := result.AlertAction.AlertSourceIDs[0]
+
+			sources := make([]interface{}, 0)
+			source := make(map[string]interface{})
+			source["id"] = strconv.FormatInt(sourceId, 10)
+			sources = append(sources, source)
+
+			d.Set("alert_source", sources)
+		}
+	}
 
 	return nil
 }
