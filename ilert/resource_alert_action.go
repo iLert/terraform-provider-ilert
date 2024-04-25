@@ -15,8 +15,7 @@ import (
 )
 
 func resourceAlertAction() *schema.Resource {
-	// include only type that schema supports
-	alertActionTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Discord, ilert.ConnectorTypes.Mattermost, ilert.ConnectorTypes.MicrosoftTeams, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.ZoomChat, ilert.ConnectorTypes.ZoomMeeting, ilert.ConnectorTypes.Webex)
+	alertActionTypesAll := ilert.ConnectorTypesAll
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -72,35 +71,6 @@ func resourceAlertAction() *schema.Resource {
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringInSlice(ilert.AlertActionTriggerTypesAll, false),
-				},
-			},
-			"datadog": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Datadog),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"priority": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"site": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Default:      "EU",
-							ValidateFunc: validation.StringInSlice(ilert.UptimeMonitorRegionsAll, false),
-						},
-						"tags": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-					},
 				},
 			},
 			"jira": {
@@ -271,66 +241,6 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
-			"aws_lambda": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.AWSLambda),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"body_template": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
-			"azure_faas": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.AzureFAAS),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"body_template": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
-			"google_faas": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.GoogleFAAS),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"body_template": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
 			"email": {
 				Type:          schema.TypeList,
 				Optional:      true,
@@ -354,45 +264,6 @@ func resourceAlertAction() *schema.Resource {
 						"body_template": {
 							Type:     schema.TypeString,
 							Optional: true,
-						},
-					},
-				},
-			},
-			"sysdig": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Sysdig),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"tags": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"event_filter": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
-			"zapier": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Zapier),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:     schema.TypeString,
-							Required: true,
 						},
 					},
 				},
@@ -445,22 +316,6 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
-			"status_page_io": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.StatusPageIO),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"page_id": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
 			"dingtalk": {
 				Type:          schema.TypeList,
 				Optional:      true,
@@ -470,38 +325,6 @@ func resourceAlertAction() *schema.Resource {
 				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.DingTalk),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"is_at_all": {
-							Type:     schema.TypeBool,
-							Optional: true,
-						},
-						"at_mobiles": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-					},
-				},
-			},
-			"dingtalk_action": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.DingTalkAction),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"secret": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-						},
 						"is_at_all": {
 							Type:     schema.TypeBool,
 							Optional: true,
@@ -710,25 +533,6 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		alertAction.TriggerTypes = sL
 	}
 
-	if val, ok := d.GetOk("datadog"); ok {
-		vL := val.([]interface{})
-		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
-			params := &ilert.AlertActionParamsDatadog{
-				Site:     v["site"].(string),
-				Priority: v["priority"].(string),
-			}
-			vL := v["tags"].([]interface{})
-			sL := make([]string, 0)
-			for _, m := range vL {
-				v := m.(string)
-				sL = append(sL, v)
-			}
-			params.Tags = sL
-			alertAction.Params = params
-		}
-	}
-
 	if val, ok := d.GetOk("jira"); ok {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
@@ -816,39 +620,6 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
-	if val, ok := d.GetOk("aws_lambda"); ok {
-		vL := val.([]interface{})
-		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
-			alertAction.Params = &ilert.AlertActionParamsAWSLambda{
-				WebhookURL:   v["url"].(string),
-				BodyTemplate: v["body_template"].(string),
-			}
-		}
-	}
-
-	if val, ok := d.GetOk("azure_faas"); ok {
-		vL := val.([]interface{})
-		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
-			alertAction.Params = &ilert.AlertActionParamsAzureFunction{
-				WebhookURL:   v["url"].(string),
-				BodyTemplate: v["body_template"].(string),
-			}
-		}
-	}
-
-	if val, ok := d.GetOk("google_faas"); ok {
-		vL := val.([]interface{})
-		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
-			alertAction.Params = &ilert.AlertActionParamsGoogleFunction{
-				WebhookURL:   v["url"].(string),
-				BodyTemplate: v["body_template"].(string),
-			}
-		}
-	}
-
 	if val, ok := d.GetOk("email"); ok {
 		if vL, ok := val.([]interface{}); ok && len(vL) > 0 {
 			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
@@ -873,34 +644,6 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
-	if val, ok := d.GetOk("sysdig"); ok {
-		vL := val.([]interface{})
-		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
-			params := &ilert.AlertActionParamsSysdig{
-				EventFilter: v["event_filter"].(string),
-			}
-			vL := v["tags"].([]interface{})
-			sL := make([]string, 0)
-			for _, m := range vL {
-				v := m.(string)
-				sL = append(sL, v)
-			}
-			params.Tags = sL
-			alertAction.Params = params
-		}
-	}
-
-	if val, ok := d.GetOk("zapier"); ok {
-		vL := val.([]interface{})
-		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
-			alertAction.Params = &ilert.AlertActionParamsZapier{
-				WebhookURL: v["url"].(string),
-			}
-		}
-	}
-
 	if val, ok := d.GetOk("autotask"); ok {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
@@ -921,16 +664,6 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 			v := vL[0].(map[string]interface{})
 			alertAction.Params = &ilert.AlertActionParamsZammad{
 				Email: v["email"].(string),
-			}
-		}
-	}
-
-	if val, ok := d.GetOk("status_page_io"); ok {
-		vL := val.([]interface{})
-		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
-			alertAction.Params = &ilert.AlertActionParamsStatusPageIO{
-				PageID: v["page_id"].(string),
 			}
 		}
 	}
@@ -1001,6 +734,30 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 			v := vL[0].(map[string]interface{})
 			alertAction.Params = &ilert.AlertActionParamsTelegram{
 				ChannelID: v["channel_id"].(string),
+			}
+		}
+	}
+
+	if val, ok := d.GetOk("mattermost"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertAction.Params = &ilert.AlertActionParamsMattermost{
+				URL: v["url"].(string),
+			}
+		}
+	}
+
+	if val, ok := d.GetOk("microsoft_teams_bot"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertAction.Params = &ilert.AlertActionParamsMicrosoftTeamsBot{
+				ChannelID:   v["channel_id"].(string),
+				ChannelName: v["channel_name"].(string),
+				TeamID:      v["team_id"].(string),
+				TeamName:    v["team_name"].(string),
+				Type:        v["type"].(string),
 			}
 		}
 	}
@@ -1167,14 +924,6 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	d.Set("updated_at", result.AlertAction.UpdatedAt)
 
 	switch result.AlertAction.ConnectorType {
-	case ilert.ConnectorTypes.Datadog:
-		d.Set("datadog", []interface{}{
-			map[string]interface{}{
-				"priority": result.AlertAction.Params.Priority,
-				"site":     result.AlertAction.Params.Site,
-				"tags":     result.AlertAction.Params.Tags,
-			},
-		})
 	case ilert.ConnectorTypes.Jira:
 		d.Set("jira", []interface{}{
 			map[string]interface{}{
@@ -1227,34 +976,12 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 				"status": result.AlertAction.Params.Status,
 			},
 		})
-	case ilert.ConnectorTypes.AWSLambda,
-		ilert.ConnectorTypes.AzureFAAS,
-		ilert.ConnectorTypes.GoogleFAAS:
-		d.Set("aws_lambda", []interface{}{
-			map[string]interface{}{
-				"url":           result.AlertAction.Params.WebhookURL,
-				"body_template": result.AlertAction.Params.BodyTemplate,
-			},
-		})
 	case ilert.ConnectorTypes.Email:
 		d.Set("email", []interface{}{
 			map[string]interface{}{
 				"recipients":    result.AlertAction.Params.Recipients,
 				"subject":       result.AlertAction.Params.Subject,
 				"body_template": result.AlertAction.Params.BodyTemplate,
-			},
-		})
-	case ilert.ConnectorTypes.Sysdig:
-		d.Set("sysdig", []interface{}{
-			map[string]interface{}{
-				"tags":         result.AlertAction.Params.Tags,
-				"event_filter": result.AlertAction.Params.EventFilter,
-			},
-		})
-	case ilert.ConnectorTypes.Zapier:
-		d.Set("zapier", []interface{}{
-			map[string]interface{}{
-				"url": result.AlertAction.Params.WebhookURL,
 			},
 		})
 	case ilert.ConnectorTypes.Autotask:
@@ -1271,12 +998,6 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 		d.Set("zammad", []interface{}{
 			map[string]interface{}{
 				"email": result.AlertAction.Params.Email,
-			},
-		})
-	case ilert.ConnectorTypes.StatusPageIO:
-		d.Set("status_page_io", []interface{}{
-			map[string]interface{}{
-				"page_id": result.AlertAction.Params.PageID,
 			},
 		})
 	case ilert.ConnectorTypes.DingTalk:
@@ -1310,6 +1031,22 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 		d.Set("telegram", []interface{}{
 			map[string]interface{}{
 				"channel_id": result.AlertAction.Params.ChannelID,
+			},
+		})
+	case ilert.ConnectorTypes.Mattermost:
+		d.Set("mattermost", []interface{}{
+			map[string]interface{}{
+				"url": result.AlertAction.Params.URL,
+			},
+		})
+	case ilert.ConnectorTypes.MicrosoftTeamsBot:
+		d.Set("microsoft_teams_bot", []interface{}{
+			map[string]interface{}{
+				"channel_id":   result.AlertAction.Params.ChannelID,
+				"channel_name": result.AlertAction.Params.ChannelName,
+				"team_id":      result.AlertAction.Params.TeamID,
+				"team_name":    result.AlertAction.Params.TeamName,
+				"type":         result.AlertAction.Params.Type,
 			},
 		})
 	}
