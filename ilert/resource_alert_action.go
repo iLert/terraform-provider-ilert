@@ -339,6 +339,37 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
+			"dingtalk_action": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.DingTalkAction),
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"secret": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"is_at_all": {
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+						"at_mobiles": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 			"automation_rule": {
 				Type:          schema.TypeList,
 				Optional:      true,
@@ -395,6 +426,55 @@ func resourceAlertAction() *schema.Resource {
 						"channel_id": {
 							Type:     schema.TypeString,
 							Required: true,
+						},
+					},
+				},
+			},
+			"mattermost": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Mattermost),
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"microsoft_teams_bot": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Mattermost),
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"channel_id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"channel_name": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"team_id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"team_name": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"type": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "chat | meeting",
 						},
 					},
 				},
