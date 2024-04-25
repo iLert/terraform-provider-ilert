@@ -461,7 +461,7 @@ func resourceAlertAction() *schema.Resource {
 						},
 						"channel_name": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
 						},
 						"team_id": {
 							Type:     schema.TypeString,
@@ -469,7 +469,7 @@ func resourceAlertAction() *schema.Resource {
 						},
 						"team_name": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
 						},
 						"type": {
 							Type:        schema.TypeString,
