@@ -1,5 +1,9 @@
 # Changelog
 
+## 25.04.2024, Version 2.7.0
+
+- feature/alert-actions-connectors-v2 in [#85](https://github.com/iLert/terraform-provider-ilert/pull/85)
+
 ## 20.02.2024, Version 2.6.1
 
 - fix/alert-actions-teams in [#84](https://github.com/iLert/terraform-provider-ilert/pull/84)
