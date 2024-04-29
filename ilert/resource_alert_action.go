@@ -353,8 +353,9 @@ func resourceAlertAction() *schema.Resource {
 							Required: true,
 						},
 						"secret": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:      schema.TypeString,
+							Optional:  true,
+							Sensitive: true,
 						},
 						"is_at_all": {
 							Type:     schema.TypeBool,
