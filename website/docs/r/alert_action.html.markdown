@@ -96,7 +96,7 @@ The following arguments are supported:
 #### Connector Arguments
 
 - `id` - (Optional) The connector id. Required if the connector `type` is one of values `jira`, `servicenow`, `zendesk`, `discord`, `github`, `topdesk`, `autotask`, `mattermost`, `zammad`, `dingtalk`, `microsoft_teams_bot`, `slack`.
-- `type` - (Required) The connector type. Allowed values are `jira`, `servicenow`, `zendesk`, `discord`, `github`, `topdesk`, `autotask`, `mattermost`, `zammad`, `dingtalk`.
+- `type` - (Required) The connector type. Allowed values are `jira`, `servicenow`, `zendesk`, `discord`, `github`, `topdesk`, `autotask`, `mattermost`, `zammad`, `dingtalk`, `microsoft_teams_bot`, `slack`.
 
 #### Jira Arguments
 
