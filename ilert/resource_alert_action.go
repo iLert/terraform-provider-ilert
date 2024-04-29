@@ -15,7 +15,7 @@ import (
 )
 
 func resourceAlertAction() *schema.Resource {
-	alertActionTypesAll := ilert.ConnectorTypesAll
+	alertActionTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Discord, ilert.ConnectorTypes.Mattermost)
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -430,29 +430,13 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
-			"mattermost": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Mattermost),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-					},
-				},
-			},
 			"microsoft_teams_bot": {
 				Type:          schema.TypeList,
 				Optional:      true,
 				MaxItems:      1,
 				MinItems:      1,
 				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Mattermost),
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.MicrosoftTeamsBot),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"channel_id": {
@@ -818,16 +802,6 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
-	if val, ok := d.GetOk("mattermost"); ok {
-		vL := val.([]interface{})
-		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
-			alertAction.Params = &ilert.AlertActionParamsMattermost{
-				URL: v["url"].(string),
-			}
-		}
-	}
-
 	if val, ok := d.GetOk("microsoft_teams_bot"); ok {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
@@ -1111,12 +1085,6 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 		d.Set("telegram", []interface{}{
 			map[string]interface{}{
 				"channel_id": result.AlertAction.Params.ChannelID,
-			},
-		})
-	case ilert.ConnectorTypes.Mattermost:
-		d.Set("mattermost", []interface{}{
-			map[string]interface{}{
-				"url": result.AlertAction.Params.URL,
 			},
 		})
 	case ilert.ConnectorTypes.MicrosoftTeamsBot:

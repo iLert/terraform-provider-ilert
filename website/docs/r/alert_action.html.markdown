@@ -85,7 +85,6 @@ The following arguments are supported:
 - `dingtalk_action` - (Optional) A [dingtalk_action](#dingtalk-action-arguments) block.
 - `automation_rule` - (Optional) An [automation_rule](#automation-rule-arguments) block.
 - `telegram` - (Optional) An [telegram](#telegram-arguments) block.
-- `mattermost` - (Optional) A [mattermost](#mattermost-arguments) block.
 - `microsoft_teams_bot` - (Optional) A [microsoft_teams_bot](#microsoft-teams-bot-arguments) block.
 - `alert_filter` - (Optional) An [alert_filter](#alert-filter-arguments) block.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
@@ -206,12 +205,6 @@ The following arguments are supported:
 > See [the Telegram integration documentation](https://docs.ilert.com/integrations/telegram) for more details.
 
 - `channel_id` - (Required) The Telegram channel id.
-
-#### Mattermost Arguments
-
-> See [the Mattermost integration documentation](https://docs.ilert.com/integrations/mattermost) for more details.
-
-- `url` - (Required) The Mattermost webhook url.
 
 #### Microsoft teams bot Arguments
 
