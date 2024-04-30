@@ -71,27 +71,21 @@ The following arguments are supported:
 - `trigger_mode` - (Optional) The trigger mode of the alert action. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
 - `delay_sec` - (Optional) The number of seconds the alert action will be delayed when reaching end of escalation. Can only be set when one of `trigger_types` is set to `alert-escalation-ended`. Must be either `0` or a value between `30` and `7200`.
 - `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-escalation-ended`, `alert-resolved`, `alert-auto-resolved`, `alert-responder-added`, `alert-responder-removed`, `alert-channel-attached`, `alert-channel-detached`.
-- `datadog` - (Optional) A [datadog](#datadog-arguments) block.
 - `jira` - (Optional) A [jira](#jira-arguments) block.
 - `servicenow` - (Optional) A [servicenow](#servicenow-arguments) block.
 - `slack` - (Optional) A [slack](#slack-arguments) block.
 - `webhook` - (Optional) A [webhook](#webhook-arguments) block.
 - `zendesk` - (Optional) A [zendesk](#zendesk-arguments) block.
 - `github` - (Optional) A [github](#github-arguments) block.
-- `aws_lambda` - (Optional) A [aws_lambda](#aws-lambda-arguments) block.
-- `azure_faas` - (Optional) A [azure_faas](#azure-function-arguments) block.
-- `google_faas` - (Optional) A [google_faas](#google-cloud-function-arguments) block.
+- `topdesk` - (Optional) A [topdesk](#topdesk-arguments) block.
 - `email` - (Optional) A [email](#email-arguments) block.
-- `sysdig` - (Optional) A [sysdig](#sysdig-arguments) block.
-- `zapier` - (Optional) A [zapier](#zapier-arguments) block.
 - `autotask` - (Optional) A [autotask](#autotask-arguments) block.
-- `mattermost` - (Optional) A [mattermost](#mattermost-arguments) block.
 - `zammad` - (Optional) A [zammad](#zammad-arguments) block.
-- `status_page_io` - (Optional) A [status_page_io](#statuspage-arguments) block.
 - `dingtalk` - (Optional) A [dingtalk](#dingtalk-arguments) block.
 - `dingtalk_action` - (Optional) A [dingtalk_action](#dingtalk-action-arguments) block.
 - `automation_rule` - (Optional) An [automation_rule](#automation-rule-arguments) block.
 - `telegram` - (Optional) An [telegram](#telegram-arguments) block.
+- `microsoft_teams_bot` - (Optional) A [microsoft_teams_bot](#microsoft-teams-bot-arguments) block.
 - `alert_filter` - (Optional) An [alert_filter](#alert-filter-arguments) block.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 
@@ -101,16 +95,8 @@ The following arguments are supported:
 
 #### Connector Arguments
 
-- `id` - (Optional) The connector id. Required if the connector `type` is one of values `aws_lambda`, `azure_faas`, `datadog`, `discord`, `github`, `google_faas`, `jira`, `microsoft_teams`, `servicenow`, `sysdig`, `topdesk`, `zendesk`, `autotask`, `mattermost`, `zammad`, `status_page_io`.
-- `type` - (Required) The connector type. Allowed values are `aws_lambda`, `azure_faas`, `datadog`, `discord`, `email`, `github`, `google_faas`, `jira`, `microsoft_teams`, `servicenow`, `slack`, `sysdig`, `topdesk`, `webhook`, `zapier`, `zendesk`.
-
-#### Datadog Arguments
-
-> See [the Datadog outbound integration documentation](https://docs.ilert.com/integrations/datadog/outbound) for more details.
-
-- `priority` - (Optional) The datadog priority.
-- `site` - (Optional) The datadog site. Allowed values are `EU` or `US`. Default: `EU`.
-- `tags` - (Optional) A list of the datadog tags.
+- `id` - (Optional) The connector id. Required if the connector `type` is one of values `jira`, `servicenow`, `zendesk`, `discord`, `github`, `topdesk`, `autotask`, `mattermost`, `zammad`, `dingtalk`, `microsoft_teams_bot`, `slack`.
+- `type` - (Required) The connector type. Allowed values are `jira`, `servicenow`, `zendesk`, `discord`, `github`, `topdesk`, `autotask`, `mattermost`, `zammad`, `dingtalk`, `microsoft_teams_bot`, `slack`.
 
 #### Jira Arguments
 
@@ -165,27 +151,6 @@ The following arguments are supported:
 
 - `status` - (Required) The TOPdesk status. Allowed values are `firstLine`, `secondLine`, `partial`. Default: `firstLine`.
 
-#### AWS Lambda Arguments
-
-> See [the AWS Lambda integration documentation](https://docs.ilert.com/integrations/aws-lambda) for more details.
-
-- `url` - (Required) The AWS Lambda URL.
-- `body_template` - (Optional) The AWS Lambda template body.
-
-#### Azure Function Arguments
-
-> See [the Azure Function integration documentation](https://docs.ilert.com/integrations/azure-functions) for more details.
-
-- `url` - (Required) The Azure Function URL.
-- `body_template` - (Optional) The Azure Function template body.
-
-#### Google Cloud Function Arguments
-
-> See [the Google Cloud Function integration documentation](https://docs.ilert.com/integrations/gcf) for more details.
-
-- `url` - (Required) The Google Cloud Function URL.
-- `body_template` - (Optional) The Google Cloud Function template body.
-
 #### Email Arguments
 
 > See [the Email Outbound integration documentation](https://docs.ilert.com/integrations/email-outbound-integration) for more details.
@@ -193,19 +158,6 @@ The following arguments are supported:
 - `recipients` - (Required) The list of the email recipients.
 - `subject` - (Required) The email subject.
 - `body_template` - (Optional) The email template body.
-
-#### Sysdig Arguments
-
-> See [the Sysdig outbound integration documentation](https://docs.ilert.com/integrations/sysdig/outbound) for more details.
-
-- `tags` - (Optional) The list of the Sysdig tags.
-- `event_filter` - (Optional) The Sysdig event filter.
-
-#### Zapier Arguments
-
-> See [the Zapier Outbound integration documentation](https://docs.ilert.com/integrations/zapier/outbound) for more details.
-
-- `url` - (Required) The Zapier trigger URL.
 
 #### Autotask Arguments
 
@@ -222,12 +174,6 @@ The following arguments are supported:
 > See [the Zammad outbound integration documentation](https://docs.ilert.com/integrations/zammad/outbound) for more details.
 
 - `email` - (Required) The Zammad operator email.
-
-#### StatusPage Arguments
-
-> See [the StatusPage outbound integration documentation](https://docs.ilert.com/integrations/statuspage) for more details.
-
-- `page_id` - (Required) The StatusPage Page ID.
 
 #### Dingtalk Arguments
 
@@ -259,6 +205,16 @@ The following arguments are supported:
 > See [the Telegram integration documentation](https://docs.ilert.com/integrations/telegram) for more details.
 
 - `channel_id` - (Required) The Telegram channel id.
+
+#### Microsoft teams bot Arguments
+
+> See [the Microsoft teams bot integration documentation](https://docs.ilert.com/chatops/microsoft-teams) for more details.
+
+- `channel_id` - (Required) The id of the channel.
+- `channel_name` - (Optional) The name of the channel.
+- `team_id` - (Required) The id of the team.
+- `team_name` - (Optional) The name of the team.
+- `type` - (Required) The type of the bot setup. Allowed values are `chat` or `meeting`.
 
 #### Alert Filter Arguments
 

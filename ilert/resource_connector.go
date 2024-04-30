@@ -14,8 +14,8 @@ import (
 )
 
 func resourceConnector() *schema.Resource {
-	// include only type that schema supports
-	connectorTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Email, ilert.ConnectorTypes.MicrosoftTeams, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.ZoomChat, ilert.ConnectorTypes.ZoomMeeting, ilert.ConnectorTypes.Webex, ilert.ConnectorTypes.Slack, ilert.ConnectorTypes.Webhook, ilert.ConnectorTypes.Zapier, ilert.ConnectorTypes.DingTalkAction, ilert.ConnectorTypes.AutomationRule, ilert.ConnectorTypes.Telegram)
+	// remove types with no or one specific standalone connector
+	connectorTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Email, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.Slack, ilert.ConnectorTypes.Webhook, ilert.ConnectorTypes.AutomationRule, ilert.ConnectorTypes.Telegram, ilert.ConnectorTypes.DingTalkAction)
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -28,23 +28,6 @@ func resourceConnector() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice(ilert.ConnectorTypesAll, false),
-			},
-			"datadog": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Datadog),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"api_key": {
-							Type:      schema.TypeString,
-							Required:  true,
-							Sensitive: true,
-						},
-					},
-				},
 			},
 			"jira": {
 				Type:          schema.TypeList,
@@ -67,22 +50,6 @@ func resourceConnector() *schema.Resource {
 							Type:      schema.TypeString,
 							Required:  true,
 							Sensitive: true,
-						},
-					},
-				},
-			},
-			"microsoft_teams": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.MicrosoftTeams),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"url": {
-							Type:     schema.TypeString,
-							Required: true,
 						},
 					},
 				},
@@ -195,74 +162,6 @@ func resourceConnector() *schema.Resource {
 					},
 				},
 			},
-			"aws_lambda": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.AWSLambda),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"authorization": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-						},
-					},
-				},
-			},
-			"azure_faas": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.AzureFAAS),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"authorization": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-						},
-					},
-				},
-			},
-			"google_faas": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.GoogleFAAS),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"authorization": {
-							Type:      schema.TypeString,
-							Optional:  true,
-							Sensitive: true,
-						},
-					},
-				},
-			},
-			"sysdig": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Sysdig),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"api_key": {
-							Type:      schema.TypeString,
-							Required:  true,
-							Sensitive: true,
-						},
-					},
-				},
-			},
 			"autotask": {
 				Type:          schema.TypeList,
 				Optional:      true,
@@ -317,23 +216,6 @@ func resourceConnector() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"api_key": {
-							Type:      schema.TypeString,
-							Required:  true,
-							Sensitive: true,
-						},
-					},
-				},
-			},
-			"status_page_io": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.StatusPageIO),
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
 						"api_key": {
 							Type:      schema.TypeString,
 							Required:  true,
@@ -664,24 +546,12 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 	d.Set("updated_at", result.Connector.UpdatedAt)
 
 	switch result.Connector.Type {
-	case ilert.ConnectorTypes.Datadog:
-		d.Set("datadog", []interface{}{
-			map[string]interface{}{
-				"api_key": result.Connector.Params.APIKey,
-			},
-		})
 	case ilert.ConnectorTypes.Jira:
 		d.Set("jira", []interface{}{
 			map[string]interface{}{
 				"url":      result.Connector.Params.URL,
 				"email":    result.Connector.Params.Email,
 				"password": result.Connector.Params.Password,
-			},
-		})
-	case ilert.ConnectorTypes.MicrosoftTeams:
-		d.Set("microsoft_teams", []interface{}{
-			map[string]interface{}{
-				"url": result.Connector.Params.URL,
 			},
 		})
 	case ilert.ConnectorTypes.ServiceNow:
@@ -720,20 +590,6 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 				"password": result.Connector.Params.Password,
 			},
 		})
-	case ilert.ConnectorTypes.AWSLambda,
-		ilert.ConnectorTypes.AzureFAAS,
-		ilert.ConnectorTypes.GoogleFAAS:
-		d.Set("aws_lambda", []interface{}{
-			map[string]interface{}{
-				"authorization": result.Connector.Params.Authorization,
-			},
-		})
-	case ilert.ConnectorTypes.Sysdig:
-		d.Set("sysdig", []interface{}{
-			map[string]interface{}{
-				"api_key": result.Connector.Params.APIKey,
-			},
-		})
 	case ilert.ConnectorTypes.Autotask:
 		d.Set("autotask", []interface{}{
 			map[string]interface{}{
@@ -752,12 +608,6 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 		d.Set("zammad", []interface{}{
 			map[string]interface{}{
 				"url":     result.Connector.Params.URL,
-				"api_key": result.Connector.Params.APIKey,
-			},
-		})
-	case ilert.ConnectorTypes.StatusPageIO:
-		d.Set("status_page_io", []interface{}{
-			map[string]interface{}{
 				"api_key": result.Connector.Params.APIKey,
 			},
 		})

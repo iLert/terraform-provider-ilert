@@ -1164,14 +1164,6 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 	d.Set("updated_at", result.Connection.UpdatedAt)
 
 	switch result.Connection.ConnectorType {
-	case ilert.ConnectorTypes.Datadog:
-		d.Set("datadog", []interface{}{
-			map[string]interface{}{
-				"priority": result.Connection.Params.Priority,
-				"site":     result.Connection.Params.Site,
-				"tags":     result.Connection.Params.Tags,
-			},
-		})
 	case ilert.ConnectorTypes.Jira:
 		d.Set("jira", []interface{}{
 			map[string]interface{}{
@@ -1224,34 +1216,12 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 				"status": result.Connection.Params.Status,
 			},
 		})
-	case ilert.ConnectorTypes.AWSLambda,
-		ilert.ConnectorTypes.AzureFAAS,
-		ilert.ConnectorTypes.GoogleFAAS:
-		d.Set("aws_lambda", []interface{}{
-			map[string]interface{}{
-				"url":           result.Connection.Params.WebhookURL,
-				"body_template": result.Connection.Params.BodyTemplate,
-			},
-		})
 	case ilert.ConnectorTypes.Email:
 		d.Set("email", []interface{}{
 			map[string]interface{}{
 				"recipients":    result.Connection.Params.Recipients,
 				"subject":       result.Connection.Params.Subject,
 				"body_template": result.Connection.Params.BodyTemplate,
-			},
-		})
-	case ilert.ConnectorTypes.Sysdig:
-		d.Set("sysdig", []interface{}{
-			map[string]interface{}{
-				"tags":         result.Connection.Params.Tags,
-				"event_filter": result.Connection.Params.EventFilter,
-			},
-		})
-	case ilert.ConnectorTypes.Zapier:
-		d.Set("zapier", []interface{}{
-			map[string]interface{}{
-				"url": result.Connection.Params.WebhookURL,
 			},
 		})
 	case ilert.ConnectorTypes.Autotask:
@@ -1268,12 +1238,6 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 		d.Set("zammad", []interface{}{
 			map[string]interface{}{
 				"email": result.Connection.Params.Email,
-			},
-		})
-	case ilert.ConnectorTypes.StatusPageIO:
-		d.Set("zammad", []interface{}{
-			map[string]interface{}{
-				"page_id": result.Connection.Params.PageID,
 			},
 		})
 	}
