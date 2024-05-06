@@ -15,7 +15,7 @@ import (
 )
 
 func resourceAlertAction() *schema.Resource {
-	alertActionTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Discord, ilert.ConnectorTypes.Mattermost)
+	alertActionTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Discord, ilert.ConnectorTypes.Mattermost, ilert.ConnectorTypes.MicrosoftTeams)
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
