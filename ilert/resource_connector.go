@@ -79,6 +79,22 @@ func resourceConnector() *schema.Resource {
 					},
 				},
 			},
+			"microsoft_teams": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.MicrosoftTeams),
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 			"zendesk": {
 				Type:          schema.TypeList,
 				Optional:      true,
@@ -552,6 +568,12 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 				"url":      result.Connector.Params.URL,
 				"email":    result.Connector.Params.Email,
 				"password": result.Connector.Params.Password,
+			},
+		})
+	case ilert.ConnectorTypes.MicrosoftTeams:
+		d.Set("microsoft_teams", []interface{}{
+			map[string]interface{}{
+				"url": result.Connector.Params.URL,
 			},
 		})
 	case ilert.ConnectorTypes.ServiceNow:

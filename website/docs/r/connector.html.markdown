@@ -28,8 +28,9 @@ resource "ilert_connector" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the connector.
-- `type` - (Required) The type of the connector. Allowed values are `jira`, `servicenow`, `zendesk`, `discord`, `github`, `topdesk`, `autotask`, `mattermost`, `zammad`, `dingtalk`.
+- `type` - (Required) The type of the connector. Allowed values are `jira`, `microsoft_teams`, `servicenow`, `zendesk`, `discord`, `github`, `topdesk`, `autotask`, `mattermost`, `zammad`, `dingtalk`.
 - `jira` - (Optional) A [jira](#jira-arguments) block.
+- `microsoft_teams` - (Optional) A [microsoft_teams](#microsoft-teams-arguments) block.
 - `servicenow` - (Optional) A [servicenow](#servicenow-arguments) block.
 - `zendesk` - (Optional) A [zendesk](#zendesk-arguments) block.
 - `discord` - (Optional) A [discord](#discord-arguments) block.
@@ -47,6 +48,12 @@ The following arguments are supported:
 - `url` - (Required) The Jira server URL.
 - `email` - (Required) The Jira user email.
 - `password` - (Required) The Jira user password or API token.
+
+#### Microsoft Teams Arguments
+
+> See [the Microsoft Teams integration documentation](https://docs.ilert.com/integrations/microsoft-teams) for more details.
+
+- `url` - (Required) The Microsoft Teams connector URL.
 
 #### ServiceNow Arguments
 
