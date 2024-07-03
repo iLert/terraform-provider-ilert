@@ -36,3 +36,8 @@ func StringSliceContains(s []string, e string) bool {
 	}
 	return false
 }
+
+// Bool returns a pointer to the bool value passed in.
+func Bool(v bool) *bool {
+	return &v
+}

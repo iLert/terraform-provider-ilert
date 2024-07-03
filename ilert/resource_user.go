@@ -71,6 +71,10 @@ func resourceUser() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"send_no_invitation": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 		},
 		CreateContext: resourceUserCreate,
 		ReadContext:   resourceUserRead,
@@ -136,11 +140,16 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 
+	input := &ilert.CreateUserInput{User: user}
+	if val, ok := d.GetOk("send_no_invitation"); ok {
+		input.SendNoInvitation = Bool(val.(bool))
+	}
+
 	log.Printf("[INFO] Creating user %s", user.Username)
 
 	result := &ilert.CreateUserOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		r, err := client.CreateUser(&ilert.CreateUserInput{User: user})
+		r, err := client.CreateUser(input)
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				log.Printf("[ERROR] Creating ilert user error '%s', so retry again", err.Error())
