@@ -1,6 +1,6 @@
 # Changelog
 
-## 09.07.2024, Version 2.8.1
+## 09.07.2024, Version 2.8.4
 
 - Add region to user [#87](https://github.com/iLert/terraform-provider-ilert/pull/88)
 
