@@ -1,5 +1,9 @@
 # Changelog
 
+## 09.07.2024, Version 2.8.1
+
+- Add region to user [#87](https://github.com/iLert/terraform-provider-ilert/pull/88)
+
 ## 03.07.2024, Version 2.8.0
 
 - Add send no invitation option to user resource in [#87](https://github.com/iLert/terraform-provider-ilert/pull/87)

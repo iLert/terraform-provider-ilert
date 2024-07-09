@@ -31,6 +31,7 @@ The following arguments are supported:
 - `position` - (Optional) The user's position.
 - `department` - (Optional) The user's department.
 - `language` - (Optional) The user's language. Allowed values are `en`, `de`.
+- `region` - (Optional) The user's region e.g. `EN`, `DE`.
 - `role` - (Optional) The user's role. Allowed values are `ADMIN`, `USER`, `RESPONDER` or `STAKEHOLDER`. Default: `USER`
 - `shift_color` - (Optional) The hex code for the user's shift color.
 - `send_no_invitation` - (Optional) Boolean whether an invitation email notification is sent to the user. Defaults to `false`.
