@@ -55,6 +55,10 @@ func resourceUser() *schema.Resource {
 					"de",
 				}, false),
 			},
+			"region": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"role": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -118,6 +122,10 @@ func buildUser(d *schema.ResourceData) (*ilert.User, error) {
 
 	if val, ok := d.GetOk("language"); ok {
 		user.Language = val.(string)
+	}
+
+	if val, ok := d.GetOk("region"); ok {
+		user.Region = val.(string)
 	}
 
 	if val, ok := d.GetOk("role"); ok {
@@ -221,6 +229,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	d.Set("position", result.User.Position)
 	d.Set("department", result.User.Department)
 	d.Set("language", result.User.Language)
+	d.Set("region", result.User.Region)
 	d.Set("role", result.User.Role)
 	d.Set("shift_color", result.User.ShiftColor)
 
