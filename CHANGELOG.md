@@ -1,8 +1,12 @@
 # Changelog
 
+## 19.07.2024, Version 2.8.5
+
+- Add microsoft_teams_webhook to alert actions [#89](https://github.com/iLert/terraform-provider-ilert/pull/89)
+
 ## 09.07.2024, Version 2.8.4
 
-- Add region to user [#87](https://github.com/iLert/terraform-provider-ilert/pull/88)
+- Add region to user [#88](https://github.com/iLert/terraform-provider-ilert/pull/88)
 
 ## 03.07.2024, Version 2.8.0
 

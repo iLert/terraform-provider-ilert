@@ -86,6 +86,7 @@ The following arguments are supported:
 - `automation_rule` - (Optional) An [automation_rule](#automation-rule-arguments) block.
 - `telegram` - (Optional) An [telegram](#telegram-arguments) block.
 - `microsoft_teams_bot` - (Optional) A [microsoft_teams_bot](#microsoft-teams-bot-arguments) block.
+- `microsoft_teams_webhook` - (Optional) A [microsoft_teams_webhook](#microsoft-teams-webhook-arguments) block.
 - `alert_filter` - (Optional) An [alert_filter](#alert-filter-arguments) block.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 
@@ -215,6 +216,12 @@ The following arguments are supported:
 - `team_id` - (Required) The id of the team.
 - `team_name` - (Optional) The name of the team.
 - `type` - (Required) The type of the bot setup. Allowed values are `chat` or `meeting`.
+
+#### Microsoft teams webhook Arguments
+
+> See [the Microsoft teams bot integration documentation](https://docs.ilert.com/chatops/microsoft-teams/chat/workflows) for more details.
+
+- `url` - (Required) The workflow URL for the channel.
 
 #### Alert Filter Arguments
 

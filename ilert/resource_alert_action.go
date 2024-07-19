@@ -464,6 +464,22 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
+			"microsoft_teams_webhook": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				MinItems:      1,
+				ForceNew:      true,
+				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.MicrosoftTeamsWebhook),
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 			"created_at": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -817,6 +833,16 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		}
 	}
 
+	if val, ok := d.GetOk("microsoft_teams_webhook"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertAction.Params = &ilert.AlertActionParamsMicrosoftTeamsWebhook{
+				URL: v["url"].(string),
+			}
+		}
+	}
+
 	if val, ok := d.GetOk("alert_filter"); ok {
 		vL := val.([]interface{})
 		if len(vL) > 0 {
@@ -1096,6 +1122,12 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 				"team_id":      result.AlertAction.Params.TeamID,
 				"team_name":    result.AlertAction.Params.TeamName,
 				"type":         result.AlertAction.Params.Type,
+			},
+		})
+	case ilert.ConnectorTypes.MicrosoftTeamsWebhook:
+		d.Set("microsoft_teams_webhook", []interface{}{
+			map[string]interface{}{
+				"url": result.AlertAction.Params.URL,
 			},
 		})
 	}
