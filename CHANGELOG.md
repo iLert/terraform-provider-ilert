@@ -1,5 +1,9 @@
 # Changelog
 
+## 24.07.2024, Version 2.8.6
+
+- fix/microsoft-teams-webhook-validation [#90](https://github.com/iLert/terraform-provider-ilert/pull/90)
+
 ## 19.07.2024, Version 2.8.5
 
 - Add microsoft_teams_webhook to alert actions [#89](https://github.com/iLert/terraform-provider-ilert/pull/89)

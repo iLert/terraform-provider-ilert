@@ -15,7 +15,7 @@ import (
 
 func resourceConnector() *schema.Resource {
 	// remove types with no or one specific standalone connector
-	connectorTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Email, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.Slack, ilert.ConnectorTypes.Webhook, ilert.ConnectorTypes.AutomationRule, ilert.ConnectorTypes.Telegram, ilert.ConnectorTypes.DingTalkAction)
+	connectorTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Email, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.Slack, ilert.ConnectorTypes.Webhook, ilert.ConnectorTypes.AutomationRule, ilert.ConnectorTypes.Telegram, ilert.ConnectorTypes.DingTalkAction, ilert.ConnectorTypes.MicrosoftTeamsWebhook)
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
