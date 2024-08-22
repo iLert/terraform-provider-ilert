@@ -2,7 +2,7 @@
 
 ## 22.08.2024, Version 2.9.0
 
-- feature/new-api-resources in [#92](https://github.com/iLert/terraform-provider-ilert/pull/92)
+- feature/new-api-resources pt.1 in [#92](https://github.com/iLert/terraform-provider-ilert/pull/92)
 
 ## 24.07.2024, Version 2.8.6
 
