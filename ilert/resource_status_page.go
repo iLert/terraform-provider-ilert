@@ -452,13 +452,17 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 	}
 
 	if val, ok := d.GetOk("email_whitelist"); ok {
-		vL := val.([]interface{})
-		sL := make([]string, 0)
-		for _, m := range vL {
-			v := m.(string)
-			sL = append(sL, v)
+		if statusPage.Visibility == ilert.StatusPageVisibility.Private {
+			vL := val.([]interface{})
+			sL := make([]string, 0)
+			for _, m := range vL {
+				v := m.(string)
+				sL = append(sL, v)
+			}
+			statusPage.EmailWhitelist = sL
+		} else {
+			return nil, fmt.Errorf("[ERROR] Can't set email whitelist, as it is only allowed on private status pages")
 		}
-		statusPage.EmailWhitelist = sL
 	}
 
 	if val, ok := d.GetOk("announcement"); ok {
