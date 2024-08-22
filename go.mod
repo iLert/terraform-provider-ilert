@@ -2,6 +2,8 @@ module github.com/iLert/terraform-provider-ilert
 
 go 1.19
 
+replace github.com/iLert/ilert-go/v3 => /Users/markosimon/Documents/workspace/ilert-go
+
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.25.0
 	github.com/iLert/ilert-go/v3 v3.8.3
