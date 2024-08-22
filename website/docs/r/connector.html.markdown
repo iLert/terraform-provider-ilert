@@ -131,7 +131,7 @@ The following attributes are exported:
 
 ## Import
 
-Services can be imported using the `id`, e.g.
+Connectors can be imported using the `id`, e.g.
 
 ```sh
 $ terraform import ilert_connector.main 123456789

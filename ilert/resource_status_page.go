@@ -209,6 +209,43 @@ func resourceStatusPage() *schema.Resource {
 				ValidateFunc:  validation.StringInSlice(ilert.StatusPageAppearanceAll, false),
 				ConflictsWith: []string{"theme_mode"},
 			},
+			"email_whitelist": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"announcement": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"announcement_on_page": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"announcement_in_widget": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"metric": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MinItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"name": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringLenBetween(1, 255),
+						},
+					},
+				},
+			},
 		},
 		CreateContext: resourceStatusPageCreate,
 		ReadContext:   resourceStatusPageRead,
@@ -414,6 +451,48 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 		statusPage.Appearance = val.(string)
 	}
 
+	if val, ok := d.GetOk("email_whitelist"); ok {
+		if statusPage.Visibility == ilert.StatusPageVisibility.Private {
+			vL := val.([]interface{})
+			sL := make([]string, 0)
+			for _, m := range vL {
+				v := m.(string)
+				sL = append(sL, v)
+			}
+			statusPage.EmailWhitelist = sL
+		} else {
+			return nil, fmt.Errorf("[ERROR] Can't set email whitelist, as it is only allowed on private status pages")
+		}
+	}
+
+	if val, ok := d.GetOk("announcement"); ok {
+		statusPage.Announcement = val.(string)
+	}
+
+	if val, ok := d.GetOk("announcement_on_page"); ok {
+		statusPage.AnnouncementOnPage = val.(bool)
+	}
+
+	if val, ok := d.GetOk("announcement_in_widget"); ok {
+		statusPage.AnnouncementInWidget = val.(bool)
+	}
+
+	if val, ok := d.GetOk("metric"); ok {
+		vL := val.([]interface{})
+		mts := make([]ilert.Metric, 0)
+		for _, m := range vL {
+			v := m.(map[string]interface{})
+			mt := ilert.Metric{
+				ID: int64(v["id"].(int)),
+			}
+			if v["name"] != nil && v["name"].(string) != "" {
+				mt.Name = v["name"].(string)
+			}
+			mts = append(mts, mt)
+		}
+		statusPage.Metrics = mts
+	}
+
 	return statusPage, nil
 }
 
@@ -558,6 +637,30 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 		d.Set("appearance", result.StatusPage.Appearance)
 	}
 
+	if val, ok := d.GetOk("email_whitelist"); ok && val.([]interface{}) != nil && len(val.([]interface{})) > 0 {
+		d.Set("email_whitelist", result.StatusPage.EmailWhitelist)
+	}
+
+	if _, ok := d.GetOk("announcement"); ok {
+		d.Set("announcement", result.StatusPage.Announcement)
+	}
+
+	if _, ok := d.GetOk("announcement_on_page"); ok {
+		d.Set("announcement_on_page", result.StatusPage.AnnouncementOnPage)
+	}
+
+	if _, ok := d.GetOk("announcement_in_widget"); ok {
+		d.Set("announcement_in_widget", result.StatusPage.AnnouncementInWidget)
+	}
+
+	metrics, err := flattenMetricsList(result.StatusPage.Metrics, d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("metric", metrics); err != nil {
+		return diag.Errorf("error setting metrics: %s", err)
+	}
+
 	return nil
 }
 
@@ -668,6 +771,28 @@ func flattenServicesList(list []ilert.Service, d *schema.ResourceData) ([]interf
 	}
 	results := make([]interface{}, 0)
 	if val, ok := d.GetOk("service"); ok && val != nil {
+		vL := val.([]interface{})
+		for i, item := range list {
+			if vL != nil && i < len(vL) && vL[i] != nil {
+				result := make(map[string]interface{})
+				v := vL[i].(map[string]interface{})
+				result["id"] = item.ID
+				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+					result["name"] = item.Name
+				}
+				results = append(results, result)
+			}
+		}
+	}
+	return results, nil
+}
+
+func flattenMetricsList(list []ilert.Metric, d *schema.ResourceData) ([]interface{}, error) {
+	if list == nil {
+		return make([]interface{}, 0), nil
+	}
+	results := make([]interface{}, 0)
+	if val, ok := d.GetOk("metric"); ok && val != nil {
 		vL := val.([]interface{})
 		for i, item := range list {
 			if vL != nil && i < len(vL) && vL[i] != nil {

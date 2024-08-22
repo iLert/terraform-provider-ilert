@@ -562,6 +562,14 @@ func resourceAlertSource() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice(ilert.AlertSourceAlertGroupingWindowsAll, false),
 			},
+			"score_threshold": {
+				Type:     schema.TypeFloat,
+				Optional: true,
+			},
+			"event_filter": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 		CreateContext: resourceAlertSourceCreate,
 		ReadContext:   resourceAlertSourceRead,
@@ -610,8 +618,8 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 	}
 	if val, ok := d.GetOk("alert_creation"); ok {
 		alertCreation := val.(string)
-		if _, ok := d.GetOk("alert_grouping_window"); !ok && alertCreation == ilert.AlertSourceAlertCreations.OneAlertGroupedPerWindow {
-			return nil, fmt.Errorf("[ERROR] Can't set alert creation type 'ONE_ALERT_GROUPED_PER_WINDOW' when alert grouping window is not set")
+		if _, ok := d.GetOk("alert_grouping_window"); !ok && (alertCreation == ilert.AlertSourceAlertCreations.OneAlertGroupedPerWindow || alertCreation == ilert.AlertSourceAlertCreations.IntelligentGrouping) {
+			return nil, fmt.Errorf("[ERROR] Can't set alert creation type 'ONE_ALERT_GROUPED_PER_WINDOW' or 'INTELLIGENT_GROUPING' when alert grouping window is not set")
 		}
 		alertSource.AlertCreation = alertCreation
 	}
@@ -901,11 +909,19 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		}
 	}
 	if val, ok := d.GetOk("alert_grouping_window"); ok {
-		if alert_creation, ok := d.GetOk("alert_creation"); !ok || alert_creation.(string) != ilert.AlertSourceAlertCreations.OneAlertGroupedPerWindow {
-			return nil, fmt.Errorf("[ERROR] Can't set alert grouping window when alert creation is not set or not of type 'ONE_ALERT_GROUPED_PER_WINDOW'")
+		if alert_creation, ok := d.GetOk("alert_creation"); !ok || (alert_creation.(string) != ilert.AlertSourceAlertCreations.OneAlertGroupedPerWindow && alert_creation.(string) != ilert.AlertSourceAlertCreations.IntelligentGrouping) {
+			return nil, fmt.Errorf("[ERROR] Can't set alert grouping window when alert creation is not set or not of type 'ONE_ALERT_GROUPED_PER_WINDOW' or 'INTELLIGENT_GROUPING'")
 		}
 		alertGroupingWindow := val.(string)
 		alertSource.AlertGroupingWindow = alertGroupingWindow
+	}
+
+	if val, ok := d.GetOk("score_threshold"); ok {
+		alertSource.ScoreThreshold = val.(float64)
+	}
+
+	if val, ok := d.GetOk("event_filter"); ok {
+		alertSource.EventFilter = val.(string)
 	}
 
 	return alertSource, nil
@@ -923,7 +939,9 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m in
 	log.Printf("[DEBUG] Creating ilert alert source %s\n", alertSource.Name)
 	result := &ilert.CreateAlertSourceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		r, err := client.CreateAlertSource(&ilert.CreateAlertSourceInput{AlertSource: alertSource})
+		includes := make([]*string, 0)
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"))
+		r, err := client.CreateAlertSource(&ilert.CreateAlertSourceInput{AlertSource: alertSource, Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				log.Printf("[ERROR] Creating ilert alert source error '%s', so retry again", err.Error())
@@ -958,7 +976,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	result := &ilert.GetAlertSourceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"))
 		r, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
@@ -1006,6 +1024,8 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 		d.Set("email", result.AlertSource.IntegrationKey)
 	}
 	d.Set("alert_grouping_window", result.AlertSource.AlertGroupingWindow)
+	d.Set("score_threshold", result.AlertSource.ScoreThreshold)
+	d.Set("event_filter", result.AlertSource.EventFilter)
 
 	if result.AlertSource.Heartbeat != nil {
 		d.Set("heartbeat", []interface{}{
@@ -1173,7 +1193,9 @@ func resourceAlertSourceUpdate(ctx context.Context, d *schema.ResourceData, m in
 	}
 	log.Printf("[DEBUG] Updating alert source: %s", d.Id())
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
-		_, err = client.UpdateAlertSource(&ilert.UpdateAlertSourceInput{AlertSource: alertSource, AlertSourceID: ilert.Int64(alertSourceID)})
+		includes := make([]*string, 0)
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"))
+		_, err = client.UpdateAlertSource(&ilert.UpdateAlertSourceInput{AlertSource: alertSource, AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)

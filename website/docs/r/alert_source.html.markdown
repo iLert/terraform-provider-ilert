@@ -42,7 +42,7 @@ The following arguments are supported:
 - `name` - (Required) The name of the alert source.
 - `integration_type` - (Required) The integration type of the alert source. Allowed values are `NAGIOS`, `ICINGA`, `EMAIL`, `SMS`, `API`, `CRN`, `HEARTBEAT`, `PRTG`, `PINGDOM`, `CLOUDWATCH`, `AWSPHD`, `STACKDRIVER`, `INSTANA`, `ZABBIX`, `SOLARWINDS`, `PROMETHEUS`, `NEWRELIC`, `GRAFANA`, `GITHUB`, `DATADOG`, `UPTIMEROBOT`, `APPDYNAMICS`, `DYNATRACE`, `TOPDESK`, `STATUSCAKE`, `MONITOR`, `TOOL`, `CHECKMK`, `AUTOTASK`, `AWSBUDGET`, `KENTIXAM`, `JIRA`, `CONSUL`, `ZAMMAD`, `SIGNALFX`, `SPLUNK`, `KUBERNETES`, `SEMATEXT`, `SENTRY`, `SUMOLOGIC`, `RAYGUN`, `MXTOOLBOX`, `ESWATCHER`, `AMAZONSNS`, `KAPACITOR`, `CORTEXXSOAR`, `SYSDIG`, `SERVERDENSITY`, `ZAPIER`, `SERVICENOW`, `SEARCHGUARD`, `AZUREALERTS`, `TERRAFORMCLOUD`, `ZENDESK`, `AUVIK`, `SENSU`, `NCENTRAL`, `JUMPCLOUD`, `SALESFORCE`, `GUARDDUTY`, `STATUSHUB`, `IXON`, `APIFORTRESS`, `FRESHSERVICE`, `APPSIGNAL`, `LIGHTSTEP`, `IBMCLOUDFUNCTIONS`, `CROWDSTRIKE`, `HUMIO`, `OHDEAR`, `MONGODBATLAS`, `GITLAB`.
 - `escalation_policy` - (Required) The escalation policy id used by this alert source.
-- `alert_creation` - (Optional) ilert receives events from your monitoring systems and can then create alerts in different ways. This option is recommended. Allowed values are `ONE_ALERT_PER_EMAIL`, `ONE_ALERT_PER_EMAIL_SUBJECT`, `ONE_PENDING_ALERT_ALLOWED`, `ONE_OPEN_ALERT_ALLOWED`, `OPEN_RESOLVE_ON_EXTRACTION`, `ONE_ALERT_GROUPED_PER_WINDOW`. `alert_grouping_window` must be defined when this field is set to `ONE_ALERT_GROUPED_PER_WINDOW`.
+- `alert_creation` - (Optional) ilert receives events from your monitoring systems and can then create alerts in different ways. This option is recommended. Allowed values are `ONE_ALERT_PER_EMAIL`, `ONE_ALERT_PER_EMAIL_SUBJECT`, `ONE_PENDING_ALERT_ALLOWED`, `ONE_OPEN_ALERT_ALLOWED`, `OPEN_RESOLVE_ON_EXTRACTION`, `ONE_ALERT_GROUPED_PER_WINDOW`, `INTELLIGENT_GROUPING`. `alert_grouping_window` must be defined when this field is set to `ONE_ALERT_GROUPED_PER_WINDOW` or `INTELLIGENT_GROUPING`.
 - `active` - (Optional) The state of the alert source. Default: `true`.
 - `alert_priority_rule` - (Optional) The alert priority rule. This option is recommended. Allowed values are `HIGH`, `LOW`, `HIGH_DURING_SUPPORT_HOURS`, `LOW_DURING_SUPPORT_HOURS`.
 - `auto_resolution_timeout` - (Optional) The auto resolution timeout. Allowed values are `PT10M`, `PT20M`, `PT30M`, `PT40M`, `PT50M`, `PT60M`, `PT90M`, `PT2H`, `PT3H`, `PT4H`, `PT5H`, `PT6H`, `PT12H`, `PT24H` (`H` means hour and `M` means minute).
@@ -62,7 +62,9 @@ The following arguments are supported:
 - `routing_template` - (Optional) A routing [template](#template-arguments) block.
 - `link_template` - (Optional) One or more [link template](#link-template-arguments) block.
 - `priority_template` - (Optional) A [priority template](#priority-template-arguments) block.
-- `alert_grouping_window` - (Optional) The alert grouping time frame. Any alerts triggered within this time frame will be grouped together. This field has to be defined when `alert_creation` is set to `ONE_ALERT_GROUPED_PER_WINDOW`.
+- `alert_grouping_window` - (Optional) The alert grouping time frame. Any alerts triggered within this time frame will be grouped together. This field has to be defined when `alert_creation` is set to `ONE_ALERT_GROUPED_PER_WINDOW` or `INTELLIGENT_GROUPING`.
+- `score_threshold` - (Optional) Sets the score threshold. Indicates how similar alerts are to be grouped together. This field has to be defined when `alert_creation` is set to `INTELLIGENT_GROUPING`. Should be a floating point number between `0` and `1` (inclusive).
+- `event_filter` - (Optional) Defines event filter condition in ICL language. This is a code based implementation, more info on syntax: https://docs.ilert.com/rest-api/icl-ilert-condition-language. For block based configuration please use the web UI.
 
 #### Heartbeat Arguments
 

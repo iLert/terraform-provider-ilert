@@ -69,8 +69,9 @@ The following arguments are supported:
 - `alert_source` - (Required) One or more [alert source](#alert-source-arguments) blocks.
 - `connector` - (Required) A [connector](#connector-arguments) block.
 - `trigger_mode` - (Optional) The trigger mode of the alert action. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
-- `delay_sec` - (Optional) The number of seconds the alert action will be delayed when reaching end of escalation. Can only be set when one of `trigger_types` is set to `alert-escalation-ended`. Must be either `0` or a value between `30` and `7200`.
-- `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-escalation-ended`, `alert-resolved`, `alert-auto-resolved`, `alert-responder-added`, `alert-responder-removed`, `alert-channel-attached`, `alert-channel-detached`.
+- `escalation_ended_delay_sec` - (Optional) The number of seconds the alert action will be delayed when reaching end of escalation. Should only be set when one of `trigger_types` is set to `alert-escalation-ended`. Must be either `0` or a value between `30` and `7200`.
+- `not_resolved_delay_sec` - (Optional) The number of seconds the alert action will be delayed when the alert is not resolved yet. Should only be set when one of `trigger_types` is set to `v-alert-not-resolved`. Must be either `0` or a value between `60` and `7200`.
+- `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-escalation-ended`, `alert-resolved`, `alert-auto-resolved`, `alert-responder-added`, `alert-responder-removed`, `alert-channel-attached`, `alert-channel-detached`, `v-alert-not-resolved`.
 - `jira` - (Optional) A [jira](#jira-arguments) block.
 - `servicenow` - (Optional) A [servicenow](#servicenow-arguments) block.
 - `slack` - (Optional) A [slack](#slack-arguments) block.
@@ -87,6 +88,7 @@ The following arguments are supported:
 - `telegram` - (Optional) An [telegram](#telegram-arguments) block.
 - `microsoft_teams_bot` - (Optional) A [microsoft_teams_bot](#microsoft-teams-bot-arguments) block.
 - `microsoft_teams_webhook` - (Optional) A [microsoft_teams_webhook](#microsoft-teams-webhook-arguments) block.
+- `slack_webhook` - (Optional) A [slack_webhook](#slack-webhook-arguments) block.
 - `alert_filter` - (Optional) An [alert_filter](#alert-filter-arguments) block.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 
@@ -219,7 +221,9 @@ The following arguments are supported:
 
 #### Microsoft teams webhook Arguments
 
-> See [the Microsoft teams bot integration documentation](https://docs.ilert.com/chatops/microsoft-teams/chat/workflows) for more details.
+- `url` - (Required) The workflow URL for the channel.
+
+#### Slack webhook Arguments
 
 - `url` - (Required) The workflow URL for the channel.
 
@@ -250,7 +254,7 @@ The following attributes are exported:
 
 ## Import
 
-Services can be imported using the `id`, e.g.
+Alert actions can be imported using the `id`, e.g.
 
 ```sh
 $ terraform import ilert_alert_action.main 123456789
