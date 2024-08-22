@@ -301,12 +301,18 @@ func resourceMetricRead(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	d.Set("unit_label", result.Metric.UnitLabel)
-	d.Set("metadata", []interface{}{map[string]interface{}{
-		"query": result.Metric.Metadata.Query,
-	}})
-	d.Set("data_source", []interface{}{map[string]interface{}{
-		"id": int(result.Metric.DataSource.ID),
-	}})
+
+	if result.Metric.Metadata != nil {
+		d.Set("metadata", []interface{}{map[string]interface{}{
+			"query": result.Metric.Metadata.Query,
+		}})
+	}
+
+	if result.Metric.DataSource != nil {
+		d.Set("data_source", []interface{}{map[string]interface{}{
+			"id": int(result.Metric.DataSource.ID),
+		}})
+	}
 
 	return nil
 }
