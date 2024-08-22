@@ -561,6 +561,15 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"delay_sec": {
+				Type:       schema.TypeInt,
+				Optional:   true,
+				Deprecated: "The field delay_sec is deprecated! Please use escalation_ended_delay_sec instead for trigger_type 'alert_escalation_ended' or not_resolved_delay_sec for trigger_type 'alert_not_resolved'.",
+			},
+			"escalation_ended_delay_sec": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"not_resolved_delay_sec": {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
@@ -916,6 +925,22 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		alertAction.DelaySec = val.(int)
 	}
 
+	if val, ok := d.GetOk("escalation_ended_delay_sec"); ok {
+		escalationEndedDelaySec := val.(int)
+		if escalationEndedDelaySec != 0 && (escalationEndedDelaySec < 30 || escalationEndedDelaySec > 7200) {
+			return nil, fmt.Errorf("[ERROR] Can't set 'escalation_ended_delay_sec', value must be either 0 or between 30 and 7200")
+		}
+		alertAction.EscalationEndedDelaySec = val.(int)
+	}
+
+	if val, ok := d.GetOk("not_resolved_delay_sec"); ok {
+		notResolvedDelaySec := val.(int)
+		if notResolvedDelaySec != 0 && (notResolvedDelaySec < 60 || notResolvedDelaySec > 7200) {
+			return nil, fmt.Errorf("[ERROR] Can't set 'not_resolved_delay_sec', value must be either 0 or between 60 and 7200")
+		}
+		alertAction.NotResolvedDelaySec = val.(int)
+	}
+
 	return alertAction, nil
 }
 
@@ -1199,6 +1224,8 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	d.Set("delay_sec", result.AlertAction.DelaySec)
+	d.Set("escalation_ended_delay_sec", result.AlertAction.EscalationEndedDelaySec)
+	d.Set("not_resolved_delay_sec", result.AlertAction.NotResolvedDelaySec)
 
 	if val, ok := d.GetOk("alert_source"); ok && len(val.([]interface{})) == 1 {
 		if v, ok := d.GetOk("team"); !ok || len(v.([]interface{})) == 0 {
