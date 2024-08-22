@@ -66,6 +66,10 @@ The following arguments are supported:
 - `account_wide_view` - (Optional) Indicates whether or not the status page should be shown account wide.
 - `structure` - (Optional) A [structure](#structure-arguments) block.
 - `appearance` - (Optional) The appearance of the status page. Allowed values are `LIGHT` and `DARK`.
+- `email_whitelist` - (Optional) One or more emails to whitelist. Enables login via email only.
+- `announcement` - (Optional) Sets the text for an announcement shown at the top of the status page and/or in a widget.
+- `announcement_on_page`- (Optional) Indicates whether the announcement is show at the top of the status page or not.
+- `announcement_in_widget`- (Optional) Indicates whether the announcement is also shown in the status widget.
 - `metric` - (Required) One or more [metric](#metric-arguments) blocks.
 
 #### Service Arguments
