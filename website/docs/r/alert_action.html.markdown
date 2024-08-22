@@ -70,7 +70,7 @@ The following arguments are supported:
 - `connector` - (Required) A [connector](#connector-arguments) block.
 - `trigger_mode` - (Optional) The trigger mode of the alert action. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
 - `delay_sec` - (Optional) The number of seconds the alert action will be delayed when reaching end of escalation. Can only be set when one of `trigger_types` is set to `alert-escalation-ended`. Must be either `0` or a value between `30` and `7200`.
-- `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-escalation-ended`, `alert-resolved`, `alert-auto-resolved`, `alert-responder-added`, `alert-responder-removed`, `alert-channel-attached`, `alert-channel-detached`.
+- `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-escalation-ended`, `alert-resolved`, `alert-auto-resolved`, `alert-responder-added`, `alert-responder-removed`, `alert-channel-attached`, `alert-channel-detached`, `v-alert-not-resolved`.
 - `jira` - (Optional) A [jira](#jira-arguments) block.
 - `servicenow` - (Optional) A [servicenow](#servicenow-arguments) block.
 - `slack` - (Optional) A [slack](#slack-arguments) block.
