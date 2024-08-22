@@ -209,6 +209,25 @@ func resourceStatusPage() *schema.Resource {
 				ValidateFunc:  validation.StringInSlice(ilert.StatusPageAppearanceAll, false),
 				ConflictsWith: []string{"theme_mode"},
 			},
+			"email_whitelist": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"announcement": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"announcement_on_page": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"announcement_in_widget": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"metric": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -432,6 +451,28 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 		statusPage.Appearance = val.(string)
 	}
 
+	if val, ok := d.GetOk("email_whitelist"); ok {
+		vL := val.([]interface{})
+		sL := make([]string, 0)
+		for _, m := range vL {
+			v := m.(string)
+			sL = append(sL, v)
+		}
+		statusPage.EmailWhitelist = sL
+	}
+
+	if val, ok := d.GetOk("announcement"); ok {
+		statusPage.Announcement = val.(string)
+	}
+
+	if val, ok := d.GetOk("announcement_on_page"); ok {
+		statusPage.AnnouncementOnPage = val.(bool)
+	}
+
+	if val, ok := d.GetOk("announcement_in_widget"); ok {
+		statusPage.AnnouncementInWidget = val.(bool)
+	}
+
 	if val, ok := d.GetOk("metric"); ok {
 		vL := val.([]interface{})
 		mts := make([]ilert.Metric, 0)
@@ -590,6 +631,22 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	if _, ok := d.GetOk("appearance"); ok {
 		d.Set("appearance", result.StatusPage.Appearance)
+	}
+
+	if val, ok := d.GetOk("email_whitelist"); ok && val.([]interface{}) != nil && len(val.([]interface{})) > 0 {
+		d.Set("email_whitelist", result.StatusPage.EmailWhitelist)
+	}
+
+	if _, ok := d.GetOk("announcement"); ok {
+		d.Set("announcement", result.StatusPage.Announcement)
+	}
+
+	if _, ok := d.GetOk("announcement_on_page"); ok {
+		d.Set("announcement_on_page", result.StatusPage.AnnouncementOnPage)
+	}
+
+	if _, ok := d.GetOk("announcement_in_widget"); ok {
+		d.Set("announcement_in_widget", result.StatusPage.AnnouncementInWidget)
 	}
 
 	metrics, err := flattenMetricsList(result.StatusPage.Metrics, d)
