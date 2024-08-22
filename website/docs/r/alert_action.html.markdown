@@ -87,6 +87,7 @@ The following arguments are supported:
 - `telegram` - (Optional) An [telegram](#telegram-arguments) block.
 - `microsoft_teams_bot` - (Optional) A [microsoft_teams_bot](#microsoft-teams-bot-arguments) block.
 - `microsoft_teams_webhook` - (Optional) A [microsoft_teams_webhook](#microsoft-teams-webhook-arguments) block.
+- `slack_webhook` - (Optional) A [slack_webhook](#slack-webhook-arguments) block.
 - `alert_filter` - (Optional) An [alert_filter](#alert-filter-arguments) block.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 
@@ -219,7 +220,9 @@ The following arguments are supported:
 
 #### Microsoft teams webhook Arguments
 
-> See [the Microsoft teams bot integration documentation](https://docs.ilert.com/chatops/microsoft-teams/chat/workflows) for more details.
+- `url` - (Required) The workflow URL for the channel.
+
+#### Slack webhook Arguments
 
 - `url` - (Required) The workflow URL for the channel.
 
@@ -250,7 +253,7 @@ The following attributes are exported:
 
 ## Import
 
-Services can be imported using the `id`, e.g.
+Alert actions can be imported using the `id`, e.g.
 
 ```sh
 $ terraform import ilert_alert_action.main 123456789
