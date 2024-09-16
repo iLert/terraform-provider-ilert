@@ -117,6 +117,7 @@ The following arguments are supported:
 - `caller_id` - (Optional) The ServiceNow caller id.
 - `impact` - (Optional) The ServiceNow impact.
 - `urgency` - (Optional) The ServiceNow urgency.
+- `body_template` - (Optional) The custom template body.
 
 #### Slack Arguments
 
@@ -222,6 +223,7 @@ The following arguments are supported:
 #### Microsoft teams webhook Arguments
 
 - `url` - (Required) The workflow URL for the channel.
+- `body_template` - (Optional) The custom template body.
 
 #### Slack webhook Arguments
 
