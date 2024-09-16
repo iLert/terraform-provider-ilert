@@ -119,6 +119,10 @@ func resourceAlertAction() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
+						"body_template": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
 					},
 				},
 			},
@@ -477,6 +481,10 @@ func resourceAlertAction() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 						},
+						"body_template": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
 					},
 				},
 			},
@@ -656,9 +664,10 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
 			alertAction.Params = &ilert.AlertActionParamsServiceNow{
-				CallerID: v["caller_id"].(string),
-				Impact:   v["impact"].(string),
-				Urgency:  v["urgency"].(string),
+				CallerID:     v["caller_id"].(string),
+				Impact:       v["impact"].(string),
+				Urgency:      v["urgency"].(string),
+				BodyTemplate: v["body_template"].(string),
 			}
 		}
 	}
@@ -863,7 +872,8 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
 			alertAction.Params = &ilert.AlertActionParamsMicrosoftTeamsWebhook{
-				URL: v["url"].(string),
+				URL:          v["url"].(string),
+				BodyTemplate: v["body_template"].(string),
 			}
 		}
 	}
@@ -1067,9 +1077,10 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	case ilert.ConnectorTypes.ServiceNow:
 		d.Set("servicenow", []interface{}{
 			map[string]interface{}{
-				"caller_id": result.AlertAction.Params.CallerID,
-				"impact":    result.AlertAction.Params.Impact,
-				"urgency":   result.AlertAction.Params.Urgency,
+				"caller_id":     result.AlertAction.Params.CallerID,
+				"impact":        result.AlertAction.Params.Impact,
+				"urgency":       result.AlertAction.Params.Urgency,
+				"body_template": result.AlertAction.Params.BodyTemplate,
 			},
 		})
 	case ilert.ConnectorTypes.Slack:
@@ -1178,7 +1189,8 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	case ilert.ConnectorTypes.MicrosoftTeamsWebhook:
 		d.Set("microsoft_teams_webhook", []interface{}{
 			map[string]interface{}{
-				"url": result.AlertAction.Params.URL,
+				"url":          result.AlertAction.Params.URL,
+				"bodyTemplate": result.AlertAction.Params.BodyTemplate,
 			},
 		})
 	case ilert.ConnectorTypes.SlackWebhook:
