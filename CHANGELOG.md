@@ -1,5 +1,9 @@
 # Changelog
 
+## 16.09.2024, Version 2.9.1
+
+- feature/additional-body-template-fields in [#93](https://github.com/iLert/terraform-provider-ilert/pull/93)
+
 ## 22.08.2024, Version 2.9.0
 
 - feature/new-api-resources pt.1 in [#92](https://github.com/iLert/terraform-provider-ilert/pull/92)
