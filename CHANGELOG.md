@@ -1,5 +1,9 @@
 # Changelog
 
+## 01.10.2024, Version 2.10.0
+
+- feature/alert-action-conditions-field in [#94](https://github.com/iLert/terraform-provider-ilert/pull/94)
+
 ## 16.09.2024, Version 2.9.1
 
 - feature/additional-body-template-fields in [#93](https://github.com/iLert/terraform-provider-ilert/pull/93)
