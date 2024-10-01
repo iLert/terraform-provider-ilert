@@ -513,10 +513,11 @@ func resourceAlertAction() *schema.Resource {
 				Computed: true,
 			},
 			"alert_filter": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MinItems: 1,
-				MaxItems: 1,
+				Type:       schema.TypeList,
+				Optional:   true,
+				MinItems:   1,
+				MaxItems:   1,
+				Deprecated: "This field is deprecated, use 'conditions' instead. If both are used this field is ignored.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"operator": {
@@ -579,6 +580,10 @@ func resourceAlertAction() *schema.Resource {
 			},
 			"not_resolved_delay_sec": {
 				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"conditions": {
+				Type:     schema.TypeString,
 				Optional: true,
 			},
 		},
@@ -951,6 +956,10 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		alertAction.NotResolvedDelaySec = val.(int)
 	}
 
+	if val, ok := d.GetOk("conditions"); ok {
+		alertAction.Conditions = val.(string)
+	}
+
 	return alertAction, nil
 }
 
@@ -1251,6 +1260,8 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 			d.Set("alert_source", sources)
 		}
 	}
+
+	d.Set("conditions", result.AlertAction.Conditions)
 
 	return nil
 }
