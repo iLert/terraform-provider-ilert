@@ -1020,7 +1020,9 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 		version := 2
 		if val, ok := d.GetOk("alert_source"); ok && len(val.([]interface{})) == 1 {
 			if val, ok := d.GetOk("team"); !ok || len(val.([]interface{})) == 0 {
-				version = 1
+				if val, ok := d.GetOk("conditions"); !ok || len(val.(string)) == 0 {
+					version = 1
+				}
 			}
 		}
 		r, err := client.GetAlertAction(&ilert.GetAlertActionInput{AlertActionID: ilert.String(alertActionID), Version: ilert.Int(version)})
