@@ -103,8 +103,8 @@ github.com/hashicorp/yamux v0.1.1 h1:yrQxtgseBDrq9Y652vSRDvsKCJKOUD+GzTS4Y0Y8pvE
 github.com/hashicorp/yamux v0.1.1/go.mod h1:CtWFDAQgb7dxtzFs4tWbplKIe2jSi3+5vKbgIO0SLnQ=
 github.com/huandu/xstrings v1.3.1/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/huandu/xstrings v1.3.2/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
-github.com/iLert/ilert-go/v3 v3.9.1 h1:+6R8uJPZUZSGHlP0FX8nHBh6DvZPnHuBg2SziUfyFB8=
-github.com/iLert/ilert-go/v3 v3.9.1/go.mod h1:xHJ8qdmthK4HExcQOd3V5JARed/EBKTdX86MqrJ1yJ0=
+github.com/iLert/ilert-go/v3 v3.10.1 h1:VNzm+WIBj8wgNOKNQFs/XEhTjoHR4IskbXiA/RKDQKY=
+github.com/iLert/ilert-go/v3 v3.10.1/go.mod h1:xHJ8qdmthK4HExcQOd3V5JARed/EBKTdX86MqrJ1yJ0=
 github.com/imdario/mergo v0.3.11/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=
 github.com/imdario/mergo v0.3.12 h1:b6R2BslTbIEToALKP7LxUvijTsNI9TAe80pLWN2g/HU=
 github.com/imdario/mergo v0.3.12/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=

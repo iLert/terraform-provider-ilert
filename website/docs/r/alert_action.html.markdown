@@ -91,6 +91,7 @@ The following arguments are supported:
 - `slack_webhook` - (Optional) A [slack_webhook](#slack-webhook-arguments) block.
 - `alert_filter` - (Optional) An [alert_filter](#alert-filter-arguments) block.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `conditions` - (Optional) Defines event filter condition in ICL language. This is a code based implementation, more info on syntax: https://docs.ilert.com/rest-api/icl-ilert-condition-language. For block based configuration please use the web UI.
 
 #### Alert Source Arguments
 
