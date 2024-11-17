@@ -73,7 +73,6 @@ func resourceDeploymentPipeline() *schema.Resource {
 							Type:     schema.TypeList,
 							Optional: true,
 							MinItems: 1,
-							Default:  []string{"main", "master"},
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -85,7 +84,6 @@ func resourceDeploymentPipeline() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
-							ValidateFunc: validation.StringInSlice(ilert.GitHubEventFilterTypeAll, false),
 						},
 					},
 				},
@@ -245,6 +243,7 @@ func resourceDeploymentPipelineRead(ctx context.Context, d *schema.ResourceData,
 
 	d.Set("name", result.DeploymentPipeline.Name)
 	d.Set("integration_type", result.DeploymentPipeline.IntegrationType)
+	d.Set("integration_key", result.DeploymentPipeline.IntegrationKey)
 
 	teams, err := flattenTeamShortList(result.DeploymentPipeline.Teams, d)
 	if err != nil {
@@ -253,6 +252,10 @@ func resourceDeploymentPipelineRead(ctx context.Context, d *schema.ResourceData,
 	if err := d.Set("team", teams); err != nil {
 		return diag.Errorf("error setting teams: %s", err)
 	}
+
+	d.Set("created_at", result.DeploymentPipeline.CreatedAt)
+	d.Set("updated_at", result.DeploymentPipeline.UpdatedAt)
+	d.Set("integration_url", result.DeploymentPipeline.IntegrationUrl)
 
 	if result.DeploymentPipeline.IntegrationType == ilert.DeploymentPipelineIntegrationType.GitHub {
 		d.Set("github", []interface{}{
@@ -274,6 +277,9 @@ func resourceDeploymentPipelineUpdate(ctx context.Context, d *schema.ResourceDat
 		log.Printf("[ERROR] Building deployment pipeline error %s", err.Error())
 		return diag.FromErr(err)
 	}
+
+	// API expects integration key to be always set, even if not allowed to be set by user
+	deploymentPipeline.IntegrationKey = d.Get("integration_key").(string)
 
 	deploymentPipelineID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
