@@ -17,7 +17,7 @@ resource "ilert_deployment_pipeline" "example" {
   name     = "example"
   integration_type = "GITHUB"
   github {
-    branch_filter = ["main", "master]
+    branch_filter = ["main", "master"]
     event_filter = ["release"]
   }
 }
@@ -28,7 +28,7 @@ resource "ilert_deployment_pipeline" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the deployment pipeline.
-- `integration_type` - (Required) The integration type of the deployment pipeline. Can be `GITHUB` or `API`.
+- `integration_type` - (Required) The integration type of the deployment pipeline. Allowed values are `GITHUB` or `API`.
 - `integration_key` - (Computed) The integration key of the deployment pipeline.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 - `created_at` - (Computed) The creation date of the deployment pipeline.
@@ -44,7 +44,7 @@ The following arguments are supported:
 #### GitHub Arguments
 
 - `branch_filter` - One or more branch filters to only accept events on specified branches.
-- `event_filter` - One or more event filters to only accept events on specified actions.
+- `event_filter` - One or more event filters to only accept events on specified actions. Allowed values are `pull_request`, `push` and `release`.
 
 ## Import
 
