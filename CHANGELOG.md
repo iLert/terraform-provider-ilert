@@ -1,5 +1,9 @@
 # Changelog
 
+## 17.11.2024, Version 2.11.0
+
+- feature/deployment-pipeline in [#96](https://github.com/iLert/terraform-provider-ilert/pull/96)
+
 ## 01.10.2024, Version 2.10.0
 
 - feature/alert-action-conditions-field in [#94](https://github.com/iLert/terraform-provider-ilert/pull/94)
