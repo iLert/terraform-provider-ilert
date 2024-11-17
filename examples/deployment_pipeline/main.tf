@@ -1,4 +1,8 @@
 resource "ilert_deployment_pipeline" "example" {
-  name     = "example1"
-  integration_type = "API"
+  name     = "example"
+  integration_type = "GITHUB"
+  github {
+    branch_filter = ["main", "master"]
+    event_filter = ["release"]
+  }
 }
