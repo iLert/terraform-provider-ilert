@@ -88,6 +88,32 @@ func resourceDeploymentPipeline() *schema.Resource {
 					},
 				},
 			},
+			"gitlab": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MinItems: 1,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"branch_filter": {
+							Type:     schema.TypeList,
+							Optional: true,
+							MinItems: 1,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"event_filter": {
+							Type:     schema.TypeList,
+							Optional: true,
+							MinItems: 1,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 		},
 		CreateContext: resourceDeploymentPipelineCreate,
 		ReadContext:   resourceDeploymentPipelineRead,
@@ -136,6 +162,33 @@ func buildDeploymentPipeline(d *schema.ResourceData) (*ilert.DeploymentPipeline,
 		if len(vL) > 0 {
 			v := vL[0].(map[string]interface{})
 			params := &ilert.DeploymentPipelineGitHubParams{}
+			if vL, ok := v["branch_filter"].([]interface{}); ok && len(vL) > 0 {
+				sL := make([]string, 0)
+				for _, m := range vL {
+					if v, ok := m.(string); ok && v != "" {
+						sL = append(sL, v)
+					}
+				}
+				params.BranchFilters = sL
+			}
+			if vL, ok := v["event_filter"].([]interface{}); ok && len(vL) > 0 {
+				sL := make([]string, 0)
+				for _, m := range vL {
+					if v, ok := m.(string); ok && v != "" {
+						sL = append(sL, v)
+					}
+				}
+				params.EventFilters = sL
+			}
+			deploymentPipeline.Params = params
+		}
+	}
+
+	if val, ok := d.GetOk("gitlab"); ok && integrationType == ilert.DeploymentPipelineIntegrationType.GitLab {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			params := &ilert.DeploymentPipelineGitLabParams{}
 			if vL, ok := v["branch_filter"].([]interface{}); ok && len(vL) > 0 {
 				sL := make([]string, 0)
 				for _, m := range vL {
@@ -259,6 +312,15 @@ func resourceDeploymentPipelineRead(ctx context.Context, d *schema.ResourceData,
 
 	if result.DeploymentPipeline.IntegrationType == ilert.DeploymentPipelineIntegrationType.GitHub {
 		d.Set("github", []interface{}{
+			map[string]interface{}{
+				"branch_filter": result.DeploymentPipeline.Params.BranchFilters,
+				"event_filter":  result.DeploymentPipeline.Params.EventFilters,
+			},
+		})
+	}
+
+	if result.DeploymentPipeline.IntegrationType == ilert.DeploymentPipelineIntegrationType.GitLab {
+		d.Set("gitlab", []interface{}{
 			map[string]interface{}{
 				"branch_filter": result.DeploymentPipeline.Params.BranchFilters,
 				"event_filter":  result.DeploymentPipeline.Params.EventFilters,
