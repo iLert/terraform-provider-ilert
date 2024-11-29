@@ -1,5 +1,9 @@
 # Changelog
 
+## 29.11.2024, Version 2.11.1
+
+- feature/deployment-pipeline-gitlab in [#97](https://github.com/iLert/terraform-provider-ilert/pull/97)
+
 ## 17.11.2024, Version 2.11.0
 
 - feature/deployment-pipeline in [#96](https://github.com/iLert/terraform-provider-ilert/pull/96)
