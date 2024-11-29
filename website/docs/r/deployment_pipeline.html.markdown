@@ -28,13 +28,14 @@ resource "ilert_deployment_pipeline" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the deployment pipeline.
-- `integration_type` - (Required) The integration type of the deployment pipeline. Allowed values are `GITHUB` or `API`.
+- `integration_type` - (Required) The integration type of the deployment pipeline. Allowed values are `GITHUB`, `GITLAB` or `API`.
 - `integration_key` - (Computed) The integration key of the deployment pipeline.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 - `created_at` - (Computed) The creation date of the deployment pipeline.
 - `updated_at` - (Computed) The latest date the deployment pipeline was updated at.
 - `integration_url` - (Computed) The integration url of the deployment pipeline. Deployment events are sent to this URL.
 - `github` - The [github](#github-arguments) block allows configuring parameters for GitHub.
+- `gitlab` - The [gitlab](#gitlab-arguments) block allows configuring parameters for GitLab.
 
 #### Team Arguments
 
@@ -45,6 +46,11 @@ The following arguments are supported:
 
 - `branch_filter` - One or more branch filters to only accept events on specified branches.
 - `event_filter` - One or more event filters to only accept events on specified actions. Allowed values are `pull_request`, `push` and `release`.
+
+#### GitLab Arguments
+
+- `branch_filter` - One or more branch filters to only accept events on specified branches.
+- `event_filter` - One or more event filters to only accept events on specified actions. Allowed values are `Merge Request Hook`, `Push Hook` and `Release Hook`.
 
 ## Import
 
