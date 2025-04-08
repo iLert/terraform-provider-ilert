@@ -1,5 +1,9 @@
 # Changelog
 
+## 08.04.2025, Version 2.11.2
+
+- fix/incident-template-send-notification in [#101](https://github.com/iLert/terraform-provider-ilert/pull/101)
+
 ## 29.11.2024, Version 2.11.1
 
 - feature/deployment-pipeline-gitlab in [#97](https://github.com/iLert/terraform-provider-ilert/pull/97)
