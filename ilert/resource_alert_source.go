@@ -991,7 +991,7 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m in
 	result := &ilert.CreateAlertSourceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
 		r, err := client.CreateAlertSource(&ilert.CreateAlertSourceInput{AlertSource: alertSource, Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
@@ -1027,7 +1027,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	result := &ilert.GetAlertSourceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
 		r, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
@@ -1258,7 +1258,7 @@ func resourceAlertSourceUpdate(ctx context.Context, d *schema.ResourceData, m in
 	log.Printf("[DEBUG] Updating alert source: %s", d.Id())
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
 		_, err = client.UpdateAlertSource(&ilert.UpdateAlertSourceInput{AlertSource: alertSource, AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
@@ -1316,7 +1316,7 @@ func resourceAlertSourceExists(d *schema.ResourceData, m interface{}) (bool, err
 	result := false
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
 		_, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
