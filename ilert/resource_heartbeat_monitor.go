@@ -23,8 +23,9 @@ func resourceHeartbeatMonitor() *schema.Resource {
 				ValidateFunc: validation.StringLenBetween(1, 255),
 			},
 			"interval_sec": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:         schema.TypeInt,
+				Required:     true,
+				ValidateFunc: validation.IntAtLeast(25),
 			},
 			"alert_summary": {
 				Type:     schema.TypeString,
