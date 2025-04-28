@@ -727,10 +727,6 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		if len(vL) > 0 && vL[0] != nil {
 			v := vL[0].(map[string]interface{})
 			if id := int64(v["id"].(int)); id > 0 {
-				if err != nil {
-					log.Printf("[ERROR] Could not parse support hours id %s", err.Error())
-					return nil, err
-				}
 				alertSource.SupportHours = &ilert.SupportHour{
 					ID: id,
 				}
