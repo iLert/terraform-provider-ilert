@@ -106,11 +106,11 @@ func resourceHeartbeatMonitor() *schema.Resource {
 
 func buildHeartbeatMonitor(d *schema.ResourceData) (*ilert.HeartbeatMonitor, error) {
 	name := d.Get("name").(string)
-	intervalSec := d.Get("interval_sec").(int64)
+	intervalSec := d.Get("interval_sec").(int)
 
 	heartbeatMonitor := &ilert.HeartbeatMonitor{
 		Name:        name,
-		IntervalSec: intervalSec,
+		IntervalSec: int64(intervalSec),
 	}
 
 	if val, ok := d.GetOk("alert_summary"); ok {
@@ -229,7 +229,7 @@ func resourceHeartbeatMonitorRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	d.Set("name", result.HeartbeatMonitor.Name)
-	d.Set("interval_sec", result.HeartbeatMonitor.IntervalSec)
+	d.Set("interval_sec", int(result.HeartbeatMonitor.IntervalSec))
 
 	if _, ok := d.GetOk("alert_summary"); ok {
 		d.Set("alert_summary", result.HeartbeatMonitor.AlertSummary)
