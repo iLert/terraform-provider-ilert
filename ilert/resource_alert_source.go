@@ -119,28 +119,32 @@ func resourceAlertSource() *schema.Resource {
 				}, false),
 			},
 			"email_filtered": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:       schema.TypeBool,
+				Deprecated: "The field email_filtered is deprecated! Please use event_type_filter_create with alert source type EMAIL2 instead.",
+				Optional:   true,
+				Default:    false,
 			},
 			"email_resolve_filtered": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:       schema.TypeBool,
+				Deprecated: "The field email_resolve_filtered is deprecated! Please use event_type_filter_resolve with alert source type EMAIL2 instead.",
+				Optional:   true,
+				Default:    false,
 			},
 			"filter_operator": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "AND",
+				Type:       schema.TypeString,
+				Deprecated: "The field filter_operator is deprecated! Please use event_type_filter_create with alert source type EMAIL2 instead.",
+				Optional:   true,
+				Default:    "AND",
 				ValidateFunc: validation.StringInSlice([]string{
 					"AND",
 					"OR",
 				}, false),
 			},
 			"resolve_filter_operator": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "AND",
+				Type:       schema.TypeString,
+				Deprecated: "The field resolve_filter_operator is deprecated! Please use event_type_filter_resolve with alert source type EMAIL2 instead.",
+				Optional:   true,
+				Default:    "AND",
 				ValidateFunc: validation.StringInSlice([]string{
 					"AND",
 					"OR",
@@ -174,6 +178,7 @@ func resourceAlertSource() *schema.Resource {
 			},
 			"heartbeat": {
 				Type:        schema.TypeList,
+				Deprecated:  "The field heartbeat is deprecated! Please use the heartbeat monitor resource instead.",
 				Optional:    true,
 				MaxItems:    1,
 				MinItems:    1,
@@ -331,14 +336,16 @@ func resourceAlertSource() *schema.Resource {
 				},
 			},
 			"email": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:       schema.TypeString,
+				Deprecated: "The field email is deprecated! Please use type EMAIL2 to configure an email alert source.",
+				Optional:   true,
 			},
 			"resolve_key_extractor": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				MinItems: 1,
+				Type:       schema.TypeList,
+				Deprecated: "The field resolve_key_extractor is deprecated! Please use alert_key_template with alert source type EMAIL2 instead.",
+				Optional:   true,
+				MaxItems:   1,
+				MinItems:   1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"field": {
@@ -366,9 +373,10 @@ func resourceAlertSource() *schema.Resource {
 				},
 			},
 			"email_predicate": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MinItems: 1,
+				Type:       schema.TypeList,
+				Deprecated: "The field email_predicate is deprecated! Please use event_type_filter_create with alert source type EMAIL2 instead.",
+				Optional:   true,
+				MinItems:   1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"field": {
@@ -402,9 +410,10 @@ func resourceAlertSource() *schema.Resource {
 				},
 			},
 			"email_resolve_predicate": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MinItems: 1,
+				Type:       schema.TypeList,
+				Deprecated: "The field email_resolve_predicate is deprecated! Please use event_type_filter_resolve with alert source type EMAIL2 instead.",
+				Optional:   true,
+				MinItems:   1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"field": {
@@ -478,6 +487,19 @@ func resourceAlertSource() *schema.Resource {
 				},
 			},
 			"routing_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"text_template": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"alert_key_template": {
 				Type:     schema.TypeList,
 				Optional: true,
 				MaxItems: 1,
@@ -567,6 +589,18 @@ func resourceAlertSource() *schema.Resource {
 				Optional: true,
 			},
 			"event_filter": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"event_type_filter_create": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"event_type_filter_accept": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"event_type_filter_resolve": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -853,6 +887,15 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 			}
 		}
 	}
+	if val, ok := d.GetOk("alert_key_template"); ok {
+		vL := val.([]interface{})
+		if len(vL) > 0 {
+			v := vL[0].(map[string]interface{})
+			alertSource.AlertKeyTemplate = &ilert.Template{
+				TextTemplate: v["text_template"].(string),
+			}
+		}
+	}
 	if val, ok := d.GetOk("link_template"); ok {
 		vL := val.([]interface{})
 		ltmps := make([]ilert.LinkTemplate, 0)
@@ -922,6 +965,18 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 
 	if val, ok := d.GetOk("event_filter"); ok {
 		alertSource.EventFilter = val.(string)
+	}
+
+	if val, ok := d.GetOk("event_type_filter_create"); ok {
+		alertSource.EventTypeFilterCreate = val.(string)
+	}
+
+	if val, ok := d.GetOk("event_type_filter_accept"); ok {
+		alertSource.EventTypeFilterAccept = val.(string)
+	}
+
+	if val, ok := d.GetOk("event_type_filter_resolve"); ok {
+		alertSource.EventTypeFilterResolve = val.(string)
 	}
 
 	return alertSource, nil
@@ -1026,6 +1081,9 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	d.Set("alert_grouping_window", result.AlertSource.AlertGroupingWindow)
 	d.Set("score_threshold", result.AlertSource.ScoreThreshold)
 	d.Set("event_filter", result.AlertSource.EventFilter)
+	d.Set("event_type_filter_create", result.AlertSource.EventTypeFilterCreate)
+	d.Set("event_type_filter_accept", result.AlertSource.EventTypeFilterAccept)
+	d.Set("event_type_filter_resolve", result.AlertSource.EventTypeFilterResolve)
 
 	if result.AlertSource.Heartbeat != nil {
 		d.Set("heartbeat", []interface{}{
@@ -1091,6 +1149,16 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 		})
 	} else {
 		d.Set("routing_template", []interface{}{})
+	}
+
+	if result.AlertSource.AlertKeyTemplate != nil {
+		d.Set("alert_key_template", []interface{}{
+			map[string]interface{}{
+				"text_template": result.AlertSource.AlertKeyTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("alert_key_template", []interface{}{})
 	}
 
 	linkTemplates, err := flattenLinkTemplatesList(result.AlertSource.LinkTemplates)
