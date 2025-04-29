@@ -59,28 +59,15 @@ resource "ilert_alert_source" "example_with_support_hours" {
 
 resource "ilert_alert_source" "example_email" {
   name              = "My Email Integration from terraform"
-  integration_type  = "EMAIL"
+  integration_type  = "EMAIL2"
   email             = "example@ 'your tenant' .ilert.eu"
   escalation_policy = ilert_escalation_policy.example.id
 
   alert_creation = "OPEN_RESOLVE_ON_EXTRACTION"
-  resolve_key_extractor {
-    field    = "EMAIL_SUBJECT"
-    criteria = "ALL_TEXT_BEFORE"
-    value    = "my server"
+  alert_key_template {
+    text_template = "{{ subject.splitTakeAt(\"my server\", 0) }}"
   }
 
-  email_filtered = true
-  email_predicate {
-    field    = "EMAIL_BODY"
-    criteria = "CONTAINS_STRING"
-    value    = "alarm"
-  }
-
-  email_resolve_filtered = true
-  email_resolve_predicate {
-    field    = "EMAIL_BODY"
-    criteria = "CONTAINS_STRING"
-    value    = "resolve"
-  }
+  event_type_filter_create  = "(event.customDetails.body contains_any [\"alarm\"])"
+  event_type_filter_resolve = "(event.customDetails.body in [\"resolve\"])"
 }
