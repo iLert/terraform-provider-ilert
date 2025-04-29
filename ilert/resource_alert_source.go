@@ -637,7 +637,7 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		},
 	}
 
-	if integrationType == "EMAIL" {
+	if integrationType == "EMAIL" || integrationType == "EMAIL2" {
 		if val, ok := d.GetOk("email"); ok {
 			email := val.(string)
 			alertSource.IntegrationKey = email
@@ -1070,7 +1070,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	d.Set("status", result.AlertSource.Status)
 	d.Set("integration_key", result.AlertSource.IntegrationKey)
 	d.Set("integration_url", result.AlertSource.IntegrationURL)
-	if result.AlertSource.IntegrationType == "EMAIL" {
+	if result.AlertSource.IntegrationType == "EMAIL" || result.AlertSource.IntegrationType == "EMAIL2" {
 		d.Set("email", result.AlertSource.IntegrationKey)
 	}
 	d.Set("alert_grouping_window", result.AlertSource.AlertGroupingWindow)
