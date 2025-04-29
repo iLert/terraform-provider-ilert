@@ -336,9 +336,8 @@ func resourceAlertSource() *schema.Resource {
 				},
 			},
 			"email": {
-				Type:       schema.TypeString,
-				Deprecated: "The field email is deprecated! Please use type EMAIL2 to configure an email alert source.",
-				Optional:   true,
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"resolve_key_extractor": {
 				Type:       schema.TypeList,
