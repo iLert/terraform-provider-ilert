@@ -1,5 +1,9 @@
 # Changelog
 
+## 06.06.2025, Version 2.12.1
+
+- feature/heartbeat-monitor-datasource-fields in [#103](https://github.com/iLert/terraform-provider-ilert/pull/103)
+
 ## 28.04.2025, Version 2.12.0
 
 - feature/heartbeat-monitors_new-alert-source-fields in [#102](https://github.com/iLert/terraform-provider-ilert/pull/102)
