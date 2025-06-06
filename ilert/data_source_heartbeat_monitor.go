@@ -53,6 +53,9 @@ func dataSourceHeartbeatMonitorRead(ctx context.Context, d *schema.ResourceData,
 
 		d.SetId(strconv.FormatInt(found.ID, 10))
 		d.Set("name", found.Name)
+		d.Set("state", found.State)
+		d.Set("integration_key", found.IntegrationKey)
+		d.Set("integration_url", found.IntegrationUrl)
 
 		return nil
 	})
