@@ -22,6 +22,18 @@ func dataSourceHeartbeatMonitor() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"integration_key": {
+				Type:      schema.TypeString,
+				Computed:  true,
+			},
+			"integration_url": {
+				Type:      schema.TypeString,
+				Computed:  true,
+			},
 		},
 	}
 }
