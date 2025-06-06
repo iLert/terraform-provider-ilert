@@ -28,5 +28,8 @@ The following arguments are supported:
 
 - `id` - The ID of the found heartbeat monitor.
 - `name` - The name of the found heartbeat monitor.
+- `state` - (Computed) The state of the heartbeat monitor.
+- `integration_key` - (Computed) The integration key of the heartbeat monitor.
+- `integration_url` - (Computed) The integration url of the heartbeat monitor.
 
 [1]: https://api.ilert.com/api-docs/#tag/heartbeat-monitors

@@ -56,7 +56,7 @@ The following arguments are supported:
 - `created_at` - (Computed) The creation date of the heartbeat monitor.
 - `updated_at` - (Computed) The latest date the heartbeat monitor was updated at.
 - `integration_key` - (Computed) The integration key of the heartbeat monitor.
-- `integration_url` - (Computed) The integration url of the heartbeat monitor. Deployment events are sent to this URL.
+- `integration_url` - (Computed) The integration url of the heartbeat monitor.
 
 #### Alert Source Arguments
 
