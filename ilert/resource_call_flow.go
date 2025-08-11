@@ -324,6 +324,11 @@ func resourceCallFlowNode() *schema.Resource {
 					},
 				},
 			},
+			"branches": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     resourceCallFlowBranch(),
+			},
 		},
 	}
 }
@@ -352,11 +357,11 @@ func resourceCallFlowBranch() *schema.Resource {
 
 func buildCallFlow(d *schema.ResourceData) (*ilert.CallFlow, error) {
 	name := d.Get("name").(string)
-	integrationType := d.Get("integration_type").(string)
+	language := d.Get("language").(string)
 
-	CallFlow := &ilert.CallFlow{
-		Name:            name,
-		IntegrationType: integrationType,
+	callFlow := &ilert.CallFlow{
+		Name:     name,
+		Language: language,
 	}
 
 	if val, ok := d.GetOk("team"); ok {
@@ -372,64 +377,247 @@ func buildCallFlow(d *schema.ResourceData) (*ilert.CallFlow, error) {
 			}
 			tms = append(tms, tm)
 		}
-		CallFlow.Teams = tms
+		callFlow.Teams = tms
 	}
 
-	if val, ok := d.GetOk("github"); ok && integrationType == ilert.CallFlowIntegrationType.GitHub {
-		vL := val.([]interface{})
-		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
-			params := &ilert.CallFlowGitHubParams{}
-			if vL, ok := v["branch_filter"].([]interface{}); ok && len(vL) > 0 {
-				sL := make([]string, 0)
-				for _, m := range vL {
-					if v, ok := m.(string); ok && v != "" {
-						sL = append(sL, v)
-					}
-				}
-				params.BranchFilters = sL
+	// root node
+	if val, ok := d.GetOk("root_node"); ok {
+		if vL, ok := val.([]interface{}); ok && len(vL) > 0 && vL[0] != nil {
+			rn := vL[0].(map[string]interface{})
+			node, err := buildCallFlowNodeFromMap(rn)
+			if err != nil {
+				return nil, err
 			}
-			if vL, ok := v["event_filter"].([]interface{}); ok && len(vL) > 0 {
-				sL := make([]string, 0)
-				for _, m := range vL {
-					if v, ok := m.(string); ok && v != "" {
-						sL = append(sL, v)
-					}
-				}
-				params.EventFilters = sL
-			}
-			CallFlow.Params = params
+			callFlow.RootNode = node
 		}
 	}
 
-	if val, ok := d.GetOk("gitlab"); ok && integrationType == ilert.CallFlowIntegrationType.GitLab {
-		vL := val.([]interface{})
-		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
-			params := &ilert.CallFlowGitLabParams{}
-			if vL, ok := v["branch_filter"].([]interface{}); ok && len(vL) > 0 {
-				sL := make([]string, 0)
-				for _, m := range vL {
-					if v, ok := m.(string); ok && v != "" {
-						sL = append(sL, v)
-					}
-				}
-				params.BranchFilters = sL
-			}
-			if vL, ok := v["event_filter"].([]interface{}); ok && len(vL) > 0 {
-				sL := make([]string, 0)
-				for _, m := range vL {
-					if v, ok := m.(string); ok && v != "" {
-						sL = append(sL, v)
-					}
-				}
-				params.EventFilters = sL
-			}
-			CallFlow.Params = params
-		}
-	}
+	return callFlow, nil
+}
 
-	return CallFlow, nil
+func buildCallFlowNodeFromMap(rn map[string]interface{}) (*ilert.CallFlowNode, error) {
+	node := &ilert.CallFlowNode{}
+	if s, ok := rn["node_type"].(string); ok && s != "" {
+		node.NodeType = s
+	}
+	if s, ok := rn["name"].(string); ok && s != "" {
+		node.Name = s
+	}
+	if mvL, ok := rn["metadata"].([]interface{}); ok && len(mvL) > 0 && mvL[0] != nil {
+		mv := mvL[0].(map[string]interface{})
+		md := &ilert.CallFlowNodeMetadata{}
+		if s, ok := mv["text_message"].(string); ok && s != "" {
+			md.TextMessage = s
+		}
+		if s, ok := mv["custom_audio_url"].(string); ok && s != "" {
+			md.CustomAudioUrl = s
+		}
+		if s, ok := mv["ai_voice_model"].(string); ok && s != "" {
+			md.AIVoiceModel = s
+		}
+		if v, ok := mv["enabled_options"].([]interface{}); ok && len(v) > 0 {
+			sL := make([]string, 0, len(v))
+			for _, it := range v {
+				if s, ok := it.(string); ok && s != "" {
+					sL = append(sL, s)
+				}
+			}
+			md.EnabledOptions = sL
+		}
+		if s, ok := mv["language"].(string); ok && s != "" {
+			md.Language = s
+		}
+		if s, ok := mv["var_key"].(string); ok && s != "" {
+			md.VarKey = s
+		}
+		if s, ok := mv["var_value"].(string); ok && s != "" {
+			md.VarValue = s
+		}
+		if v, ok := mv["codes"].([]interface{}); ok && len(v) > 0 {
+			codes := make([]ilert.CallFlowNodeMetadataCode, 0, len(v))
+			for _, it := range v {
+				if it == nil {
+					continue
+				}
+				cv := it.(map[string]interface{})
+				code := ilert.CallFlowNodeMetadataCode{}
+				if lbl, ok := cv["label"].(string); ok && lbl != "" {
+					code.Label = lbl
+				}
+				if c, ok := cv["code"].(int); ok && c != 0 {
+					code.Code = int64(c)
+				}
+				codes = append(codes, code)
+			}
+			md.Codes = codes
+		}
+		if v, ok := mv["support_hours_id"].(int); ok && v > 0 {
+			md.SupportHoursId = int64(v)
+		}
+		if s, ok := mv["hold_audio_url"].(string); ok && s != "" {
+			md.HoldAudioUrl = s
+		}
+		if v, ok := mv["targets"].([]interface{}); ok && len(v) > 0 {
+			targets := make([]ilert.CallFlowNodeMetadataCallTarget, 0, len(v))
+			for _, it := range v {
+				if it == nil {
+					continue
+				}
+				tv := it.(map[string]interface{})
+				t := ilert.CallFlowNodeMetadataCallTarget{}
+				if s, ok := tv["target"].(string); ok && s != "" {
+					t.Target = s
+				}
+				if s, ok := tv["type"].(string); ok && s != "" {
+					t.Type = s
+				}
+				targets = append(targets, t)
+			}
+			md.Targets = targets
+		}
+		if s, ok := mv["call_style"].(string); ok && s != "" {
+			md.CallStyle = s
+		}
+		if v, ok := mv["alert_source_id"].(int); ok && v > 0 {
+			md.AlertSourceId = int64(v)
+		}
+		if v, ok := mv["retries"].(int); ok && v != 0 {
+			md.Retries = int64(v)
+		}
+		if v, ok := mv["call_timeout_sec"].(int); ok && v != 0 {
+			md.CallTimeoutSec = int64(v)
+		}
+		if v, ok := mv["blacklist"].([]interface{}); ok && len(v) > 0 {
+			sL := make([]string, 0, len(v))
+			for _, it := range v {
+				if s, ok := it.(string); ok && s != "" {
+					sL = append(sL, s)
+				}
+			}
+			md.Blacklist = sL
+		}
+		if v, ok := mv["intents"].([]interface{}); ok && len(v) > 0 {
+			intents := make([]ilert.CallFlowNodeMetadataIntent, 0, len(v))
+			for _, it := range v {
+				if it == nil {
+					continue
+				}
+				iv := it.(map[string]interface{})
+				in := ilert.CallFlowNodeMetadataIntent{}
+				if s, ok := iv["type"].(string); ok && s != "" {
+					in.Type = s
+				}
+				if s, ok := iv["label"].(string); ok && s != "" {
+					in.Label = s
+				}
+				if s, ok := iv["description"].(string); ok && s != "" {
+					in.Description = s
+				}
+				if arr, ok := iv["examples"].([]interface{}); ok && len(arr) > 0 {
+					ex := make([]string, 0, len(arr))
+					for _, e := range arr {
+						if s, ok := e.(string); ok && s != "" {
+							ex = append(ex, s)
+						}
+					}
+					in.Examples = ex
+				}
+				intents = append(intents, in)
+			}
+			md.Intents = intents
+		}
+		if v, ok := mv["gathers"].([]interface{}); ok && len(v) > 0 {
+			gathers := make([]ilert.CallFlowNodeMetadataGather, 0, len(v))
+			for _, it := range v {
+				if it == nil {
+					continue
+				}
+				gv := it.(map[string]interface{})
+				g := ilert.CallFlowNodeMetadataGather{}
+				if s, ok := gv["type"].(string); ok && s != "" {
+					g.Type = s
+				}
+				if s, ok := gv["label"].(string); ok && s != "" {
+					g.Label = s
+				}
+				if s, ok := gv["var_type"].(string); ok && s != "" {
+					g.VarType = s
+				}
+				if b, ok := gv["required"].(bool); ok {
+					g.Required = b
+				}
+				if s, ok := gv["question"].(string); ok && s != "" {
+					g.Question = s
+				}
+				gathers = append(gathers, g)
+			}
+			md.Gathers = gathers
+		}
+		if v, ok := mv["enrichment"].([]interface{}); ok && len(v) > 0 && v[0] != nil {
+			ev := v[0].(map[string]interface{})
+			enr := &ilert.CallFlowNodeMetadataEnrichment{}
+			if b, ok := ev["enabled"].(bool); ok {
+				enr.Enabled = b
+			}
+			if m, ok := ev["information_types"].(map[string]interface{}); ok && len(m) > 0 {
+				infos := make([]string, 0, len(m))
+				for _, val := range m {
+					if s, ok := val.(string); ok && s != "" {
+						infos = append(infos, s)
+					}
+				}
+				enr.InformationTypes = infos
+			}
+			if m, ok := ev["sources"].(map[string]interface{}); ok && len(m) > 0 {
+				srcs := make([]ilert.CallFlowNodeMetadataEnrichmentSource, 0, len(m))
+				for _, val := range m {
+					if val == nil {
+						continue
+					}
+					sv := val.(map[string]interface{})
+					src := ilert.CallFlowNodeMetadataEnrichmentSource{}
+					if id, ok := sv["id"].(int); ok && id > 0 {
+						src.ID = int64(id)
+					}
+					if t, ok := sv["type"].(string); ok && t != "" {
+						src.Type = t
+					}
+					srcs = append(srcs, src)
+				}
+				enr.Sources = srcs
+			}
+			md.Enrichment = enr
+		}
+		node.Metadata = md
+	}
+	// branches
+	if br, ok := rn["branches"].([]interface{}); ok && len(br) > 0 {
+		branches := make([]ilert.CallFlowBranch, 0, len(br))
+		for _, be := range br {
+			if be == nil {
+				continue
+			}
+			bv := be.(map[string]interface{})
+			b := ilert.CallFlowBranch{}
+			if s, ok := bv["branch_type"].(string); ok && s != "" {
+				b.BranchType = s
+			}
+			if s, ok := bv["condition"].(string); ok && s != "" {
+				b.Condition = s
+			}
+			if tvL, ok := bv["target"].([]interface{}); ok && len(tvL) > 0 && tvL[0] != nil {
+				tv := tvL[0].(map[string]interface{})
+				tn, err := buildCallFlowNodeFromMap(tv)
+				if err != nil {
+					return nil, err
+				}
+				b.Target = tn
+			}
+			branches = append(branches, b)
+		}
+		node.Branches = branches
+	}
+	return node, nil
 }
 
 func resourceCallFlowCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -445,8 +633,7 @@ func resourceCallFlowCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	result := &ilert.CreateCallFlowOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		includes := []*string{ilert.String("integrationUrl")}
-		r, err := client.CreateCallFlow(&ilert.CreateCallFlowInput{CallFlow: CallFlow, Include: includes})
+		r, err := client.CreateCallFlow(&ilert.CreateCallFlowInput{CallFlow: CallFlow})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				log.Printf("[ERROR] Creating ilert Call Flow error '%s', so retry again", err.Error())
@@ -484,8 +671,7 @@ func resourceCallFlowRead(ctx context.Context, d *schema.ResourceData, m interfa
 	log.Printf("[DEBUG] Reading Call Flow: %s", d.Id())
 	result := &ilert.GetCallFlowOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		includes := []*string{ilert.String("integrationUrl")}
-		r, err := client.GetCallFlow(&ilert.GetCallFlowInput{CallFlowID: ilert.Int64(CallFlowID), Include: includes})
+		r, err := client.GetCallFlow(&ilert.GetCallFlowInput{CallFlowID: ilert.Int64(CallFlowID)})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing Call Flow %s from state because it no longer exist", d.Id())
@@ -513,8 +699,7 @@ func resourceCallFlowRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	d.Set("name", result.CallFlow.Name)
-	d.Set("integration_type", result.CallFlow.IntegrationType)
-	d.Set("integration_key", result.CallFlow.IntegrationKey)
+	d.Set("language", result.CallFlow.Language)
 
 	teams, err := flattenTeamShortList(result.CallFlow.Teams, d)
 	if err != nil {
@@ -524,26 +709,33 @@ func resourceCallFlowRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.Errorf("error setting teams: %s", err)
 	}
 
-	d.Set("created_at", result.CallFlow.CreatedAt)
-	d.Set("updated_at", result.CallFlow.UpdatedAt)
-	d.Set("integration_url", result.CallFlow.IntegrationUrl)
-
-	if result.CallFlow.IntegrationType == ilert.CallFlowIntegrationType.GitHub {
-		d.Set("github", []interface{}{
-			map[string]interface{}{
-				"branch_filter": result.CallFlow.Params.BranchFilters,
-				"event_filter":  result.CallFlow.Params.EventFilters,
-			},
-		})
+	// assigned_number (computed)
+	if result.CallFlow.AssignedNumber != nil {
+		assigned := make(map[string]interface{})
+		assigned["id"] = result.CallFlow.AssignedNumber.ID
+		assigned["name"] = result.CallFlow.AssignedNumber.Name
+		if result.CallFlow.AssignedNumber.PhoneNumber != nil {
+			assigned["phone_number"] = []interface{}{
+				map[string]interface{}{
+					"region_code": result.CallFlow.AssignedNumber.PhoneNumber.RegionCode,
+					"number":      result.CallFlow.AssignedNumber.PhoneNumber.Number,
+				},
+			}
+		} else {
+			assigned["phone_number"] = []interface{}{}
+		}
+		d.Set("assigned_number", []interface{}{assigned})
+	} else {
+		d.Set("assigned_number", []interface{}{})
 	}
 
-	if result.CallFlow.IntegrationType == ilert.CallFlowIntegrationType.GitLab {
-		d.Set("gitlab", []interface{}{
-			map[string]interface{}{
-				"branch_filter": result.CallFlow.Params.BranchFilters,
-				"event_filter":  result.CallFlow.Params.EventFilters,
-			},
-		})
+	// root_node
+	rn, err := flattenCallFlowNodeOutput(result.CallFlow.RootNode, d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("root_node", rn); err != nil {
+		return diag.Errorf("error setting root_node: %s", err)
 	}
 
 	return nil
@@ -557,9 +749,6 @@ func resourceCallFlowUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		log.Printf("[ERROR] Building Call Flow error %s", err.Error())
 		return diag.FromErr(err)
 	}
-
-	// API expects integration key to be always set, even if not allowed to be set by user
-	CallFlow.IntegrationKey = d.Get("integration_key").(string)
 
 	CallFlowID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -651,4 +840,260 @@ func resourceCallFlowExists(d *schema.ResourceData, m interface{}) (bool, error)
 		return false, err
 	}
 	return result, nil
+}
+
+func flattenCallFlowNodeOutput(node *ilert.CallFlowNodeOutput, d *schema.ResourceData) ([]interface{}, error) {
+	if node == nil {
+		return make([]interface{}, 0), nil
+	}
+
+	result := make(map[string]interface{})
+	result["node_type"] = node.NodeType
+
+	if node.Name != "" {
+		result["name"] = node.Name
+	}
+
+	mds, err := flattenCallFlowNodeMetadata(node.Metadata)
+	if err != nil {
+		return nil, err
+	}
+	if len(mds) > 0 {
+		result["metadata"] = mds
+	} else {
+		result["metadata"] = []interface{}{}
+	}
+
+	if len(node.Branches) > 0 {
+		branches := make([]interface{}, 0, len(node.Branches))
+		for _, b := range node.Branches {
+			bm := make(map[string]interface{})
+			if b.BranchType != "" {
+				bm["branch_type"] = b.BranchType
+			}
+			if b.Condition != "" {
+				bm["condition"] = b.Condition
+			}
+			// Target is another node in a list with max 1
+			tn, err := flattenCallFlowNode(&b.Target)
+			if err != nil {
+				return nil, err
+			}
+			bm["target"] = tn
+			branches = append(branches, bm)
+		}
+		result["branches"] = branches
+	}
+
+	return []interface{}{result}, nil
+}
+
+func flattenCallFlowNode(node **ilert.CallFlowNode) ([]interface{}, error) {
+	if node == nil || *node == nil {
+		return []interface{}{}, nil
+	}
+	n := *node
+	result := make(map[string]interface{})
+	result["node_type"] = n.NodeType
+	if n.Name != "" {
+		result["name"] = n.Name
+	}
+	if n.Metadata != nil {
+		// Metadata in this representation is interface{}; try to map to CallFlowNodeMetadata when possible
+		if md, ok := n.Metadata.(*ilert.CallFlowNodeMetadata); ok {
+			mds, err := flattenCallFlowNodeMetadata(md)
+			if err != nil {
+				return nil, err
+			}
+			result["metadata"] = mds
+		}
+	}
+	// Branches (recursive)
+	if len(n.Branches) > 0 {
+		branches := make([]interface{}, 0, len(n.Branches))
+		for _, b := range n.Branches {
+			bm := make(map[string]interface{})
+			if b.BranchType != "" {
+				bm["branch_type"] = b.BranchType
+			}
+			if b.Condition != "" {
+				bm["condition"] = b.Condition
+			}
+			tn, err := flattenCallFlowNode(&b.Target)
+			if err != nil {
+				return nil, err
+			}
+			bm["target"] = tn
+			branches = append(branches, bm)
+		}
+		result["branches"] = branches
+	}
+	return []interface{}{result}, nil
+}
+
+func flattenCallFlowNodeMetadata(md *ilert.CallFlowNodeMetadata) ([]interface{}, error) {
+	if md == nil {
+		return make([]interface{}, 0), nil
+	}
+
+	result := make(map[string]interface{})
+
+	if md.TextMessage != "" {
+		result["text_message"] = md.TextMessage
+	}
+	if md.CustomAudioUrl != "" {
+		result["custom_audio_url"] = md.CustomAudioUrl
+	}
+	if md.AIVoiceModel != "" {
+		result["ai_voice_model"] = md.AIVoiceModel
+	}
+	if len(md.EnabledOptions) > 0 {
+		opts := make([]interface{}, 0, len(md.EnabledOptions))
+		for _, s := range md.EnabledOptions {
+			if s != "" {
+				opts = append(opts, s)
+			}
+		}
+		result["enabled_options"] = opts
+	}
+	if md.Language != "" {
+		result["language"] = md.Language
+	}
+	if md.VarKey != "" {
+		result["var_key"] = md.VarKey
+	}
+	if md.VarValue != "" {
+		result["var_value"] = md.VarValue
+	}
+	if len(md.Codes) > 0 {
+		codes := make([]interface{}, 0, len(md.Codes))
+		for _, c := range md.Codes {
+			m := make(map[string]interface{})
+			if c.Code != 0 {
+				m["code"] = int(c.Code)
+			}
+			if c.Label != "" {
+				m["label"] = c.Label
+			}
+			codes = append(codes, m)
+		}
+		result["codes"] = codes
+	}
+	if md.SupportHoursId != 0 {
+		result["support_hours_id"] = int(md.SupportHoursId)
+	}
+	if md.HoldAudioUrl != "" {
+		result["hold_audio_url"] = md.HoldAudioUrl
+	}
+	if len(md.Targets) > 0 {
+		targets := make([]interface{}, 0, len(md.Targets))
+		for _, t := range md.Targets {
+			m := make(map[string]interface{})
+			if t.Target != "" {
+				m["target"] = t.Target
+			}
+			if t.Type != "" {
+				m["type"] = t.Type
+			}
+			targets = append(targets, m)
+		}
+		result["targets"] = targets
+	}
+	if md.CallStyle != "" {
+		result["call_style"] = md.CallStyle
+	}
+	if md.AlertSourceId != 0 {
+		result["alert_source_id"] = int(md.AlertSourceId)
+	}
+	if md.Retries != 0 {
+		result["retries"] = int(md.Retries)
+	}
+	if md.CallTimeoutSec != 0 {
+		result["call_timeout_sec"] = int(md.CallTimeoutSec)
+	}
+	if len(md.Blacklist) > 0 {
+		bl := make([]interface{}, 0, len(md.Blacklist))
+		for _, s := range md.Blacklist {
+			if s != "" {
+				bl = append(bl, s)
+			}
+		}
+		result["blacklist"] = bl
+	}
+	if len(md.Intents) > 0 {
+		intents := make([]interface{}, 0, len(md.Intents))
+		for _, in := range md.Intents {
+			m := make(map[string]interface{})
+			if in.Type != "" {
+				m["type"] = in.Type
+			}
+			if in.Label != "" {
+				m["label"] = in.Label
+			}
+			if in.Description != "" {
+				m["description"] = in.Description
+			}
+			if len(in.Examples) > 0 {
+				ex := make([]interface{}, 0, len(in.Examples))
+				for _, s := range in.Examples {
+					if s != "" {
+						ex = append(ex, s)
+					}
+				}
+				m["examples"] = ex
+			}
+			intents = append(intents, m)
+		}
+		result["intents"] = intents
+	}
+	if len(md.Gathers) > 0 {
+		gathers := make([]interface{}, 0, len(md.Gathers))
+		for _, g := range md.Gathers {
+			m := make(map[string]interface{})
+			if g.Type != "" {
+				m["type"] = g.Type
+			}
+			if g.Label != "" {
+				m["label"] = g.Label
+			}
+			if g.VarType != "" {
+				m["var_type"] = g.VarType
+			}
+			// Required is optional; include if true or if present in config is not available here; set when true
+			if g.Required {
+				m["required"] = g.Required
+			}
+			if g.Question != "" {
+				m["question"] = g.Question
+			}
+			gathers = append(gathers, m)
+		}
+		result["gathers"] = gathers
+	}
+	if md.Enrichment != nil {
+		em := make(map[string]interface{})
+		em["enabled"] = md.Enrichment.Enabled
+		if len(md.Enrichment.InformationTypes) > 0 {
+			itMap := make(map[string]interface{}, len(md.Enrichment.InformationTypes))
+			for _, v := range md.Enrichment.InformationTypes {
+				if v != "" {
+					itMap[v] = v
+				}
+			}
+			em["information_types"] = itMap
+		}
+		if len(md.Enrichment.Sources) > 0 {
+			srcMap := make(map[string]interface{}, len(md.Enrichment.Sources))
+			for _, s := range md.Enrichment.Sources {
+				srcMap[strconv.FormatInt(s.ID, 10)] = map[string]interface{}{
+					"id":   int(s.ID),
+					"type": s.Type,
+				}
+			}
+			em["sources"] = srcMap
+		}
+		result["enrichment"] = []interface{}{em}
+	}
+
+	return []interface{}{result}, nil
 }
