@@ -14,6 +14,8 @@ import (
 	"github.com/iLert/ilert-go/v3"
 )
 
+var callFlowDepth = 10
+
 func resourceCallFlow() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -30,7 +32,6 @@ func resourceCallFlow() *schema.Resource {
 			"assigned_number": {
 				Type:     schema.TypeList,
 				Computed: true,
-				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -44,7 +45,6 @@ func resourceCallFlow() *schema.Resource {
 						"phone_number": {
 							Type:     schema.TypeList,
 							Computed: true,
-							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"region_code": {
@@ -83,7 +83,7 @@ func resourceCallFlow() *schema.Resource {
 				Required: true,
 				MinItems: 1,
 				MaxItems: 1,
-				Elem:     resourceCallFlowNode(),
+				Elem:     resourceCallFlowRoot(callFlowDepth),
 			},
 		},
 		CreateContext: resourceCallFlowCreate,
@@ -103,7 +103,15 @@ func resourceCallFlow() *schema.Resource {
 	}
 }
 
-func resourceCallFlowNode() *schema.Resource {
+func resourceCallFlowRoot(depth int) *schema.Resource {
+	if depth <= 0 {
+		return resourceCallFlowNodeNoBranches()
+	}
+
+	return resourceCallFlowNode(depth - 1)
+}
+
+func resourceCallFlowNode(depth int) *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -121,202 +129,231 @@ func resourceCallFlowNode() *schema.Resource {
 				Optional: true,
 				MaxItems: 1,
 				MinItems: 1,
+				Elem:     resourceCallFlowNodeMetadata(),
+			},
+			"branches": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     resourceCallFlowBranch(depth),
+			},
+		},
+	}
+}
+
+func resourceCallFlowNodeNoBranches() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringLenBetween(1, 255),
+			},
+			"node_type": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeTypeAll, false),
+			},
+			"metadata": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				Elem:     resourceCallFlowNodeMetadata(),
+			},
+		},
+	}
+}
+
+func resourceCallFlowNodeMetadata() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"text_message": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"custom_audio_url": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"ai_voice_model": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataAIVoiceModelAll, false),
+			},
+			"enabled_options": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"language": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataLanguageAll, false),
+			},
+			"var_key": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"var_value": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"codes": {
+				Type:     schema.TypeList,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"text_message": {
-							Type:     schema.TypeString,
+						"code": {
+							Type:     schema.TypeInt,
 							Optional: true,
 						},
-						"custom_audio_url": {
+						"label": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Required: true,
 						},
-						"ai_voice_model": {
+					},
+				},
+			},
+			"support_hours_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"hold_audio_url": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"targets": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"target": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"type": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataCallTargetTypeAll, false),
+						},
+					},
+				},
+			},
+			"call_style": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataCallStyleAll, false),
+			},
+			"alert_source_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"retries": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"call_timeout_sec": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"blacklist": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"intents": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataAIVoiceModelAll, false),
+							ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataIntentTypeAll, false),
 						},
-						"enabled_options": {
+						"label": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"description": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"examples": {
 							Type:     schema.TypeList,
 							Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
-						"language": {
+					},
+				},
+			},
+			"gathers": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataLanguageAll, false),
+							ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataGatherTypeAll, false),
 						},
-						"var_key": {
+						"label": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"var_value": {
+						"var_type": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataGatherVarTypeAll, false),
+						},
+						"required": {
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+						"question": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"codes": {
-							Type:     schema.TypeList,
+					},
+				},
+			},
+			"enrichment": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:     schema.TypeBool,
+							Required: true,
+						},
+						"information_types": {
+							Type:     schema.TypeMap,
 							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"code": {
-										Type:     schema.TypeInt,
-										Optional: true,
-									},
-									"label": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-								},
+							Elem: &schema.Schema{
+								Type:         schema.TypeString,
+								ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataEnrichmentInformationTypeAll, false),
 							},
 						},
-						"support_hours_id": {
-							Type:     schema.TypeInt,
-							Optional: true,
-						},
-						"hold_audio_url": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"targets": {
+						"sources": {
 							Type:     schema.TypeList,
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"target": {
-										Type:     schema.TypeString,
+									"id": {
+										Type:     schema.TypeInt,
 										Required: true,
 									},
 									"type": {
 										Type:         schema.TypeString,
 										Required:     true,
-										ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataCallTargetTypeAll, false),
-									},
-								},
-							},
-						},
-						"call_style": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataCallStyleAll, false),
-						},
-						"alert_source_id": {
-							Type:     schema.TypeInt,
-							Optional: true,
-						},
-						"retries": {
-							Type:     schema.TypeInt,
-							Optional: true,
-						},
-						"call_timeout_sec": {
-							Type:     schema.TypeInt,
-							Optional: true,
-						},
-						"blacklist": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"intents": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"type": {
-										Type:          schema.TypeString,
-										Optional:      true,
-										ValidateFunc:  validation.StringInSlice(ilert.CallFlowNodeMetadataIntentTypeAll, false),
-										ConflictsWith: []string{"intents.label", "intents.description", "intents.examples"},
-									},
-									"label": {
-										Type:          schema.TypeString,
-										Optional:      true,
-										ConflictsWith: []string{"intents.type"},
-									},
-									"description": {
-										Type:          schema.TypeString,
-										Optional:      true,
-										ConflictsWith: []string{"intents.type"},
-									},
-									"examples": {
-										Type:          schema.TypeList,
-										Optional:      true,
-										ConflictsWith: []string{"intents.type"},
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-								},
-							},
-						},
-						"gathers": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"type": {
-										Type:         schema.TypeString,
-										Optional:     true,
-										ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataGatherTypeAll, false),
-									},
-									"label": {
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-									"var_type": {
-										Type:         schema.TypeString,
-										Optional:     true,
-										ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataGatherVarTypeAll, false),
-									},
-									"required": {
-										Type:     schema.TypeBool,
-										Optional: true,
-									},
-									"question": {
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-								},
-							},
-						},
-						"enrichment": {
-							Type:     schema.TypeList,
-							Optional: true,
-							MaxItems: 1,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"enabled": {
-										Type:     schema.TypeBool,
-										Required: true,
-									},
-									"information_types": {
-										Type:     schema.TypeMap,
-										Optional: true,
-										Elem: &schema.Schema{
-											Type:         schema.TypeString,
-											ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataEnrichmentInformationTypeAll, false),
-										},
-									},
-									"sources": {
-										Type:     schema.TypeMap,
-										Optional: true,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"id": {
-													Type:     schema.TypeInt,
-													Required: true,
-												},
-												"type": {
-													Type:         schema.TypeString,
-													Required:     true,
-													ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataEnrichmentSourceTypeAll, false),
-												},
-											},
-										},
+										ValidateFunc: validation.StringInSlice(ilert.CallFlowNodeMetadataEnrichmentSourceTypeAll, false),
 									},
 								},
 							},
@@ -324,16 +361,11 @@ func resourceCallFlowNode() *schema.Resource {
 					},
 				},
 			},
-			"branches": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     resourceCallFlowBranch(),
-			},
 		},
 	}
 }
 
-func resourceCallFlowBranch() *schema.Resource {
+func resourceCallFlowBranch(depth int) *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"branch_type": {
@@ -349,7 +381,7 @@ func resourceCallFlowBranch() *schema.Resource {
 				Type:     schema.TypeList,
 				Required: true,
 				MaxItems: 1,
-				Elem:     resourceCallFlowNode(),
+				Elem:     resourceCallFlowRoot(depth),
 			},
 		},
 	}
@@ -380,7 +412,6 @@ func buildCallFlow(d *schema.ResourceData) (*ilert.CallFlow, error) {
 		callFlow.Teams = tms
 	}
 
-	// root node
 	if val, ok := d.GetOk("root_node"); ok {
 		if vL, ok := val.([]interface{}); ok && len(vL) > 0 && vL[0] != nil {
 			rn := vL[0].(map[string]interface{})
@@ -590,7 +621,7 @@ func buildCallFlowNodeFromMap(rn map[string]interface{}) (*ilert.CallFlowNode, e
 		}
 		node.Metadata = md
 	}
-	// branches
+
 	if br, ok := rn["branches"].([]interface{}); ok && len(br) > 0 {
 		branches := make([]ilert.CallFlowBranch, 0, len(br))
 		for _, be := range br {
@@ -709,7 +740,6 @@ func resourceCallFlowRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.Errorf("error setting teams: %s", err)
 	}
 
-	// assigned_number (computed)
 	if result.CallFlow.AssignedNumber != nil {
 		assigned := make(map[string]interface{})
 		assigned["id"] = result.CallFlow.AssignedNumber.ID
@@ -729,7 +759,6 @@ func resourceCallFlowRead(ctx context.Context, d *schema.ResourceData, m interfa
 		d.Set("assigned_number", []interface{}{})
 	}
 
-	// root_node
 	rn, err := flattenCallFlowNodeOutput(result.CallFlow.RootNode, d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -874,7 +903,6 @@ func flattenCallFlowNodeOutput(node *ilert.CallFlowNodeOutput, d *schema.Resourc
 			if b.Condition != "" {
 				bm["condition"] = b.Condition
 			}
-			// Target is another node in a list with max 1
 			tn, err := flattenCallFlowNode(&b.Target)
 			if err != nil {
 				return nil, err
@@ -899,7 +927,6 @@ func flattenCallFlowNode(node **ilert.CallFlowNode) ([]interface{}, error) {
 		result["name"] = n.Name
 	}
 	if n.Metadata != nil {
-		// Metadata in this representation is interface{}; try to map to CallFlowNodeMetadata when possible
 		if md, ok := n.Metadata.(*ilert.CallFlowNodeMetadata); ok {
 			mds, err := flattenCallFlowNodeMetadata(md)
 			if err != nil {
@@ -908,7 +935,6 @@ func flattenCallFlowNode(node **ilert.CallFlowNode) ([]interface{}, error) {
 			result["metadata"] = mds
 		}
 	}
-	// Branches (recursive)
 	if len(n.Branches) > 0 {
 		branches := make([]interface{}, 0, len(n.Branches))
 		for _, b := range n.Branches {
@@ -1059,7 +1085,6 @@ func flattenCallFlowNodeMetadata(md *ilert.CallFlowNodeMetadata) ([]interface{},
 			if g.VarType != "" {
 				m["var_type"] = g.VarType
 			}
-			// Required is optional; include if true or if present in config is not available here; set when true
 			if g.Required {
 				m["required"] = g.Required
 			}
