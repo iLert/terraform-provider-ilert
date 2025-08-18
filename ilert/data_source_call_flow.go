@@ -17,7 +17,7 @@ func dataSourceCallFlow() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceCallFlowRead,
 
-		Schema: map[string]*schema.Schema{
+        Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -25,7 +25,6 @@ func dataSourceCallFlow() *schema.Resource {
 			"assigned_number": {
 				Type:     schema.TypeList,
 				Computed: true,
-				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -36,11 +35,10 @@ func dataSourceCallFlow() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"phone_number": {
-							Type:     schema.TypeList,
-							Computed: true,
-							MaxItems: 1,
-							Elem: &schema.Resource{
+            "phone_number": {
+            						Type:     schema.TypeList,
+            						Computed: true,
+            						Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"region_code": {
 										Type:     schema.TypeString,
