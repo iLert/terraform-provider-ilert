@@ -1,5 +1,9 @@
 # Changelog
 
+## 11.08.2025, Version 2.13.0
+
+- feature/call-flows in [#104](https://github.com/iLert/terraform-provider-ilert/pull/104)
+
 ## 06.06.2025, Version 2.12.1
 
 - feature/heartbeat-monitor-datasource-fields in [#103](https://github.com/iLert/terraform-provider-ilert/pull/103)
