@@ -114,6 +114,10 @@ func resourceCallFlowRoot(depth int) *schema.Resource {
 func resourceCallFlowNode(depth int) *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 			"name": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -143,6 +147,10 @@ func resourceCallFlowNode(depth int) *schema.Resource {
 func resourceCallFlowNodeNoBranches() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 			"name": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -368,6 +376,10 @@ func resourceCallFlowNodeMetadata() *schema.Resource {
 func resourceCallFlowBranch(depth int) *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 			"branch_type": {
 				Type:         schema.TypeString,
 				Required:     true,
@@ -379,7 +391,7 @@ func resourceCallFlowBranch(depth int) *schema.Resource {
 			},
 			"target": {
 				Type:     schema.TypeList,
-				Required: true,
+				Optional: true,
 				MaxItems: 1,
 				Elem:     resourceCallFlowRoot(depth),
 			},
@@ -428,6 +440,9 @@ func buildCallFlow(d *schema.ResourceData) (*ilert.CallFlow, error) {
 
 func buildCallFlowNodeFromMap(rn map[string]interface{}) (*ilert.CallFlowNode, error) {
 	node := &ilert.CallFlowNode{}
+	if v, ok := rn["id"].(int); ok && v > 0 {
+		node.ID = int64(v)
+	}
 	if s, ok := rn["node_type"].(string); ok && s != "" {
 		node.NodeType = s
 	}
@@ -630,6 +645,9 @@ func buildCallFlowNodeFromMap(rn map[string]interface{}) (*ilert.CallFlowNode, e
 			}
 			bv := be.(map[string]interface{})
 			b := ilert.CallFlowBranch{}
+			if v, ok := bv["id"].(int); ok && v > 0 {
+				b.ID = int64(v)
+			}
 			if s, ok := bv["branch_type"].(string); ok && s != "" {
 				b.BranchType = s
 			}
@@ -759,7 +777,7 @@ func resourceCallFlowRead(ctx context.Context, d *schema.ResourceData, m interfa
 		d.Set("assigned_number", []interface{}{})
 	}
 
-	rn, err := flattenCallFlowNodeOutput(result.CallFlow.RootNode, d)
+	rn, err := flattenCallFlowNodeOutput(result.CallFlow.RootNode)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -871,12 +889,15 @@ func resourceCallFlowExists(d *schema.ResourceData, m interface{}) (bool, error)
 	return result, nil
 }
 
-func flattenCallFlowNodeOutput(node *ilert.CallFlowNodeOutput, d *schema.ResourceData) ([]interface{}, error) {
+func flattenCallFlowNodeOutput(node *ilert.CallFlowNodeOutput) ([]interface{}, error) {
 	if node == nil {
 		return make([]interface{}, 0), nil
 	}
 
 	result := make(map[string]interface{})
+	if node.ID != 0 {
+		result["id"] = int(node.ID)
+	}
 	result["node_type"] = node.NodeType
 
 	if node.Name != "" {
@@ -897,6 +918,9 @@ func flattenCallFlowNodeOutput(node *ilert.CallFlowNodeOutput, d *schema.Resourc
 		branches := make([]interface{}, 0, len(node.Branches))
 		for _, b := range node.Branches {
 			bm := make(map[string]interface{})
+			if b.ID != 0 {
+				bm["id"] = int(b.ID)
+			}
 			if b.BranchType != "" {
 				bm["branch_type"] = b.BranchType
 			}
@@ -922,12 +946,207 @@ func flattenCallFlowNode(node **ilert.CallFlowNode) ([]interface{}, error) {
 	}
 	n := *node
 	result := make(map[string]interface{})
+	if n.ID != 0 {
+		result["id"] = int(n.ID)
+	}
 	result["node_type"] = n.NodeType
 	if n.Name != "" {
 		result["name"] = n.Name
 	}
 	if n.Metadata != nil {
-		if md, ok := n.Metadata.(*ilert.CallFlowNodeMetadata); ok {
+		if mdMap, ok := n.Metadata.(map[string]interface{}); ok {
+
+			md := &ilert.CallFlowNodeMetadata{}
+
+			if v, ok := mdMap["textMessage"].(string); ok && v != "" {
+				md.TextMessage = v
+			}
+			if v, ok := mdMap["customAudioUrl"].(string); ok && v != "" {
+				md.CustomAudioUrl = v
+			}
+			if v, ok := mdMap["aiVoiceModel"].(string); ok && v != "" {
+				md.AIVoiceModel = v
+			}
+			if v, ok := mdMap["language"].(string); ok && v != "" {
+				md.Language = v
+			}
+			if v, ok := mdMap["varKey"].(string); ok && v != "" {
+				md.VarKey = v
+			}
+			if v, ok := mdMap["varValue"].(string); ok && v != "" {
+				md.VarValue = v
+			}
+			if v, ok := mdMap["holdAudioUrl"].(string); ok && v != "" {
+				md.HoldAudioUrl = v
+			}
+			if v, ok := mdMap["callStyle"].(string); ok && v != "" {
+				md.CallStyle = v
+			}
+			if v, ok := mdMap["supportHoursId"].(float64); ok && v > 0 {
+				md.SupportHoursId = int64(v)
+			}
+			if v, ok := mdMap["alertSourceId"].(float64); ok && v > 0 {
+				md.AlertSourceId = int64(v)
+			}
+			if v, ok := mdMap["retries"].(float64); ok && v != 0 {
+				md.Retries = int64(v)
+			}
+			if v, ok := mdMap["callTimeoutSec"].(float64); ok && v != 0 {
+				md.CallTimeoutSec = int64(v)
+			}
+
+			if v, ok := mdMap["codes"].([]interface{}); ok && len(v) > 0 {
+				codes := make([]ilert.CallFlowNodeMetadataCode, 0, len(v))
+				for _, it := range v {
+					if it == nil {
+						continue
+					}
+					cv := it.(map[string]interface{})
+					code := ilert.CallFlowNodeMetadataCode{}
+					if lbl, ok := cv["label"].(string); ok && lbl != "" {
+						code.Label = lbl
+					}
+					if c, ok := cv["code"].(float64); ok && c != 0 {
+						code.Code = int64(c)
+					}
+					codes = append(codes, code)
+				}
+				md.Codes = codes
+			}
+
+			if v, ok := mdMap["targets"].([]interface{}); ok && len(v) > 0 {
+				targets := make([]ilert.CallFlowNodeMetadataCallTarget, 0, len(v))
+				for _, it := range v {
+					if it == nil {
+						continue
+					}
+					tv := it.(map[string]interface{})
+					t := ilert.CallFlowNodeMetadataCallTarget{}
+					if s, ok := tv["target"].(string); ok && s != "" {
+						t.Target = s
+					}
+					if s, ok := tv["type"].(string); ok && s != "" {
+						t.Type = s
+					}
+					targets = append(targets, t)
+				}
+				md.Targets = targets
+			}
+
+			if v, ok := mdMap["intents"].([]interface{}); ok && len(v) > 0 {
+				intents := make([]ilert.CallFlowNodeMetadataIntent, 0, len(v))
+				for _, it := range v {
+					if it == nil {
+						continue
+					}
+					iv := it.(map[string]interface{})
+					in := ilert.CallFlowNodeMetadataIntent{}
+					if s, ok := iv["type"].(string); ok && s != "" {
+						in.Type = s
+					}
+					if s, ok := iv["label"].(string); ok && s != "" {
+						in.Label = s
+					}
+					if s, ok := iv["description"].(string); ok && s != "" {
+						in.Description = s
+					}
+					if arr, ok := iv["examples"].([]interface{}); ok && len(arr) > 0 {
+						ex := make([]string, 0, len(arr))
+						for _, e := range arr {
+							if s, ok := e.(string); ok && s != "" {
+								ex = append(ex, s)
+							}
+						}
+						in.Examples = ex
+					}
+					intents = append(intents, in)
+				}
+				md.Intents = intents
+			}
+
+			if v, ok := mdMap["gathers"].([]interface{}); ok && len(v) > 0 {
+				gathers := make([]ilert.CallFlowNodeMetadataGather, 0, len(v))
+				for _, it := range v {
+					if it == nil {
+						continue
+					}
+					gv := it.(map[string]interface{})
+					g := ilert.CallFlowNodeMetadataGather{}
+					if s, ok := gv["type"].(string); ok && s != "" {
+						g.Type = s
+					}
+					if s, ok := gv["label"].(string); ok && s != "" {
+						g.Label = s
+					}
+					if s, ok := gv["varType"].(string); ok && s != "" {
+						g.VarType = s
+					}
+					if b, ok := gv["required"].(bool); ok {
+						g.Required = b
+					}
+					if s, ok := gv["question"].(string); ok && s != "" {
+						g.Question = s
+					}
+					gathers = append(gathers, g)
+				}
+				md.Gathers = gathers
+			}
+
+			if v, ok := mdMap["enrichment"].([]interface{}); ok && len(v) > 0 && v[0] != nil {
+				ev := v[0].(map[string]interface{})
+				enr := &ilert.CallFlowNodeMetadataEnrichment{}
+				if b, ok := ev["enabled"].(bool); ok {
+					enr.Enabled = b
+				}
+				if m, ok := ev["informationTypes"].(map[string]interface{}); ok && len(m) > 0 {
+					infos := make([]string, 0, len(m))
+					for _, val := range m {
+						if s, ok := val.(string); ok && s != "" {
+							infos = append(infos, s)
+						}
+					}
+					enr.InformationTypes = infos
+				}
+				if m, ok := ev["sources"].(map[string]interface{}); ok && len(m) > 0 {
+					srcs := make([]ilert.CallFlowNodeMetadataEnrichmentSource, 0, len(m))
+					for _, val := range m {
+						if val == nil {
+							continue
+						}
+						sv := val.(map[string]interface{})
+						src := ilert.CallFlowNodeMetadataEnrichmentSource{}
+						if id, ok := sv["id"].(float64); ok && id > 0 {
+							src.ID = int64(id)
+						}
+						if t, ok := sv["type"].(string); ok && t != "" {
+							src.Type = t
+						}
+						srcs = append(srcs, src)
+					}
+					enr.Sources = srcs
+				}
+				md.Enrichment = enr
+			}
+
+			if v, ok := mdMap["enabled_options"].([]interface{}); ok && len(v) > 0 {
+				opts := make([]string, 0, len(v))
+				for _, opt := range v {
+					if s, ok := opt.(string); ok && s != "" {
+						opts = append(opts, s)
+					}
+				}
+				md.EnabledOptions = opts
+			}
+			if v, ok := mdMap["blacklist"].([]interface{}); ok && len(v) > 0 {
+				bl := make([]string, 0, len(v))
+				for _, item := range v {
+					if s, ok := item.(string); ok && s != "" {
+						bl = append(bl, s)
+					}
+				}
+				md.Blacklist = bl
+			}
+
 			mds, err := flattenCallFlowNodeMetadata(md)
 			if err != nil {
 				return nil, err
@@ -939,6 +1158,9 @@ func flattenCallFlowNode(node **ilert.CallFlowNode) ([]interface{}, error) {
 		branches := make([]interface{}, 0, len(n.Branches))
 		for _, b := range n.Branches {
 			bm := make(map[string]interface{})
+			if b.ID != 0 {
+				bm["id"] = int(b.ID)
+			}
 			if b.BranchType != "" {
 				bm["branch_type"] = b.BranchType
 			}
