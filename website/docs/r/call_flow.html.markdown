@@ -3,7 +3,7 @@ layout: "ilert"
 page_title: "ilert: ilert_call_flow"
 sidebar_current: "docs-ilert-resource-call-flow"
 description: |-
-    Creates and manages a call flow in ilert.
+  Creates and manages a call flow in ilert.
 ---
 
 # ilert_call_flow
@@ -14,36 +14,22 @@ A call flow defines the IVR (interactive voice response) structure for incoming 
 
 ```hcl
 resource "ilert_call_flow" "example" {
-  name     = "example-call-flow"
-  language = "English"
+  name     = "example"
+  language = "en"
 
-  root_node = [{
+  root_node {
     node_type = "ROOT"
-    name      = "root"
-
-    branches = [
-      {
-        branch_type = "ANSWERED"
-        target = [{
-          node_type = "AUDIO_MESSAGE"
-          name      = "welcome"
-          metadata = [{
-            text_message = "Welcome to our hotline."
-          }]
-        }]
-      },
-      {
-        branch_type = "CATCH_ALL"
-        target = [{
-          node_type = "VOICEMAIL"
-          name      = "vm"
-          metadata = [{
-            text_message = "Please leave a message after the beep."
-          }]
-        }]
+    branches {
+      branch_type = "ANSWERED"
+      target {
+        name = "Create alert"
+        node_type = "CREATE_ALERT"
+        metadata {
+          alert_source_id = -1 // your alert source id
+        }
       }
-    ]
-  }]
+    }
+  }
 }
 ```
 
