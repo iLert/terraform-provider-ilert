@@ -1128,7 +1128,7 @@ func flattenCallFlowNode(node **ilert.CallFlowNode) ([]interface{}, error) {
 				md.Enrichment = enr
 			}
 
-			if v, ok := mdMap["enabled_options"].([]interface{}); ok && len(v) > 0 {
+			if v, ok := mdMap["enabledOptions"].([]interface{}); ok && len(v) > 0 {
 				opts := make([]string, 0, len(v))
 				for _, opt := range v {
 					if s, ok := opt.(string); ok && s != "" {
