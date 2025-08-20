@@ -8,7 +8,7 @@ description: |-
 
 # ilert_call_flow
 
-A call flow defines the IVR (interactive voice response) structure for incoming calls.
+A call flow enables defining complex structures to achieve advanced voice routing, dynamic call workflows, and enhanced incident call management.
 
 ## Example Usage
 
