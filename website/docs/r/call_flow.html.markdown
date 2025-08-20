@@ -33,6 +33,8 @@ resource "ilert_call_flow" "example" {
 }
 ```
 
+> Note: More examples for call flows can be found in main.tf under examples/call_flow within the provider.
+
 ## Argument Reference
 
 The following arguments are supported:
