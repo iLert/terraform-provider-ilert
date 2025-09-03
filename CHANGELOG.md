@@ -1,5 +1,9 @@
 # Changelog
 
+## 03.09.2025, Version 2.14.0
+
+- feature/add-new-integration-types in [#106](https://github.com/iLert/terraform-provider-ilert/pull/106)
+
 ## 11.08.2025, Version 2.13.0
 
 - feature/call-flows in [#104](https://github.com/iLert/terraform-provider-ilert/pull/104)
@@ -63,7 +67,7 @@
 ## 20.02.2024, Version 2.6.1
 
 - fix/alert-actions-teams in [#84](https://github.com/iLert/terraform-provider-ilert/pull/84)
-    - ensures existing scripts using one alert source with no team explicitly set to use legacy api without breaking
+  - ensures existing scripts using one alert source with no team explicitly set to use legacy api without breaking
 
 ## 01.02.2024, Version 2.6.0
 
@@ -86,7 +90,7 @@
 
 - fix/deprecate-uptime-monitors in [#74](https://github.com/iLert/terraform-provider-ilert/pull/74)
 - feature/support-hours-resource in [#77](https://github.com/iLert/terraform-provider-ilert/pull/77)
-    - fixes issue [#76](https://github.com/iLert/terraform-provider-ilert/issues/76)
+  - fixes issue [#76](https://github.com/iLert/terraform-provider-ilert/issues/76)
 - feature/status-page-layout-fields in [#78](https://github.com/iLert/terraform-provider-ilert/pull/78)
 
 ## 15.12.2023, Version 2.3.1
@@ -135,27 +139,27 @@
 ## 08.03.2023, Version 2.0.0 - API user preference migration: see [migration changes](https://docs.ilert.com/rest-api/api-version-history/api-user-preference-migration-2023#migrating-ilert-go-and-or-terraform) for a detailed migration guide
 
 - feature/notification settings 2.0 in [#50](https://github.com/iLert/terraform-provider-ilert/pull/50)
-    - remove notification settings from user resource
-    - add user contacts
-        - email
-        - phone number
-    - add user notification preferences
-        - alert (alert creation)
-        - duty (on-call)
-        - subscription (subscriber to incident, service, status page)
-        - update (alert update changes)
-    - update all examples, add additional readme's
-    - documentation overhaul
+  - remove notification settings from user resource
+  - add user contacts
+    - email
+    - phone number
+  - add user notification preferences
+    - alert (alert creation)
+    - duty (on-call)
+    - subscription (subscriber to incident, service, status page)
+    - update (alert update changes)
+  - update all examples, add additional readme's
+  - documentation overhaul
 
 ## 03.03.2023, Version 1.11.4
 
 - fix/status-page-missing-field in [#49](https://github.com/iLert/terraform-provider-ilert/pull/49)
-    - addresses issue [#48](https://github.com/iLert/terraform-provider-ilert/issues/48)
+  - addresses issue [#48](https://github.com/iLert/terraform-provider-ilert/issues/48)
 
 ## 20.02.2023, Version 1.11.3
 
 - fix/remove-deprecated-schema in [#46](https://github.com/iLert/terraform-provider-ilert/pull/46)
-    - addresses issue [#45](https://github.com/iLert/terraform-provider-ilert/issues/45)
+  - addresses issue [#45](https://github.com/iLert/terraform-provider-ilert/issues/45)
 
 ## 08.02.2023, Version 1.11.2
 
@@ -164,13 +168,13 @@
 ## 08.02.2023, Version 1.11.1
 
 - fix/resource-schema-validation in [#43](https://github.com/iLert/terraform-provider-ilert/pull/43)
-    - add nil checks to validation methods
+  - add nil checks to validation methods
 
 ## 18.01.2023, Version 1.11.0
 
 - feature/metrics in [#42](https://github.com/iLert/terraform-provider-ilert/pull/42)
-    - add metrics resource and data source
-    - add metric data sources resource and data source
+  - add metrics resource and data source
+  - add metric data sources resource and data source
 
 ## 12.01.2023, Version 1.10.0
 
@@ -202,17 +206,17 @@
 ## 05.09.2022, Version 1.7.2
 
 - improve data source search for:
-    - alert actions
-    - alert sources
-    - connectors
-    - escalation policies
-    - incident templates
-    - schedules
-    - services
-    - status pages
-    - teams
-    - uptime monitors
-    - users
+  - alert actions
+  - alert sources
+  - connectors
+  - escalation policies
+  - incident templates
+  - schedules
+  - services
+  - status pages
+  - teams
+  - uptime monitors
+  - users
 
 ## 01.09.2022, Version 1.7.1
 
@@ -222,11 +226,11 @@
 
 - add schedule data source and resource
 - fix issue that changes still happen if same resource is applied multiple times
-    - fix service
-    - fix status page
-    - fix uptime monitor
-    - fix user
-    - fix team
+  - fix service
+  - fix status page
+  - fix uptime monitor
+  - fix user
+  - fix team
 - remove unnecessary field activated on statuspage
 
 ## 24.08.2022, Version 1.6.4
