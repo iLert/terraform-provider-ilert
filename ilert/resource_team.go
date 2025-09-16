@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
 	"time"
 
@@ -29,9 +30,10 @@ func resourceTeam() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(ilert.TeamVisibilityAll, false),
 			},
 			"member": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MinItems: 1,
+				Type:             schema.TypeList,
+				Optional:         true,
+				MinItems:         1,
+				DiffSuppressFunc: compareMemberListsIgnoringOrder,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"user": {
@@ -307,4 +309,44 @@ func flattenMembersList(list []ilert.TeamMember) ([]interface{}, error) {
 	}
 
 	return results, nil
+}
+
+func compareMemberListsIgnoringOrder(k, old, new string, d *schema.ResourceData) bool {
+	currentMembers := d.Get("member").([]interface{})
+
+	oldMembers := d.GetRawState().GetAttr("member")
+	if oldMembers.IsNull() || !oldMembers.IsKnown() {
+		return false
+	}
+
+	var currentUserIDs, oldUserIDs []string
+
+	for _, member := range currentMembers {
+		if m, ok := member.(map[string]interface{}); ok {
+			if userID, ok := m["user"].(string); ok {
+				currentUserIDs = append(currentUserIDs, userID)
+			}
+		}
+	}
+
+	for _, member := range oldMembers.AsValueSlice() {
+		if m, ok := member.AsValueMap()["user"]; ok && m.IsKnown() {
+			oldUserIDs = append(oldUserIDs, m.AsString())
+		}
+	}
+
+	sort.Strings(currentUserIDs)
+	sort.Strings(oldUserIDs)
+
+	if len(currentUserIDs) != len(oldUserIDs) {
+		return false
+	}
+
+	for i := range currentUserIDs {
+		if currentUserIDs[i] != oldUserIDs[i] {
+			return false
+		}
+	}
+
+	return true
 }
