@@ -1,5 +1,9 @@
 # Changelog
 
+## 16.09.2025, Version 2.14.1
+
+- fix/team-members-order in [#107](https://github.com/iLert/terraform-provider-ilert/pull/107)
+
 ## 03.09.2025, Version 2.14.0
 
 - feature/add-new-integration-types in [#106](https://github.com/iLert/terraform-provider-ilert/pull/106)
