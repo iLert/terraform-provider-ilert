@@ -31,7 +31,6 @@ func resourceTeam() *schema.Resource {
 			"member": {
 				Type:     schema.TypeList,
 				Optional: true,
-				MinItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"user": {
@@ -74,9 +73,9 @@ func buildTeam(d *schema.ResourceData) (*ilert.Team, error) {
 		Visibility: visibility,
 	}
 
+	members := make([]ilert.TeamMember, 0)
 	if val, ok := d.GetOk("member"); ok {
 		vL := val.([]interface{})
-		nps := make([]ilert.TeamMember, 0)
 		for _, m := range vL {
 			v := m.(map[string]interface{})
 			ep := ilert.TeamMember{
@@ -92,10 +91,10 @@ func buildTeam(d *schema.ResourceData) (*ilert.Team, error) {
 					ID: userID,
 				}
 			}
-			nps = append(nps, ep)
+			members = append(members, ep)
 		}
-		team.Members = nps
 	}
+	team.Members = members
 
 	return team, nil
 }
@@ -292,23 +291,6 @@ func resourceTeamExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	return result, nil
 }
 
-func flattenMembersList(list []ilert.TeamMember) ([]interface{}, error) {
-	if list == nil {
-		return make([]interface{}, 0), nil
-	}
-	results := make([]interface{}, 0)
-	for _, item := range list {
-		result := make(map[string]interface{})
-		result["role"] = item.Role
-		if item.User.ID > 0 {
-			result["user"] = strconv.FormatInt(item.User.ID, 10)
-		}
-		results = append(results, result)
-	}
-
-	return results, nil
-}
-
 func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) ([]interface{}, error) {
 	if list == nil {
 		return make([]interface{}, 0), nil
@@ -316,12 +298,12 @@ func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) (
 
 	configMembers := d.Get("member")
 	if configMembers == nil {
-		return flattenMembersList(list)
+		return make([]interface{}, 0), nil
 	}
 
 	configMembersList, ok := configMembers.([]interface{})
 	if !ok {
-		return flattenMembersList(list)
+		return make([]interface{}, 0), nil
 	}
 
 	serverMembersMap := make(map[string]ilert.TeamMember)
@@ -341,7 +323,6 @@ func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) (
 					result["role"] = serverMember.Role
 					result["user"] = userID
 					results = append(results, result)
-					// Remove from map to avoid duplicates
 					delete(serverMembersMap, userID)
 				}
 			}
