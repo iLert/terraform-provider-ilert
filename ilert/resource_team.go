@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"sort"
 	"strconv"
 	"time"
 
@@ -30,10 +29,8 @@ func resourceTeam() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(ilert.TeamVisibilityAll, false),
 			},
 			"member": {
-				Type:             schema.TypeList,
-				Optional:         true,
-				MinItems:         1,
-				DiffSuppressFunc: compareMemberListsIgnoringOrder,
+				Type:     schema.TypeList,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"user": {
@@ -76,9 +73,9 @@ func buildTeam(d *schema.ResourceData) (*ilert.Team, error) {
 		Visibility: visibility,
 	}
 
+	members := make([]ilert.TeamMember, 0)
 	if val, ok := d.GetOk("member"); ok {
 		vL := val.([]interface{})
-		nps := make([]ilert.TeamMember, 0)
 		for _, m := range vL {
 			v := m.(map[string]interface{})
 			ep := ilert.TeamMember{
@@ -94,10 +91,10 @@ func buildTeam(d *schema.ResourceData) (*ilert.Team, error) {
 					ID: userID,
 				}
 			}
-			nps = append(nps, ep)
+			members = append(members, ep)
 		}
-		team.Members = nps
 	}
+	team.Members = members
 
 	return team, nil
 }
@@ -182,7 +179,7 @@ func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	d.Set("name", result.Team.Name)
 	d.Set("visibility", result.Team.Visibility)
 
-	members, err := flattenMembersList(result.Team.Members)
+	members, err := flattenMembersListSorted(result.Team.Members, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -294,59 +291,52 @@ func resourceTeamExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	return result, nil
 }
 
-func flattenMembersList(list []ilert.TeamMember) ([]interface{}, error) {
+func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) ([]interface{}, error) {
 	if list == nil {
 		return make([]interface{}, 0), nil
 	}
+
+	configMembers := d.Get("member")
+	if configMembers == nil {
+		return make([]interface{}, 0), nil
+	}
+
+	configMembersList, ok := configMembers.([]interface{})
+	if !ok {
+		return make([]interface{}, 0), nil
+	}
+
+	serverMembersMap := make(map[string]ilert.TeamMember)
+	for _, member := range list {
+		if member.User.ID > 0 {
+			userID := strconv.FormatInt(member.User.ID, 10)
+			serverMembersMap[userID] = member
+		}
+	}
+
 	results := make([]interface{}, 0)
-	for _, item := range list {
+	for _, configMember := range configMembersList {
+		if configMemberMap, ok := configMember.(map[string]interface{}); ok {
+			if userID, ok := configMemberMap["user"].(string); ok {
+				if serverMember, exists := serverMembersMap[userID]; exists {
+					result := make(map[string]interface{})
+					result["role"] = serverMember.Role
+					result["user"] = userID
+					results = append(results, result)
+					delete(serverMembersMap, userID)
+				}
+			}
+		}
+	}
+
+	for _, serverMember := range serverMembersMap {
 		result := make(map[string]interface{})
-		result["role"] = item.Role
-		if item.User.ID > 0 {
-			result["user"] = strconv.FormatInt(item.User.ID, 10)
+		result["role"] = serverMember.Role
+		if serverMember.User.ID > 0 {
+			result["user"] = strconv.FormatInt(serverMember.User.ID, 10)
 		}
 		results = append(results, result)
 	}
 
 	return results, nil
-}
-
-func compareMemberListsIgnoringOrder(k, old, new string, d *schema.ResourceData) bool {
-	currentMembers := d.Get("member").([]interface{})
-
-	oldMembers := d.GetRawState().GetAttr("member")
-	if oldMembers.IsNull() || !oldMembers.IsKnown() {
-		return false
-	}
-
-	var currentUserIDs, oldUserIDs []string
-
-	for _, member := range currentMembers {
-		if m, ok := member.(map[string]interface{}); ok {
-			if userID, ok := m["user"].(string); ok {
-				currentUserIDs = append(currentUserIDs, userID)
-			}
-		}
-	}
-
-	for _, member := range oldMembers.AsValueSlice() {
-		if m, ok := member.AsValueMap()["user"]; ok && m.IsKnown() {
-			oldUserIDs = append(oldUserIDs, m.AsString())
-		}
-	}
-
-	sort.Strings(currentUserIDs)
-	sort.Strings(oldUserIDs)
-
-	if len(currentUserIDs) != len(oldUserIDs) {
-		return false
-	}
-
-	for i := range currentUserIDs {
-		if currentUserIDs[i] != oldUserIDs[i] {
-			return false
-		}
-	}
-
-	return true
 }
