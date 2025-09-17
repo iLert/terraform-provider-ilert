@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"sort"
 	"strconv"
 	"time"
 
@@ -30,10 +29,9 @@ func resourceTeam() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(ilert.TeamVisibilityAll, false),
 			},
 			"member": {
-				Type:             schema.TypeList,
-				Optional:         true,
-				MinItems:         1,
-				DiffSuppressFunc: compareMemberListsIgnoringOrder,
+				Type:     schema.TypeList,
+				Optional: true,
+				MinItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"user": {
@@ -182,7 +180,7 @@ func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	d.Set("name", result.Team.Name)
 	d.Set("visibility", result.Team.Visibility)
 
-	members, err := flattenMembersList(result.Team.Members)
+	members, err := flattenMembersListSorted(result.Team.Members, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -311,42 +309,53 @@ func flattenMembersList(list []ilert.TeamMember) ([]interface{}, error) {
 	return results, nil
 }
 
-func compareMemberListsIgnoringOrder(k, old, new string, d *schema.ResourceData) bool {
-	currentMembers := d.Get("member").([]interface{})
-
-	oldMembers := d.GetRawState().GetAttr("member")
-	if oldMembers.IsNull() || !oldMembers.IsKnown() {
-		return false
+func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) ([]interface{}, error) {
+	if list == nil {
+		return make([]interface{}, 0), nil
 	}
 
-	var currentUserIDs, oldUserIDs []string
+	configMembers := d.Get("member")
+	if configMembers == nil {
+		return flattenMembersList(list)
+	}
 
-	for _, member := range currentMembers {
-		if m, ok := member.(map[string]interface{}); ok {
-			if userID, ok := m["user"].(string); ok {
-				currentUserIDs = append(currentUserIDs, userID)
+	configMembersList, ok := configMembers.([]interface{})
+	if !ok {
+		return flattenMembersList(list)
+	}
+
+	serverMembersMap := make(map[string]ilert.TeamMember)
+	for _, member := range list {
+		if member.User.ID > 0 {
+			userID := strconv.FormatInt(member.User.ID, 10)
+			serverMembersMap[userID] = member
+		}
+	}
+
+	results := make([]interface{}, 0)
+	for _, configMember := range configMembersList {
+		if configMemberMap, ok := configMember.(map[string]interface{}); ok {
+			if userID, ok := configMemberMap["user"].(string); ok {
+				if serverMember, exists := serverMembersMap[userID]; exists {
+					result := make(map[string]interface{})
+					result["role"] = serverMember.Role
+					result["user"] = userID
+					results = append(results, result)
+					// Remove from map to avoid duplicates
+					delete(serverMembersMap, userID)
+				}
 			}
 		}
 	}
 
-	for _, member := range oldMembers.AsValueSlice() {
-		if m, ok := member.AsValueMap()["user"]; ok && m.IsKnown() {
-			oldUserIDs = append(oldUserIDs, m.AsString())
+	for _, serverMember := range serverMembersMap {
+		result := make(map[string]interface{})
+		result["role"] = serverMember.Role
+		if serverMember.User.ID > 0 {
+			result["user"] = strconv.FormatInt(serverMember.User.ID, 10)
 		}
+		results = append(results, result)
 	}
 
-	sort.Strings(currentUserIDs)
-	sort.Strings(oldUserIDs)
-
-	if len(currentUserIDs) != len(oldUserIDs) {
-		return false
-	}
-
-	for i := range currentUserIDs {
-		if currentUserIDs[i] != oldUserIDs[i] {
-			return false
-		}
-	}
-
-	return true
+	return results, nil
 }
