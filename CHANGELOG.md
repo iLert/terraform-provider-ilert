@@ -1,6 +1,6 @@
 # Changelog
 
-## 17.09.2025, Version 2.14.1
+## 17.09.2025, Version 2.14.2
 
 - fix/order-team-members in [#108](https://github.com/iLert/terraform-provider-ilert/pull/108)
 
