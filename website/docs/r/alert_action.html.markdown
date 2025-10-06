@@ -124,7 +124,7 @@ The following arguments are supported:
 
 > See [the Slack integration documentation](https://docs.ilert.com/integrations/slack) for more details.
 
-- `channel_id` - (Required) The Slack channel id.
+- `channel_id` - (Required) The Slack channel id. Unique value.
 - `channel_name` - (Optional) The Slack channel name.
 - `team_id` - (Required) The Slack workspace id.
 - `team_domain` - (Optional) The Slack workspace name.
