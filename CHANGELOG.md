@@ -1,5 +1,9 @@
 # Changelog
 
+## 21.10.2025, Version 2.14.3
+
+- fix/heartbeats in [#111](https://github.com/iLert/terraform-provider-ilert/pull/111)
+
 ## 17.09.2025, Version 2.14.2
 
 - fix/order-team-members in [#108](https://github.com/iLert/terraform-provider-ilert/pull/108)
