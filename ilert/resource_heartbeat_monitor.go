@@ -236,16 +236,18 @@ func resourceHeartbeatMonitorRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if val, ok := d.GetOk("alert_source"); ok && val != nil {
-		v := *result.HeartbeatMonitor.AlertSource
-		as := val.([]interface{})[0].(map[string]interface{})
-		alertSource := make(map[string]interface{})
+		if result.HeartbeatMonitor.AlertSource != nil {
+			v := *result.HeartbeatMonitor.AlertSource
+			as := val.([]interface{})[0].(map[string]interface{})
+			alertSource := make(map[string]interface{})
 
-		alertSource["id"] = v.ID
-		if v.Name != "" && as["name"] != nil && as["name"].(string) != "" {
-			alertSource["name"] = v.Name
+			alertSource["id"] = v.ID
+			if v.Name != "" && as["name"] != nil && as["name"].(string) != "" {
+				alertSource["name"] = v.Name
+			}
+
+			d.Set("alert_source", alertSource)
 		}
-
-		d.Set("alert_source", alertSource)
 	}
 
 	teams, err := flattenTeamShortList(result.HeartbeatMonitor.Teams, d)
