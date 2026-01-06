@@ -1,5 +1,9 @@
 # Changelog
 
+## 06.01.2026, Version 2.14.4
+
+- fix/heartbeat2-integration-type in [#113](https://github.com/iLert/terraform-provider-ilert/pull/113)
+
 ## 21.10.2025, Version 2.14.3
 
 - fix/heartbeats in [#111](https://github.com/iLert/terraform-provider-ilert/pull/111)
