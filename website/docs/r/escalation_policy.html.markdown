@@ -53,8 +53,8 @@ The following arguments are supported:
 - `escalation_timeout` - (Required) The number of minutes before an unacknowledged incident escalates away from this rule.
 - `user` - (Optional) The user id of the escalation rule. Conflicts with `schedule`, `users` and `schedules`.
 - `schedule` - (Optional) The schedule id of the escalation rule. Conflicts with `user`, `users` and `schedules`.
-- `users` - (Optional) One or more [user](#user-arguments) blocks. Conflicts with `user` and `schedule`.
-- `schedules` - (Optional) One or more [schedule](#schedule-arguments) blocks. Conflicts with `user` and `schedule`.
+- `users` - (Optional) One or more [users](#user-arguments) blocks. Conflicts with `user` and `schedule`.
+- `schedules` - (Optional) One or more [schedules](#schedule-arguments) blocks. Conflicts with `user` and `schedule`.
 
 #### User Arguments
 
