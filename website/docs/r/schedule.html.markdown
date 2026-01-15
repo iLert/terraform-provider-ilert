@@ -68,7 +68,7 @@ The following arguments are supported:
 - `schedule_layer` - (Optional, type = `RECURRING`) - One or more [schedule layer](#schedule-layer-arguments) blocks.
 - `shift` - (Optional, type = `STATIC`) - One or more [shift](#shift-arguments) blocks.
 - `show_gaps` - (Optional) Indicates whether gaps between shifts should be shown. Default: `true`
-- `default_shift_duration` - (Optional) The default furation of a shift.
+- `default_shift_duration` - (Optional) The default duration of a shift.
 - `current_shift` - (Optional) A [shift](#shift-arguments) block.
 - `next_shift` - (Optional) A [shift](#shift-arguments) block.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
