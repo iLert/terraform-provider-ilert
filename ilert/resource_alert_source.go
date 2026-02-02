@@ -42,10 +42,10 @@ func resourceAlertSource() *schema.Resource {
 				ValidateFunc: validation.StringLenBetween(1, 255),
 			},
 			"integration_type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice(ilert.AlertSourceIntegrationTypesAll, false),
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "View available integration types at https://docs.ilert.com/developer-docs/rest-api/api-reference/alert-sources#post-alert-sources",
 			},
 			"escalation_policy": {
 				Type:        schema.TypeString,

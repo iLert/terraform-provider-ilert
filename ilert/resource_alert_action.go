@@ -15,7 +15,6 @@ import (
 )
 
 func resourceAlertAction() *schema.Resource {
-	alertActionTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Discord, ilert.ConnectorTypes.Mattermost, ilert.ConnectorTypes.MicrosoftTeams)
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -50,9 +49,9 @@ func resourceAlertAction() *schema.Resource {
 							Optional: true,
 						},
 						"type": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringInSlice(ilert.ConnectorTypesAll, false),
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "View available connector types at https://docs.ilert.com/developer-docs/rest-api/api-reference/alert-actions#post-alert-actions",
 						},
 					},
 				},
@@ -74,12 +73,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"jira": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Jira),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"project": {
@@ -99,12 +97,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"servicenow": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.ServiceNow),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"caller_id": {
@@ -127,12 +124,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"slack": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Slack),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"channel_id": {
@@ -155,12 +151,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"webhook": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Webhook),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -175,12 +170,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"zendesk": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Zendesk),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"priority": {
@@ -197,12 +191,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"github": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Github),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"owner": {
@@ -224,12 +217,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"topdesk": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Topdesk),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"status": {
@@ -246,12 +238,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"email": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Email),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"recipients": {
@@ -273,12 +264,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"autotask": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Autotask),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"queue_id": {
@@ -305,12 +295,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"zammad": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Zammad),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"email": {
@@ -321,12 +310,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"dingtalk": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.DingTalk),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"is_at_all": {
@@ -344,12 +332,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"dingtalk_action": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.DingTalkAction),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -376,12 +363,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"automation_rule": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.AutomationRule),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"alert_type": {
@@ -420,12 +406,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"telegram": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.Telegram),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"channel_id": {
@@ -436,12 +421,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"microsoft_teams_bot": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.MicrosoftTeamsBot),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"channel_id": {
@@ -469,12 +453,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"microsoft_teams_webhook": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.MicrosoftTeamsWebhook),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -489,12 +472,11 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"slack_webhook": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(alertActionTypesAll, ilert.ConnectorTypes.SlackWebhook),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
