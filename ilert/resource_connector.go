@@ -22,9 +22,10 @@ func resourceConnector() *schema.Resource {
 				ValidateFunc: validation.StringLenBetween(1, 255),
 			},
 			"type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "View available connector types at https://docs.ilert.com/developer-docs/rest-api/api-reference/connectors#post-connectors",
 			},
 			"jira": {
 				Type:     schema.TypeList,

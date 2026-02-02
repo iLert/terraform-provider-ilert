@@ -49,8 +49,9 @@ func resourceAlertAction() *schema.Resource {
 							Optional: true,
 						},
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "View available connector types at https://docs.ilert.com/developer-docs/rest-api/api-reference/alert-actions#post-alert-actions",
 						},
 					},
 				},
