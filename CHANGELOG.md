@@ -1,5 +1,10 @@
 # Changelog
 
+## 02.02.2026, Version 2.14.5
+
+- benjaminguttmann-avtq/docs-escalation-policy-properties-errors in [#115](https://github.com/iLert/terraform-provider-ilert/pull/115)
+- fix/integration-type-restrictions in [#116](https://github.com/iLert/terraform-provider-ilert/pull/116)
+
 ## 06.01.2026, Version 2.14.4
 
 - fix/heartbeat2-integration-type in [#113](https://github.com/iLert/terraform-provider-ilert/pull/113)
