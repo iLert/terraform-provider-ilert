@@ -14,8 +14,6 @@ import (
 )
 
 func resourceConnector() *schema.Resource {
-	// remove types with no or one specific standalone connector
-	connectorTypesAll := removeStringsFromSlice(ilert.ConnectorTypesAll, ilert.ConnectorTypes.Email, ilert.ConnectorTypes.MicrosoftTeamsBot, ilert.ConnectorTypes.Slack, ilert.ConnectorTypes.Webhook, ilert.ConnectorTypes.AutomationRule, ilert.ConnectorTypes.Telegram, ilert.ConnectorTypes.DingTalkAction, ilert.ConnectorTypes.MicrosoftTeamsWebhook, ilert.ConnectorTypes.SlackWebhook)
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -24,18 +22,16 @@ func resourceConnector() *schema.Resource {
 				ValidateFunc: validation.StringLenBetween(1, 255),
 			},
 			"type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice(ilert.ConnectorTypesAll, false),
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 			},
 			"jira": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Jira),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -55,12 +51,11 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"servicenow": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.ServiceNow),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -80,12 +75,11 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"microsoft_teams": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.MicrosoftTeams),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -96,12 +90,11 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"zendesk": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Zendesk),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -121,12 +114,11 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"discord": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Discord),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -137,12 +129,11 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"github": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Github),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_key": {
@@ -154,12 +145,11 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"topdesk": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Topdesk),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -179,12 +169,11 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"autotask": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Autotask),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -204,12 +193,11 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"mattermost": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Mattermost),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -220,12 +208,11 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"zammad": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.Zammad),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
@@ -241,12 +228,11 @@ func resourceConnector() *schema.Resource {
 				},
 			},
 			"dingtalk": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				MinItems:      1,
-				ForceNew:      true,
-				ConflictsWith: removeStringsFromSlice(connectorTypesAll, ilert.ConnectorTypes.DingTalk),
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"url": {
