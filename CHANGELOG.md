@@ -2,6 +2,7 @@
 
 ## 02.02.2026, Version 2.14.5
 
+- benjaminguttmann-avtq/fix-schedule-docs-typo in [#114](https://github.com/iLert/terraform-provider-ilert/pull/114)
 - benjaminguttmann-avtq/docs-escalation-policy-properties-errors in [#115](https://github.com/iLert/terraform-provider-ilert/pull/115)
 - fix/integration-type-restrictions in [#116](https://github.com/iLert/terraform-provider-ilert/pull/116)
 
