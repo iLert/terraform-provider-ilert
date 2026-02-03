@@ -1054,188 +1054,9 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.Errorf("alert source response is empty")
 	}
 
-	d.Set("name", result.AlertSource.Name)
-	d.Set("integration_type", result.AlertSource.IntegrationType)
-	d.Set("escalation_policy", strconv.FormatInt(result.AlertSource.EscalationPolicy.ID, 10))
-	d.Set("incident_creation", result.AlertSource.IncidentCreation)
-	d.Set("alert_creation", result.AlertSource.AlertCreation)
-	d.Set("active", result.AlertSource.Active)
-	d.Set("incident_priority_rule", result.AlertSource.IncidentPriorityRule)
-	d.Set("alert_priority_rule", result.AlertSource.AlertPriorityRule)
-	d.Set("auto_resolution_timeout", result.AlertSource.AutoResolutionTimeout)
-	d.Set("email_filtered", result.AlertSource.EmailFiltered)
-	d.Set("email_resolve_filtered", result.AlertSource.EmailResolveFiltered)
-	d.Set("filter_operator", result.AlertSource.FilterOperator)
-	d.Set("resolve_filter_operator", result.AlertSource.ResolveFilterOperator)
-	d.Set("status", result.AlertSource.Status)
-	d.Set("integration_key", result.AlertSource.IntegrationKey)
-	d.Set("integration_url", result.AlertSource.IntegrationURL)
-	if result.AlertSource.IntegrationType == "EMAIL" || result.AlertSource.IntegrationType == "EMAIL2" {
-		d.Set("email", result.AlertSource.IntegrationKey)
-	}
-	d.Set("alert_grouping_window", result.AlertSource.AlertGroupingWindow)
-	d.Set("score_threshold", result.AlertSource.ScoreThreshold)
-	d.Set("event_filter", result.AlertSource.EventFilter)
-	d.Set("event_type_filter_create", result.AlertSource.EventTypeFilterCreate)
-	d.Set("event_type_filter_accept", result.AlertSource.EventTypeFilterAccept)
-	d.Set("event_type_filter_resolve", result.AlertSource.EventTypeFilterResolve)
-
-	if result.AlertSource.Heartbeat != nil {
-		d.Set("heartbeat", []interface{}{
-			map[string]interface{}{
-				"summary":      result.AlertSource.Heartbeat.Summary,
-				"interval_sec": result.AlertSource.Heartbeat.IntervalSec,
-				"status":       result.AlertSource.Heartbeat.Status,
-			},
-		})
-	} else {
-		d.Set("heartbeat", []interface{}{})
-	}
-
-	if result.AlertSource.AutotaskMetadata != nil {
-		d.Set("autotask_metadata", []interface{}{
-			map[string]interface{}{
-				"username":   result.AlertSource.AutotaskMetadata.Username,
-				"secret":     result.AlertSource.AutotaskMetadata.Secret,
-				"web_server": result.AlertSource.AutotaskMetadata.WebServer,
-			},
-		})
-	} else {
-		d.Set("autotask_metadata", []interface{}{})
-	}
-
-	if result.AlertSource.ResolveKeyExtractor != nil {
-		d.Set("resolve_key_extractor", []interface{}{
-			map[string]interface{}{
-				"field":    result.AlertSource.ResolveKeyExtractor.Field,
-				"criteria": result.AlertSource.ResolveKeyExtractor.Criteria,
-				"value":    result.AlertSource.ResolveKeyExtractor.Value,
-			},
-		})
-	} else {
-		d.Set("resolve_key_extractor", []interface{}{})
-	}
-
-	if result.AlertSource.SummaryTemplate != nil {
-		d.Set("summary_template", []interface{}{
-			map[string]interface{}{
-				"text_template": result.AlertSource.SummaryTemplate.TextTemplate,
-			},
-		})
-	} else {
-		d.Set("summary_template", []interface{}{})
-	}
-
-	if result.AlertSource.DetailsTemplate != nil {
-		d.Set("details_template", []interface{}{
-			map[string]interface{}{
-				"text_template": result.AlertSource.DetailsTemplate.TextTemplate,
-			},
-		})
-	} else {
-		d.Set("details_template", []interface{}{})
-	}
-
-	if result.AlertSource.RoutingTemplate != nil {
-		d.Set("routing_template", []interface{}{
-			map[string]interface{}{
-				"text_template": result.AlertSource.RoutingTemplate.TextTemplate,
-			},
-		})
-	} else {
-		d.Set("routing_template", []interface{}{})
-	}
-
-	if result.AlertSource.AlertKeyTemplate != nil {
-		d.Set("alert_key_template", []interface{}{
-			map[string]interface{}{
-				"text_template": result.AlertSource.AlertKeyTemplate.TextTemplate,
-			},
-		})
-	} else {
-		d.Set("alert_key_template", []interface{}{})
-	}
-
-	linkTemplates, err := flattenLinkTemplatesList(result.AlertSource.LinkTemplates)
+	err = transformAlertSourceResource(result.AlertSource, d)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	if err := d.Set("link_template", linkTemplates); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting link templates: %s", err))
-	}
-
-	priorityTemplate, err := flattenPriorityTemplate(result.AlertSource.PriorityTemplate)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("priority_template", priorityTemplate); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting priority template: %s", err))
-	}
-
-	if val, ok := d.GetOk("team"); ok {
-		if val != nil {
-			vL := val.([]interface{})
-			teams := make([]interface{}, 0)
-			for i, item := range result.AlertSource.Teams {
-				team := make(map[string]interface{})
-				v := vL[i].(map[string]interface{})
-				team["id"] = item.ID
-
-				// Means: if server response has a name set, and the user typed in a name too,
-				// only then team name is stored in the terraform state
-				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
-					team["name"] = item.Name
-				}
-				teams = append(teams, team)
-			}
-
-			if err := d.Set("team", teams); err != nil {
-				return diag.Errorf("error setting teams: %s", err)
-			}
-		}
-	}
-
-	if val, ok := d.GetOk("teams"); ok {
-		if val != nil {
-			teams := make([]interface{}, 0)
-			for _, item := range result.AlertSource.Teams {
-				team := make(map[string]interface{})
-				team["id"] = item.ID
-				teams = append(teams, team)
-			}
-			if err := d.Set("team", teams); err != nil {
-				return diag.Errorf("error setting teams: %s", err)
-			}
-
-			d.Set("teams", nil)
-		}
-	}
-
-	emailPredicates, err := flattenEmailPredicateList(result.AlertSource.EmailPredicates)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("email_predicate", emailPredicates); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting email predicates: %s", err))
-	}
-
-	emailResolvePredicates, err := flattenEmailPredicateList(result.AlertSource.EmailResolvePredicates)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("email_resolve_predicate", emailResolvePredicates); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting email resolve predicates: %s", err))
-	}
-
-	// never set support hours when user doesn't define them, even if server returns some
-	if _, ok := d.GetOk("support_hours"); ok {
-		supportHours, err := flattenSupportHoursInterface(result.AlertSource.SupportHours)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err := d.Set("support_hours", supportHours); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting support hours: %s", err))
-		}
 	}
 
 	return nil
@@ -1338,6 +1159,194 @@ func resourceAlertSourceExists(d *schema.ResourceData, m interface{}) (bool, err
 		return false, err
 	}
 	return result, nil
+}
+
+func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.ResourceData) error {
+	d.Set("name", alertSource.Name)
+	d.Set("integration_type", alertSource.IntegrationType)
+	d.Set("escalation_policy", strconv.FormatInt(alertSource.EscalationPolicy.ID, 10))
+	d.Set("incident_creation", alertSource.IncidentCreation)
+	d.Set("alert_creation", alertSource.AlertCreation)
+	d.Set("active", alertSource.Active)
+	d.Set("incident_priority_rule", alertSource.IncidentPriorityRule)
+	d.Set("alert_priority_rule", alertSource.AlertPriorityRule)
+	d.Set("auto_resolution_timeout", alertSource.AutoResolutionTimeout)
+	d.Set("email_filtered", alertSource.EmailFiltered)
+	d.Set("email_resolve_filtered", alertSource.EmailResolveFiltered)
+	d.Set("filter_operator", alertSource.FilterOperator)
+	d.Set("resolve_filter_operator", alertSource.ResolveFilterOperator)
+	d.Set("status", alertSource.Status)
+	d.Set("integration_key", alertSource.IntegrationKey)
+	d.Set("integration_url", alertSource.IntegrationURL)
+	if alertSource.IntegrationType == "EMAIL" || alertSource.IntegrationType == "EMAIL2" {
+		d.Set("email", alertSource.IntegrationKey)
+	}
+	d.Set("alert_grouping_window", alertSource.AlertGroupingWindow)
+	d.Set("score_threshold", alertSource.ScoreThreshold)
+	d.Set("event_filter", alertSource.EventFilter)
+	d.Set("event_type_filter_create", alertSource.EventTypeFilterCreate)
+	d.Set("event_type_filter_accept", alertSource.EventTypeFilterAccept)
+	d.Set("event_type_filter_resolve", alertSource.EventTypeFilterResolve)
+
+	if alertSource.Heartbeat != nil {
+		d.Set("heartbeat", []interface{}{
+			map[string]interface{}{
+				"summary":      alertSource.Heartbeat.Summary,
+				"interval_sec": alertSource.Heartbeat.IntervalSec,
+				"status":       alertSource.Heartbeat.Status,
+			},
+		})
+	} else {
+		d.Set("heartbeat", []interface{}{})
+	}
+
+	if alertSource.AutotaskMetadata != nil {
+		d.Set("autotask_metadata", []interface{}{
+			map[string]interface{}{
+				"username":   alertSource.AutotaskMetadata.Username,
+				"secret":     alertSource.AutotaskMetadata.Secret,
+				"web_server": alertSource.AutotaskMetadata.WebServer,
+			},
+		})
+	} else {
+		d.Set("autotask_metadata", []interface{}{})
+	}
+
+	if alertSource.ResolveKeyExtractor != nil {
+		d.Set("resolve_key_extractor", []interface{}{
+			map[string]interface{}{
+				"field":    alertSource.ResolveKeyExtractor.Field,
+				"criteria": alertSource.ResolveKeyExtractor.Criteria,
+				"value":    alertSource.ResolveKeyExtractor.Value,
+			},
+		})
+	} else {
+		d.Set("resolve_key_extractor", []interface{}{})
+	}
+
+	if alertSource.SummaryTemplate != nil {
+		d.Set("summary_template", []interface{}{
+			map[string]interface{}{
+				"text_template": alertSource.SummaryTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("summary_template", []interface{}{})
+	}
+
+	if alertSource.DetailsTemplate != nil {
+		d.Set("details_template", []interface{}{
+			map[string]interface{}{
+				"text_template": alertSource.DetailsTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("details_template", []interface{}{})
+	}
+
+	if alertSource.RoutingTemplate != nil {
+		d.Set("routing_template", []interface{}{
+			map[string]interface{}{
+				"text_template": alertSource.RoutingTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("routing_template", []interface{}{})
+	}
+
+	if alertSource.AlertKeyTemplate != nil {
+		d.Set("alert_key_template", []interface{}{
+			map[string]interface{}{
+				"text_template": alertSource.AlertKeyTemplate.TextTemplate,
+			},
+		})
+	} else {
+		d.Set("alert_key_template", []interface{}{})
+	}
+
+	linkTemplates, err := flattenLinkTemplatesList(alertSource.LinkTemplates)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("link_template", linkTemplates); err != nil {
+		return fmt.Errorf("error setting link templates: %s", err)
+	}
+
+	priorityTemplate, err := flattenPriorityTemplate(alertSource.PriorityTemplate)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("priority_template", priorityTemplate); err != nil {
+		return fmt.Errorf("error setting priority template: %s", err)
+	}
+
+	if val, ok := d.GetOk("team"); ok {
+		if val != nil {
+			vL := val.([]interface{})
+			teams := make([]interface{}, 0)
+			for i, item := range alertSource.Teams {
+				team := make(map[string]interface{})
+				v := vL[i].(map[string]interface{})
+				team["id"] = item.ID
+
+				// Means: if server response has a name set, and the user typed in a name too,
+				// only then team name is stored in the terraform state
+				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+					team["name"] = item.Name
+				}
+				teams = append(teams, team)
+			}
+
+			if err := d.Set("team", teams); err != nil {
+				return fmt.Errorf("error setting teams: %s", err)
+			}
+		}
+	}
+
+	if val, ok := d.GetOk("teams"); ok {
+		if val != nil {
+			teams := make([]interface{}, 0)
+			for _, item := range alertSource.Teams {
+				team := make(map[string]interface{})
+				team["id"] = item.ID
+				teams = append(teams, team)
+			}
+			if err := d.Set("team", teams); err != nil {
+				return fmt.Errorf("error setting teams: %s", err)
+			}
+
+			d.Set("teams", nil)
+		}
+	}
+
+	emailPredicates, err := flattenEmailPredicateList(alertSource.EmailPredicates)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("email_predicate", emailPredicates); err != nil {
+		return fmt.Errorf("error setting email predicates: %s", err)
+	}
+
+	emailResolvePredicates, err := flattenEmailPredicateList(alertSource.EmailResolvePredicates)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("email_resolve_predicate", emailResolvePredicates); err != nil {
+		return fmt.Errorf("error setting email resolve predicates: %s", err)
+	}
+
+	// never set support hours when user doesn't define them, even if server returns some
+	if _, ok := d.GetOk("support_hours"); ok {
+		supportHours, err := flattenSupportHoursInterface(alertSource.SupportHours)
+		if err != nil {
+			return err
+		}
+		if err := d.Set("support_hours", supportHours); err != nil {
+			return fmt.Errorf("error setting support hours: %s", err)
+		}
+	}
+
+	return nil
 }
 
 func flattenEmailPredicateList(predicateList []ilert.EmailPredicate) ([]interface{}, error) {
