@@ -1034,218 +1034,10 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.Errorf("alert action response is empty")
 	}
 
-	d.Set("name", result.AlertAction.Name)
-
-	if _, ok := d.GetOk("alert_source"); ok && result.AlertAction.AlertSources != nil {
-		alertSources, err := flattenAlertActionAlertSourcesList(*result.AlertAction.AlertSources)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err := d.Set("alert_source", alertSources); err != nil {
-			return diag.Errorf("error setting alert sources: %s", err)
-		}
-	}
-
-	connector := map[string]interface{}{}
-	log.Printf("[DEBUG] Reading ilert alert action: %s , connector id: %s", d.Id(), result.AlertAction.ConnectorID)
-	if result.AlertAction.ConnectorID != "" {
-		connector["id"] = result.AlertAction.ConnectorID
-	}
-	connector["type"] = result.AlertAction.ConnectorType
-	d.Set("connector", []interface{}{connector})
-	d.Set("trigger_mode", result.AlertAction.TriggerMode)
-	d.Set("trigger_types", result.AlertAction.TriggerTypes)
-	d.Set("created_at", result.AlertAction.CreatedAt)
-	d.Set("updated_at", result.AlertAction.UpdatedAt)
-
-	switch result.AlertAction.ConnectorType {
-	case ilert.ConnectorTypes.Jira:
-		d.Set("jira", []interface{}{
-			map[string]interface{}{
-				"project":       result.AlertAction.Params.Project,
-				"issue_type":    result.AlertAction.Params.IssueType,
-				"body_template": result.AlertAction.Params.BodyTemplate,
-			},
-		})
-	case ilert.ConnectorTypes.ServiceNow:
-		d.Set("servicenow", []interface{}{
-			map[string]interface{}{
-				"caller_id":     result.AlertAction.Params.CallerID,
-				"impact":        result.AlertAction.Params.Impact,
-				"urgency":       result.AlertAction.Params.Urgency,
-				"body_template": result.AlertAction.Params.BodyTemplate,
-			},
-		})
-	case ilert.ConnectorTypes.Slack:
-		d.Set("slack", []interface{}{
-			map[string]interface{}{
-				"channel_id":   result.AlertAction.Params.ChannelID,
-				"channel_name": result.AlertAction.Params.ChannelName,
-				"team_id":      result.AlertAction.Params.TeamID,
-				"team_domain":  result.AlertAction.Params.TeamDomain,
-			},
-		})
-	case ilert.ConnectorTypes.Webhook:
-		d.Set("webhook", []interface{}{
-			map[string]interface{}{
-				"url":           result.AlertAction.Params.WebhookURL,
-				"body_template": result.AlertAction.Params.BodyTemplate,
-			},
-		})
-	case ilert.ConnectorTypes.Zendesk:
-		d.Set("zendesk", []interface{}{
-			map[string]interface{}{
-				"priority": result.AlertAction.Params.Priority,
-			},
-		})
-	case ilert.ConnectorTypes.Github:
-		d.Set("github", []interface{}{
-			map[string]interface{}{
-				"owner":      result.AlertAction.Params.Owner,
-				"repository": result.AlertAction.Params.Repository,
-				"labels":     result.AlertAction.Params.Labels,
-			},
-		})
-	case ilert.ConnectorTypes.Topdesk:
-		d.Set("topdesk", []interface{}{
-			map[string]interface{}{
-				"status": result.AlertAction.Params.Status,
-			},
-		})
-	case ilert.ConnectorTypes.Email:
-		d.Set("email", []interface{}{
-			map[string]interface{}{
-				"recipients":    result.AlertAction.Params.Recipients,
-				"subject":       result.AlertAction.Params.Subject,
-				"body_template": result.AlertAction.Params.BodyTemplate,
-			},
-		})
-	case ilert.ConnectorTypes.Autotask:
-		d.Set("autotask", []interface{}{
-			map[string]interface{}{
-				"company_id":      result.AlertAction.Params.CompanyID,
-				"issue_type":      result.AlertAction.Params.IssueType,
-				"queue_id":        result.AlertAction.Params.QueueID,
-				"ticket_category": result.AlertAction.Params.TicketCategory,
-				"ticket_type":     result.AlertAction.Params.TicketType,
-			},
-		})
-	case ilert.ConnectorTypes.Zammad:
-		d.Set("zammad", []interface{}{
-			map[string]interface{}{
-				"email": result.AlertAction.Params.Email,
-			},
-		})
-	case ilert.ConnectorTypes.DingTalk:
-		d.Set("dingtalk", []interface{}{
-			map[string]interface{}{
-				"is_at_all":  result.AlertAction.Params.IsAtAll,
-				"at_mobiles": result.AlertAction.Params.AtMobiles,
-			},
-		})
-	case ilert.ConnectorTypes.DingTalkAction:
-		d.Set("dingtalk_action", []interface{}{
-			map[string]interface{}{
-				"url":        result.AlertAction.Params.URL,
-				"secret":     result.AlertAction.Params.Secret,
-				"is_at_all":  result.AlertAction.Params.IsAtAll,
-				"at_mobiles": result.AlertAction.Params.AtMobiles,
-			},
-		})
-	case ilert.ConnectorTypes.AutomationRule:
-		d.Set("automation_rule", []interface{}{
-			map[string]interface{}{
-				"alert_type":        result.AlertAction.Params.AlertType,
-				"resolve_incident":  result.AlertAction.Params.ResolveIncident,
-				"service_status":    result.AlertAction.Params.ServiceStatus,
-				"template_id":       result.AlertAction.Params.TemplateId,
-				"send_notification": result.AlertAction.Params.SendNotification,
-				"service_ids":       result.AlertAction.Params.ServiceIds,
-			},
-		})
-	case ilert.ConnectorTypes.Telegram:
-		d.Set("telegram", []interface{}{
-			map[string]interface{}{
-				"channel_id": result.AlertAction.Params.ChannelID,
-			},
-		})
-	case ilert.ConnectorTypes.MicrosoftTeamsBot:
-		d.Set("microsoft_teams_bot", []interface{}{
-			map[string]interface{}{
-				"channel_id":   result.AlertAction.Params.ChannelID,
-				"channel_name": result.AlertAction.Params.ChannelName,
-				"team_id":      result.AlertAction.Params.TeamID,
-				"team_name":    result.AlertAction.Params.TeamName,
-				"type":         result.AlertAction.Params.Type,
-			},
-		})
-	case ilert.ConnectorTypes.MicrosoftTeamsWebhook:
-		d.Set("microsoft_teams_webhook", []interface{}{
-			map[string]interface{}{
-				"url":          result.AlertAction.Params.URL,
-				"bodyTemplate": result.AlertAction.Params.BodyTemplate,
-			},
-		})
-	case ilert.ConnectorTypes.SlackWebhook:
-		d.Set("slack_webhook", []interface{}{
-			map[string]interface{}{
-				"url": result.AlertAction.Params.URL,
-			},
-		})
-	}
-
-	alertFilter, err := flattenAlertActionAlertFilter(result.AlertAction.AlertFilter)
+	err = transformAlertActionResource(result.AlertAction, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("alert_filter", alertFilter); err != nil {
-		return diag.Errorf("error setting alert filter: %s", err)
-	}
-
-	if val, ok := d.GetOk("team"); ok {
-		if val != nil && result.AlertAction.Teams != nil {
-			vL := val.([]interface{})
-			teams := make([]interface{}, 0)
-			for i, item := range *result.AlertAction.Teams {
-				team := make(map[string]interface{})
-				if i >= len(vL) {
-					break
-				}
-				v := vL[i].(map[string]interface{})
-				team["id"] = item.ID
-
-				// Means: if server response has a name set, and the user typed in a name too,
-				// only then team name is stored in the terraform state
-				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
-					team["name"] = item.Name
-				}
-				teams = append(teams, team)
-			}
-
-			if err := d.Set("team", teams); err != nil {
-				return diag.Errorf("error setting teams: %s", err)
-			}
-		}
-	}
-
-	d.Set("delay_sec", result.AlertAction.DelaySec)
-	d.Set("escalation_ended_delay_sec", result.AlertAction.EscalationEndedDelaySec)
-	d.Set("not_resolved_delay_sec", result.AlertAction.NotResolvedDelaySec)
-
-	if val, ok := d.GetOk("alert_source"); ok && len(val.([]interface{})) == 1 {
-		if v, ok := d.GetOk("team"); !ok || len(v.([]interface{})) == 0 {
-			sourceId := result.AlertAction.AlertSourceIDs[0]
-
-			sources := make([]interface{}, 0)
-			source := make(map[string]interface{})
-			source["id"] = strconv.FormatInt(sourceId, 10)
-			sources = append(sources, source)
-
-			d.Set("alert_source", sources)
-		}
-	}
-
-	d.Set("conditions", result.AlertAction.Conditions)
 
 	return nil
 }
@@ -1338,6 +1130,223 @@ func resourceAlertActionExists(d *schema.ResourceData, m interface{}) (bool, err
 		return false, err
 	}
 	return result, nil
+}
+
+func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schema.ResourceData) error {
+	d.Set("name", alertAction.Name)
+
+	if _, ok := d.GetOk("alert_source"); ok && alertAction.AlertSources != nil {
+		alertSources, err := flattenAlertActionAlertSourcesList(*alertAction.AlertSources)
+		if err != nil {
+			return err
+		}
+		if err := d.Set("alert_source", alertSources); err != nil {
+			return fmt.Errorf("error setting alert sources: %s", err)
+		}
+	}
+
+	connector := map[string]interface{}{}
+	log.Printf("[DEBUG] Reading ilert alert action: %s , connector id: %s", d.Id(), alertAction.ConnectorID)
+	if alertAction.ConnectorID != "" {
+		connector["id"] = alertAction.ConnectorID
+	}
+	connector["type"] = alertAction.ConnectorType
+	d.Set("connector", []interface{}{connector})
+	d.Set("trigger_mode", alertAction.TriggerMode)
+	d.Set("trigger_types", alertAction.TriggerTypes)
+	d.Set("created_at", alertAction.CreatedAt)
+	d.Set("updated_at", alertAction.UpdatedAt)
+
+	switch alertAction.ConnectorType {
+	case ilert.ConnectorTypes.Jira:
+		d.Set("jira", []interface{}{
+			map[string]interface{}{
+				"project":       alertAction.Params.Project,
+				"issue_type":    alertAction.Params.IssueType,
+				"body_template": alertAction.Params.BodyTemplate,
+			},
+		})
+	case ilert.ConnectorTypes.ServiceNow:
+		d.Set("servicenow", []interface{}{
+			map[string]interface{}{
+				"caller_id":     alertAction.Params.CallerID,
+				"impact":        alertAction.Params.Impact,
+				"urgency":       alertAction.Params.Urgency,
+				"body_template": alertAction.Params.BodyTemplate,
+			},
+		})
+	case ilert.ConnectorTypes.Slack:
+		d.Set("slack", []interface{}{
+			map[string]interface{}{
+				"channel_id":   alertAction.Params.ChannelID,
+				"channel_name": alertAction.Params.ChannelName,
+				"team_id":      alertAction.Params.TeamID,
+				"team_domain":  alertAction.Params.TeamDomain,
+			},
+		})
+	case ilert.ConnectorTypes.Webhook:
+		d.Set("webhook", []interface{}{
+			map[string]interface{}{
+				"url":           alertAction.Params.WebhookURL,
+				"body_template": alertAction.Params.BodyTemplate,
+			},
+		})
+	case ilert.ConnectorTypes.Zendesk:
+		d.Set("zendesk", []interface{}{
+			map[string]interface{}{
+				"priority": alertAction.Params.Priority,
+			},
+		})
+	case ilert.ConnectorTypes.Github:
+		d.Set("github", []interface{}{
+			map[string]interface{}{
+				"owner":      alertAction.Params.Owner,
+				"repository": alertAction.Params.Repository,
+				"labels":     alertAction.Params.Labels,
+			},
+		})
+	case ilert.ConnectorTypes.Topdesk:
+		d.Set("topdesk", []interface{}{
+			map[string]interface{}{
+				"status": alertAction.Params.Status,
+			},
+		})
+	case ilert.ConnectorTypes.Email:
+		d.Set("email", []interface{}{
+			map[string]interface{}{
+				"recipients":    alertAction.Params.Recipients,
+				"subject":       alertAction.Params.Subject,
+				"body_template": alertAction.Params.BodyTemplate,
+			},
+		})
+	case ilert.ConnectorTypes.Autotask:
+		d.Set("autotask", []interface{}{
+			map[string]interface{}{
+				"company_id":      alertAction.Params.CompanyID,
+				"issue_type":      alertAction.Params.IssueType,
+				"queue_id":        alertAction.Params.QueueID,
+				"ticket_category": alertAction.Params.TicketCategory,
+				"ticket_type":     alertAction.Params.TicketType,
+			},
+		})
+	case ilert.ConnectorTypes.Zammad:
+		d.Set("zammad", []interface{}{
+			map[string]interface{}{
+				"email": alertAction.Params.Email,
+			},
+		})
+	case ilert.ConnectorTypes.DingTalk:
+		d.Set("dingtalk", []interface{}{
+			map[string]interface{}{
+				"is_at_all":  alertAction.Params.IsAtAll,
+				"at_mobiles": alertAction.Params.AtMobiles,
+			},
+		})
+	case ilert.ConnectorTypes.DingTalkAction:
+		d.Set("dingtalk_action", []interface{}{
+			map[string]interface{}{
+				"url":        alertAction.Params.URL,
+				"secret":     alertAction.Params.Secret,
+				"is_at_all":  alertAction.Params.IsAtAll,
+				"at_mobiles": alertAction.Params.AtMobiles,
+			},
+		})
+	case ilert.ConnectorTypes.AutomationRule:
+		d.Set("automation_rule", []interface{}{
+			map[string]interface{}{
+				"alert_type":        alertAction.Params.AlertType,
+				"resolve_incident":  alertAction.Params.ResolveIncident,
+				"service_status":    alertAction.Params.ServiceStatus,
+				"template_id":       alertAction.Params.TemplateId,
+				"send_notification": alertAction.Params.SendNotification,
+				"service_ids":       alertAction.Params.ServiceIds,
+			},
+		})
+	case ilert.ConnectorTypes.Telegram:
+		d.Set("telegram", []interface{}{
+			map[string]interface{}{
+				"channel_id": alertAction.Params.ChannelID,
+			},
+		})
+	case ilert.ConnectorTypes.MicrosoftTeamsBot:
+		d.Set("microsoft_teams_bot", []interface{}{
+			map[string]interface{}{
+				"channel_id":   alertAction.Params.ChannelID,
+				"channel_name": alertAction.Params.ChannelName,
+				"team_id":      alertAction.Params.TeamID,
+				"team_name":    alertAction.Params.TeamName,
+				"type":         alertAction.Params.Type,
+			},
+		})
+	case ilert.ConnectorTypes.MicrosoftTeamsWebhook:
+		d.Set("microsoft_teams_webhook", []interface{}{
+			map[string]interface{}{
+				"url":          alertAction.Params.URL,
+				"bodyTemplate": alertAction.Params.BodyTemplate,
+			},
+		})
+	case ilert.ConnectorTypes.SlackWebhook:
+		d.Set("slack_webhook", []interface{}{
+			map[string]interface{}{
+				"url": alertAction.Params.URL,
+			},
+		})
+	}
+
+	alertFilter, err := flattenAlertActionAlertFilter(alertAction.AlertFilter)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("alert_filter", alertFilter); err != nil {
+		return fmt.Errorf("error setting alert filter: %s", err)
+	}
+
+	if val, ok := d.GetOk("team"); ok {
+		if val != nil && alertAction.Teams != nil {
+			vL := val.([]interface{})
+			teams := make([]interface{}, 0)
+			for i, item := range *alertAction.Teams {
+				team := make(map[string]interface{})
+				if i >= len(vL) {
+					break
+				}
+				v := vL[i].(map[string]interface{})
+				team["id"] = item.ID
+
+				// Means: if server response has a name set, and the user typed in a name too,
+				// only then team name is stored in the terraform state
+				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+					team["name"] = item.Name
+				}
+				teams = append(teams, team)
+			}
+
+			if err := d.Set("team", teams); err != nil {
+				return fmt.Errorf("error setting teams: %s", err)
+			}
+		}
+	}
+
+	d.Set("delay_sec", alertAction.DelaySec)
+	d.Set("escalation_ended_delay_sec", alertAction.EscalationEndedDelaySec)
+	d.Set("not_resolved_delay_sec", alertAction.NotResolvedDelaySec)
+
+	if val, ok := d.GetOk("alert_source"); ok && len(val.([]interface{})) == 1 {
+		if v, ok := d.GetOk("team"); !ok || len(v.([]interface{})) == 0 {
+			sourceId := alertAction.AlertSourceIDs[0]
+
+			sources := make([]interface{}, 0)
+			source := make(map[string]interface{})
+			source["id"] = strconv.FormatInt(sourceId, 10)
+			sources = append(sources, source)
+
+			d.Set("alert_source", sources)
+		}
+	}
+
+	d.Set("conditions", alertAction.Conditions)
+
+	return nil
 }
 
 func flattenAlertActionAlertSourcesList(list []ilert.AlertSource) ([]interface{}, error) {
