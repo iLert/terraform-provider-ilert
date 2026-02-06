@@ -24,9 +24,7 @@ func resourceAlertAction() *schema.Resource {
 			},
 			"alert_source": {
 				Type:     schema.TypeList,
-				Required: true,
-				MinItems: 1,
-				ForceNew: false,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -1146,7 +1144,6 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 	}
 
 	connector := map[string]interface{}{}
-	log.Printf("[DEBUG] Reading ilert alert action: %s , connector id: %s", d.Id(), alertAction.ConnectorID)
 	if alertAction.ConnectorID != "" {
 		connector["id"] = alertAction.ConnectorID
 	}
