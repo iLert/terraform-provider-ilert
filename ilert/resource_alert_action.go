@@ -1133,13 +1133,15 @@ func resourceAlertActionExists(d *schema.ResourceData, m interface{}) (bool, err
 func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schema.ResourceData) error {
 	d.Set("name", alertAction.Name)
 
-	if _, ok := d.GetOk("alert_source"); ok && alertAction.AlertSources != nil {
-		alertSources, err := flattenAlertActionAlertSourcesList(*alertAction.AlertSources)
-		if err != nil {
-			return err
-		}
-		if err := d.Set("alert_source", alertSources); err != nil {
-			return fmt.Errorf("error setting alert sources: %s", err)
+	if _, ok := d.GetOk("alert_source"); ok || d.Id() == "" {
+		if alertAction.AlertSources != nil {
+			alertSources, err := flattenAlertActionAlertSourcesList(*alertAction.AlertSources)
+			if err != nil {
+				return err
+			}
+			if err := d.Set("alert_source", alertSources); err != nil {
+				return fmt.Errorf("error setting alert sources: %s", err)
+			}
 		}
 	}
 
@@ -1321,6 +1323,20 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 			if err := d.Set("team", teams); err != nil {
 				return fmt.Errorf("error setting teams: %s", err)
 			}
+		}
+	} else if d.Id() == "" && alertAction.Teams != nil {
+		teams := make([]interface{}, 0)
+		for _, item := range *alertAction.Teams {
+			team := map[string]interface{}{
+				"id": item.ID,
+			}
+			if item.Name != "" {
+				team["name"] = item.Name
+			}
+			teams = append(teams, team)
+		}
+		if err := d.Set("team", teams); err != nil {
+			return fmt.Errorf("error setting teams: %s", err)
 		}
 	}
 

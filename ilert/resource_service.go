@@ -344,16 +344,16 @@ func flattenTeamShortList(list []ilert.TeamShort, d *schema.ResourceData) ([]int
 				results = append(results, result)
 			}
 		}
-	}
-
-	for _, item := range list {
-		result := map[string]interface{}{
-			"id": item.ID,
+	} else if d.Id() == "" {
+		for _, item := range list {
+			result := map[string]interface{}{
+				"id": item.ID,
+			}
+			if item.Name != "" {
+				result["name"] = item.Name
+			}
+			results = append(results, result)
 		}
-		if item.Name != "" {
-			result["name"] = item.Name
-		}
-		results = append(results, result)
 	}
 	return results, nil
 }

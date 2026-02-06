@@ -1301,9 +1301,7 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 				return fmt.Errorf("error setting teams: %s", err)
 			}
 		}
-	}
-
-	if val, ok := d.GetOk("teams"); ok {
+	} else if val, ok := d.GetOk("teams"); ok {
 		if val != nil {
 			teams := make([]interface{}, 0)
 			for _, item := range alertSource.Teams {
@@ -1316,6 +1314,20 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 			}
 
 			d.Set("teams", nil)
+		}
+	} else if d.Id() == "" && len(alertSource.Teams) > 0 {
+		teams := make([]interface{}, 0)
+		for _, item := range alertSource.Teams {
+			team := map[string]interface{}{
+				"id": item.ID,
+			}
+			if item.Name != "" {
+				team["name"] = item.Name
+			}
+			teams = append(teams, team)
+		}
+		if err := d.Set("team", teams); err != nil {
+			return fmt.Errorf("error setting teams: %s", err)
 		}
 	}
 
@@ -1336,7 +1348,7 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 	}
 
 	// never set support hours when user doesn't define them, even if server returns some
-	if _, ok := d.GetOk("support_hours"); ok {
+	if _, ok := d.GetOk("support_hours"); ok || d.Id() == "" {
 		supportHours, err := flattenSupportHoursInterface(alertSource.SupportHours)
 		if err != nil {
 			return err
