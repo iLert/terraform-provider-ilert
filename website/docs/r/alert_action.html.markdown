@@ -3,7 +3,7 @@ layout: "ilert"
 page_title: "ilert: ilert_alert_action"
 sidebar_current: "docs-ilert-resource-alert-action"
 description: |-
-  Creates and manages an alert action in ilert.
+   Creates and manages an alert action in ilert.
 ---
 
 # ilert_alert_action
@@ -66,7 +66,7 @@ resource "ilert_alert_action" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the alert action.
-- `alert_source` - (Required) One or more [alert source](#alert-source-arguments) blocks.
+- `alert_source` - (Optional) One or more [alert source](#alert-source-arguments) blocks.
 - `connector` - (Required) A [connector](#connector-arguments) block.
 - `trigger_mode` - (Optional) The trigger mode of the alert action. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
 - `escalation_ended_delay_sec` - (Optional) The number of seconds the alert action will be delayed when reaching end of escalation. Should only be set when one of `trigger_types` is set to `alert-escalation-ended`. Must be either `0` or a value between `30` and `7200`.

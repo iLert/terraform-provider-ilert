@@ -14,7 +14,7 @@ import (
 	"github.com/iLert/ilert-go/v3"
 )
 
-var callFlowDepth = 10
+var callFlowDepth = 50
 
 func resourceCallFlow() *schema.Resource {
 	return &schema.Resource{
