@@ -142,10 +142,10 @@ func buildDeploymentPipeline(d *schema.ResourceData) (*ilert.DeploymentPipeline,
 	}
 
 	if val, ok := d.GetOk("team"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			tm := ilert.TeamShort{
 				ID: int64(v["id"].(int)),
 			}
@@ -158,11 +158,11 @@ func buildDeploymentPipeline(d *schema.ResourceData) (*ilert.DeploymentPipeline,
 	}
 
 	if val, ok := d.GetOk("github"); ok && integrationType == ilert.DeploymentPipelineIntegrationType.GitHub {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			params := &ilert.DeploymentPipelineGitHubParams{}
-			if vL, ok := v["branch_filter"].([]interface{}); ok && len(vL) > 0 {
+			if vL, ok := v["branch_filter"].([]any); ok && len(vL) > 0 {
 				sL := make([]string, 0)
 				for _, m := range vL {
 					if v, ok := m.(string); ok && v != "" {
@@ -171,7 +171,7 @@ func buildDeploymentPipeline(d *schema.ResourceData) (*ilert.DeploymentPipeline,
 				}
 				params.BranchFilters = sL
 			}
-			if vL, ok := v["event_filter"].([]interface{}); ok && len(vL) > 0 {
+			if vL, ok := v["event_filter"].([]any); ok && len(vL) > 0 {
 				sL := make([]string, 0)
 				for _, m := range vL {
 					if v, ok := m.(string); ok && v != "" {
@@ -185,11 +185,11 @@ func buildDeploymentPipeline(d *schema.ResourceData) (*ilert.DeploymentPipeline,
 	}
 
 	if val, ok := d.GetOk("gitlab"); ok && integrationType == ilert.DeploymentPipelineIntegrationType.GitLab {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			params := &ilert.DeploymentPipelineGitLabParams{}
-			if vL, ok := v["branch_filter"].([]interface{}); ok && len(vL) > 0 {
+			if vL, ok := v["branch_filter"].([]any); ok && len(vL) > 0 {
 				sL := make([]string, 0)
 				for _, m := range vL {
 					if v, ok := m.(string); ok && v != "" {
@@ -198,7 +198,7 @@ func buildDeploymentPipeline(d *schema.ResourceData) (*ilert.DeploymentPipeline,
 				}
 				params.BranchFilters = sL
 			}
-			if vL, ok := v["event_filter"].([]interface{}); ok && len(vL) > 0 {
+			if vL, ok := v["event_filter"].([]any); ok && len(vL) > 0 {
 				sL := make([]string, 0)
 				for _, m := range vL {
 					if v, ok := m.(string); ok && v != "" {
@@ -214,7 +214,7 @@ func buildDeploymentPipeline(d *schema.ResourceData) (*ilert.DeploymentPipeline,
 	return deploymentPipeline, nil
 }
 
-func resourceDeploymentPipelineCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDeploymentPipelineCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	deploymentPipeline, err := buildDeploymentPipeline(d)
@@ -255,7 +255,7 @@ func resourceDeploymentPipelineCreate(ctx context.Context, d *schema.ResourceDat
 	return resourceDeploymentPipelineRead(ctx, d, m)
 }
 
-func resourceDeploymentPipelineRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDeploymentPipelineRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	deploymentPipelineID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -311,8 +311,8 @@ func resourceDeploymentPipelineRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("integration_url", result.DeploymentPipeline.IntegrationUrl)
 
 	if result.DeploymentPipeline.IntegrationType == ilert.DeploymentPipelineIntegrationType.GitHub {
-		d.Set("github", []interface{}{
-			map[string]interface{}{
+		d.Set("github", []any{
+			map[string]any{
 				"branch_filter": result.DeploymentPipeline.Params.BranchFilters,
 				"event_filter":  result.DeploymentPipeline.Params.EventFilters,
 			},
@@ -320,8 +320,8 @@ func resourceDeploymentPipelineRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if result.DeploymentPipeline.IntegrationType == ilert.DeploymentPipelineIntegrationType.GitLab {
-		d.Set("gitlab", []interface{}{
-			map[string]interface{}{
+		d.Set("gitlab", []any{
+			map[string]any{
 				"branch_filter": result.DeploymentPipeline.Params.BranchFilters,
 				"event_filter":  result.DeploymentPipeline.Params.EventFilters,
 			},
@@ -331,7 +331,7 @@ func resourceDeploymentPipelineRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceDeploymentPipelineUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDeploymentPipelineUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	deploymentPipeline, err := buildDeploymentPipeline(d)
@@ -370,7 +370,7 @@ func resourceDeploymentPipelineUpdate(ctx context.Context, d *schema.ResourceDat
 	return resourceDeploymentPipelineRead(ctx, d, m)
 }
 
-func resourceDeploymentPipelineDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDeploymentPipelineDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	deploymentPipelineID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -399,7 +399,7 @@ func resourceDeploymentPipelineDelete(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceDeploymentPipelineExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceDeploymentPipelineExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	deploymentPipelineID, err := strconv.ParseInt(d.Id(), 10, 64)

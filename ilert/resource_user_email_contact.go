@@ -65,10 +65,10 @@ func buildUserEmailContact(d *schema.ResourceData) (*ilert.UserEmailContact, *in
 		Target: target,
 	}
 
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}
@@ -76,7 +76,7 @@ func buildUserEmailContact(d *schema.ResourceData) (*ilert.UserEmailContact, *in
 	return contact, ilert.Int64(userId), nil
 }
 
-func resourceUserEmailContactCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserEmailContactCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	contact, userId, err := buildUserEmailContact(d)
@@ -112,8 +112,8 @@ func resourceUserEmailContactCreate(ctx context.Context, d *schema.ResourceData,
 
 	d.SetId(strconv.FormatInt(result.UserEmailContact.ID, 10))
 
-	usr := make([]interface{}, 0)
-	u := make(map[string]interface{}, 0)
+	usr := make([]any, 0)
+	u := make(map[string]any, 0)
 	u["id"] = int(*userId)
 	usr = append(usr, u)
 	d.Set("user", usr)
@@ -121,17 +121,17 @@ func resourceUserEmailContactCreate(ctx context.Context, d *schema.ResourceData,
 	return resourceUserEmailContactRead(ctx, d, m)
 }
 
-func resourceUserEmailContactRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserEmailContactRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	contactId, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}
@@ -168,8 +168,8 @@ func resourceUserEmailContactRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("target", result.UserEmailContact.Target)
 	d.Set("status", result.UserEmailContact.Status)
 
-	usr := make([]interface{}, 0)
-	u := make(map[string]interface{}, 0)
+	usr := make([]any, 0)
+	u := make(map[string]any, 0)
 	u["id"] = int(userId)
 	usr = append(usr, u)
 	d.Set("user", usr)
@@ -177,7 +177,7 @@ func resourceUserEmailContactRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceUserEmailContactUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserEmailContactUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	contact, userId, err := buildUserEmailContact(d)
@@ -212,17 +212,17 @@ func resourceUserEmailContactUpdate(ctx context.Context, d *schema.ResourceData,
 	return resourceUserEmailContactRead(ctx, d, m)
 }
 
-func resourceUserEmailContactDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserEmailContactDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	contactId, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}
@@ -247,17 +247,17 @@ func resourceUserEmailContactDelete(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceUserEmailContactExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceUserEmailContactExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	contactId, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return false, unconvertibleIDErr(d.Id(), err)
 	}
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}

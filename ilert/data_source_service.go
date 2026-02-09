@@ -30,7 +30,7 @@ func dataSourceService() *schema.Resource {
 	}
 }
 
-func dataSourceServiceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceServiceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
 	log.Printf("[DEBUG] Reading ilert service")

@@ -98,10 +98,10 @@ func buildIncidentTemplate(d *schema.ResourceData) (*ilert.IncidentTemplate, err
 	}
 
 	if val, ok := d.GetOk("team"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			tm := ilert.TeamShort{
 				ID: int64(v["id"].(int)),
 			}
@@ -116,7 +116,7 @@ func buildIncidentTemplate(d *schema.ResourceData) (*ilert.IncidentTemplate, err
 	return incidentTemplate, nil
 }
 
-func resourceIncidentTemplateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIncidentTemplateCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	incidentTemplate, err := buildIncidentTemplate(d)
@@ -155,7 +155,7 @@ func resourceIncidentTemplateCreate(ctx context.Context, d *schema.ResourceData,
 	return resourceIncidentTemplateRead(ctx, d, m)
 }
 
-func resourceIncidentTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIncidentTemplateRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	incidentTemplateID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -210,7 +210,7 @@ func resourceIncidentTemplateRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceIncidentTemplateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIncidentTemplateUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	incidentTemplate, err := buildIncidentTemplate(d)
@@ -246,7 +246,7 @@ func resourceIncidentTemplateUpdate(ctx context.Context, d *schema.ResourceData,
 	return resourceIncidentTemplateRead(ctx, d, m)
 }
 
-func resourceIncidentTemplateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIncidentTemplateDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	incidentTemplateID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -275,7 +275,7 @@ func resourceIncidentTemplateDelete(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceIncidentTemplateExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceIncidentTemplateExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	incidentTemplateID, err := strconv.ParseInt(d.Id(), 10, 64)

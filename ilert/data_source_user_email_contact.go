@@ -44,17 +44,17 @@ func dataSourceUserEmailContact() *schema.Resource {
 	}
 }
 
-func dataSourceUserEmailContactRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceUserEmailContactRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
 	log.Printf("[DEBUG] Reading ilert user email contact")
 
 	searchTarget := d.Get("target").(string)
 
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}
@@ -81,8 +81,8 @@ func dataSourceUserEmailContactRead(ctx context.Context, d *schema.ResourceData,
 		d.Set("target", found.Target)
 		d.Set("status", found.Status)
 
-		usr := make([]interface{}, 0)
-		u := make(map[string]interface{}, 0)
+		usr := make([]any, 0)
+		u := make(map[string]any, 0)
 		u["id"] = int(userId)
 		usr = append(usr, u)
 		d.Set("user", usr)

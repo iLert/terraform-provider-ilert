@@ -27,18 +27,18 @@ func dataSourceHeartbeatMonitor() *schema.Resource {
 				Computed: true,
 			},
 			"integration_key": {
-				Type:      schema.TypeString,
-				Computed:  true,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"integration_url": {
-				Type:      schema.TypeString,
-				Computed:  true,
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
 }
 
-func dataSourceHeartbeatMonitorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceHeartbeatMonitorRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
 	log.Printf("[DEBUG] Reading ilert heartbeat monitor")

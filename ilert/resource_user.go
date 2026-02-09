@@ -139,7 +139,7 @@ func buildUser(d *schema.ResourceData) (*ilert.User, error) {
 	return user, nil
 }
 
-func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	user, err := buildUser(d)
@@ -183,7 +183,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	return resourceUserRead(ctx, d, m)
 }
 
-func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	userID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -236,7 +236,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	return nil
 }
 
-func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	user, err := buildUser(d)
@@ -271,7 +271,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	return resourceUserRead(ctx, d, m)
 }
 
-func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	userID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -300,7 +300,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func resourceUserExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceUserExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	userID, err := strconv.ParseInt(d.Id(), 10, 64)

@@ -71,10 +71,10 @@ func buildUserPhoneNumberContact(d *schema.ResourceData) (*ilert.UserPhoneNumber
 		Target:     target,
 	}
 
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}
@@ -82,7 +82,7 @@ func buildUserPhoneNumberContact(d *schema.ResourceData) (*ilert.UserPhoneNumber
 	return contact, ilert.Int64(userId), nil
 }
 
-func resourceUserPhoneNumberContactCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserPhoneNumberContactCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	contact, userId, err := buildUserPhoneNumberContact(d)
@@ -118,8 +118,8 @@ func resourceUserPhoneNumberContactCreate(ctx context.Context, d *schema.Resourc
 
 	d.SetId(strconv.FormatInt(result.UserPhoneNumberContact.ID, 10))
 
-	usr := make([]interface{}, 0)
-	u := make(map[string]interface{}, 0)
+	usr := make([]any, 0)
+	u := make(map[string]any, 0)
 	u["id"] = int(*userId)
 	usr = append(usr, u)
 	d.Set("user", usr)
@@ -127,17 +127,17 @@ func resourceUserPhoneNumberContactCreate(ctx context.Context, d *schema.Resourc
 	return resourceUserPhoneNumberContactRead(ctx, d, m)
 }
 
-func resourceUserPhoneNumberContactRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserPhoneNumberContactRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	contactId, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}
@@ -175,8 +175,8 @@ func resourceUserPhoneNumberContactRead(ctx context.Context, d *schema.ResourceD
 	d.Set("target", result.UserPhoneNumberContact.Target)
 	d.Set("status", result.UserPhoneNumberContact.Status)
 
-	usr := make([]interface{}, 0)
-	u := make(map[string]interface{}, 0)
+	usr := make([]any, 0)
+	u := make(map[string]any, 0)
 	u["id"] = int(userId)
 	usr = append(usr, u)
 	d.Set("user", usr)
@@ -184,7 +184,7 @@ func resourceUserPhoneNumberContactRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceUserPhoneNumberContactUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserPhoneNumberContactUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	contact, userId, err := buildUserPhoneNumberContact(d)
@@ -219,17 +219,17 @@ func resourceUserPhoneNumberContactUpdate(ctx context.Context, d *schema.Resourc
 	return resourceUserPhoneNumberContactRead(ctx, d, m)
 }
 
-func resourceUserPhoneNumberContactDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserPhoneNumberContactDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	contactId, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}
@@ -254,17 +254,17 @@ func resourceUserPhoneNumberContactDelete(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceUserPhoneNumberContactExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceUserPhoneNumberContactExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	contactId, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return false, unconvertibleIDErr(d.Id(), err)
 	}
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}

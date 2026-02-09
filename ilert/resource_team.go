@@ -75,9 +75,9 @@ func buildTeam(d *schema.ResourceData) (*ilert.Team, error) {
 
 	members := make([]ilert.TeamMember, 0)
 	if val, ok := d.GetOk("member"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			ep := ilert.TeamMember{
 				Role: v["role"].(string),
 			}
@@ -99,7 +99,7 @@ func buildTeam(d *schema.ResourceData) (*ilert.Team, error) {
 	return team, nil
 }
 
-func resourceTeamCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceTeamCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	team, err := buildTeam(d)
@@ -137,7 +137,7 @@ func resourceTeamCreate(ctx context.Context, d *schema.ResourceData, m interface
 	return resourceTeamRead(ctx, d, m)
 }
 
-func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	teamID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -190,7 +190,7 @@ func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	return nil
 }
 
-func resourceTeamUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceTeamUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	team, err := buildTeam(d)
@@ -226,7 +226,7 @@ func resourceTeamUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	return resourceTeamRead(ctx, d, m)
 }
 
-func resourceTeamDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceTeamDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	teamID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -255,7 +255,7 @@ func resourceTeamDelete(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func resourceTeamExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceTeamExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	teamID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -291,19 +291,19 @@ func resourceTeamExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	return result, nil
 }
 
-func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) ([]interface{}, error) {
+func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) ([]any, error) {
 	if list == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
 
 	configMembers := d.Get("member")
 	if configMembers == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
 
-	configMembersList, ok := configMembers.([]interface{})
+	configMembersList, ok := configMembers.([]any)
 	if !ok {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
 
 	serverMembersMap := make(map[string]ilert.TeamMember)
@@ -314,12 +314,12 @@ func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) (
 		}
 	}
 
-	results := make([]interface{}, 0)
+	results := make([]any, 0)
 	for _, configMember := range configMembersList {
-		if configMemberMap, ok := configMember.(map[string]interface{}); ok {
+		if configMemberMap, ok := configMember.(map[string]any); ok {
 			if userID, ok := configMemberMap["user"].(string); ok {
 				if serverMember, exists := serverMembersMap[userID]; exists {
-					result := make(map[string]interface{})
+					result := make(map[string]any)
 					result["role"] = serverMember.Role
 					result["user"] = userID
 					results = append(results, result)
@@ -330,7 +330,7 @@ func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) (
 	}
 
 	for _, serverMember := range serverMembersMap {
-		result := make(map[string]interface{})
+		result := make(map[string]any)
 		result["role"] = serverMember.Role
 		if serverMember.User.ID > 0 {
 			result["user"] = strconv.FormatInt(serverMember.User.ID, 10)

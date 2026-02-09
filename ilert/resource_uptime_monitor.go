@@ -177,9 +177,9 @@ func buildUptimeMonitor(d *schema.ResourceData) (*ilert.UptimeMonitor, error) {
 	}
 
 	if val, ok := d.GetOk("check_params"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			checkParams := ilert.UptimeMonitorCheckParams{}
 			if v["url"].(string) != "" {
 				checkParams.URL = v["url"].(string)
@@ -189,8 +189,8 @@ func buildUptimeMonitor(d *schema.ResourceData) (*ilert.UptimeMonitor, error) {
 					checkParams.Port = v["port"].(int)
 				}
 			}
-			if v["response_keywords"].([]interface{}) != nil {
-				for _, keyword := range v["response_keywords"].([]interface{}) {
+			if v["response_keywords"].([]any) != nil {
+				for _, keyword := range v["response_keywords"].([]any) {
 					checkParams.ResponseKeywords = append(checkParams.ResponseKeywords, keyword.(string))
 				}
 			}
@@ -232,7 +232,7 @@ func buildUptimeMonitor(d *schema.ResourceData) (*ilert.UptimeMonitor, error) {
 	return uptimeMonitor, nil
 }
 
-func resourceUptimeMonitorCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUptimeMonitorCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	uptimeMonitor, err := buildUptimeMonitor(d)
@@ -271,7 +271,7 @@ func resourceUptimeMonitorCreate(ctx context.Context, d *schema.ResourceData, m 
 	return resourceUptimeMonitorRead(ctx, d, m)
 }
 
-func resourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	uptimeMonitorID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -313,7 +313,7 @@ func resourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, m in
 	d.Set("region", result.UptimeMonitor.Region)
 	d.Set("check_type", result.UptimeMonitor.CheckType)
 
-	checkParams := map[string]interface{}{}
+	checkParams := map[string]any{}
 	if result.UptimeMonitor.CheckParams.URL != "" {
 		checkParams["url"] = result.UptimeMonitor.CheckParams.URL
 	} else if result.UptimeMonitor.CheckParams.Host != "" {
@@ -331,7 +331,7 @@ func resourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, m in
 	if result.UptimeMonitor.CheckParams.AlertOnFingerprintChange {
 		checkParams["alert_on_fingerprint_change"] = result.UptimeMonitor.CheckParams.AlertOnFingerprintChange
 	}
-	d.Set("check_params", []interface{}{checkParams})
+	d.Set("check_params", []any{checkParams})
 
 	d.Set("interval_sec", result.UptimeMonitor.IntervalSec)
 	d.Set("timeout_ms", result.UptimeMonitor.TimeoutMs)
@@ -352,7 +352,7 @@ func resourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func resourceUptimeMonitorUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUptimeMonitorUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	uptimeMonitor, err := buildUptimeMonitor(d)
@@ -388,7 +388,7 @@ func resourceUptimeMonitorUpdate(ctx context.Context, d *schema.ResourceData, m 
 	return resourceUptimeMonitorRead(ctx, d, m)
 }
 
-func resourceUptimeMonitorDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUptimeMonitorDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	uptimeMonitorID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -418,7 +418,7 @@ func resourceUptimeMonitorDelete(ctx context.Context, d *schema.ResourceData, m 
 	return nil
 }
 
-func resourceUptimeMonitorExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceUptimeMonitorExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	uptimeMonitorID, err := strconv.ParseInt(d.Id(), 10, 64)

@@ -118,8 +118,8 @@ func buildHeartbeatMonitor(d *schema.ResourceData) (*ilert.HeartbeatMonitor, err
 	}
 
 	if val, ok := d.GetOk("alert_source"); ok {
-		vL := val.([]interface{})
-		v := vL[0].(map[string]interface{})
+		vL := val.([]any)
+		v := vL[0].(map[string]any)
 		as := ilert.AlertSource{
 			ID: int64(v["id"].(int)),
 		}
@@ -130,10 +130,10 @@ func buildHeartbeatMonitor(d *schema.ResourceData) (*ilert.HeartbeatMonitor, err
 	}
 
 	if val, ok := d.GetOk("team"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			tm := ilert.TeamShort{
 				ID: int64(v["id"].(int)),
 			}
@@ -148,7 +148,7 @@ func buildHeartbeatMonitor(d *schema.ResourceData) (*ilert.HeartbeatMonitor, err
 	return heartbeatMonitor, nil
 }
 
-func resourceHeartbeatMonitorCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceHeartbeatMonitorCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	heartbeatMonitor, err := buildHeartbeatMonitor(d)
@@ -189,7 +189,7 @@ func resourceHeartbeatMonitorCreate(ctx context.Context, d *schema.ResourceData,
 	return resourceHeartbeatMonitorRead(ctx, d, m)
 }
 
-func resourceHeartbeatMonitorRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceHeartbeatMonitorRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	heartbeatMonitorID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -238,8 +238,8 @@ func resourceHeartbeatMonitorRead(ctx context.Context, d *schema.ResourceData, m
 	if val, ok := d.GetOk("alert_source"); ok && val != nil {
 		if result.HeartbeatMonitor.AlertSource != nil {
 			v := *result.HeartbeatMonitor.AlertSource
-			as := val.([]interface{})[0].(map[string]interface{})
-			alertSource := make(map[string]interface{})
+			as := val.([]any)[0].(map[string]any)
+			alertSource := make(map[string]any)
 
 			alertSource["id"] = v.ID
 			if v.Name != "" && as["name"] != nil && as["name"].(string) != "" {
@@ -267,7 +267,7 @@ func resourceHeartbeatMonitorRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceHeartbeatMonitorUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceHeartbeatMonitorUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	heartbeatMonitor, err := buildHeartbeatMonitor(d)
@@ -306,7 +306,7 @@ func resourceHeartbeatMonitorUpdate(ctx context.Context, d *schema.ResourceData,
 	return resourceHeartbeatMonitorRead(ctx, d, m)
 }
 
-func resourceHeartbeatMonitorDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceHeartbeatMonitorDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	heartbeatMonitorID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -335,7 +335,7 @@ func resourceHeartbeatMonitorDelete(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceHeartbeatMonitorExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceHeartbeatMonitorExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	heartbeatMonitorID, err := strconv.ParseInt(d.Id(), 10, 64)

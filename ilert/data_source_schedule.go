@@ -26,7 +26,7 @@ func dataSourceSchedule() *schema.Resource {
 	}
 }
 
-func dataSourceScheduleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceScheduleRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
 	log.Printf("[DEBUG] Reading ilert schedule")

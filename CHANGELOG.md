@@ -1,5 +1,12 @@
 # Changelog
 
+## 09.02.2026, Version 2.15.1
+
+- maintenance release:
+   - added v2 for go package
+   - upgraded Go to 1.23
+   - modernise code
+
 ## 06.02.2026, Version 2.15.0
 
 - feature/resource-registry in [#117](https://github.com/iLert/terraform-provider-ilert/pull/117)

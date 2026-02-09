@@ -40,16 +40,16 @@ func dataSourceStatusPageGroup() *schema.Resource {
 	}
 }
 
-func dataSourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
 	log.Printf("[DEBUG] Reading ilert status page group")
 
 	searchName := d.Get("name").(string)
-	spL := d.Get("status_page").([]interface{})
+	spL := d.Get("status_page").([]any)
 	statusPageID := int64(-1)
 	if len(spL) > 0 && spL[0] != nil {
-		sp := spL[0].(map[string]interface{})
+		sp := spL[0].(map[string]any)
 		id := int64(sp["id"].(int))
 		statusPageID = id
 	}
@@ -75,8 +75,8 @@ func dataSourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, 
 		d.SetId(strconv.FormatInt(found.ID, 10))
 		d.Set("name", found.Name)
 
-		sp := make([]interface{}, 0)
-		s := make(map[string]interface{}, 0)
+		sp := make([]any, 0)
+		s := make(map[string]any, 0)
 		s["id"] = int(statusPageID)
 		sp = append(sp, s)
 		d.Set("status_page", sp)

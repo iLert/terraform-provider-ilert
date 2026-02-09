@@ -1,6 +1,6 @@
-module github.com/iLert/terraform-provider-ilert
+module github.com/iLert/terraform-provider-ilert/v2
 
-go 1.19
+go 1.23
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.25.0

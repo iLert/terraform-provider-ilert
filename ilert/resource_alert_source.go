@@ -697,7 +697,7 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		alertSource.ResolveFilterOperator = resolveFilterOperator
 	}
 	if val, ok := d.GetOk("teams"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		tms := make([]ilert.TeamShort, 0)
 
 		for _, m := range vL {
@@ -707,10 +707,10 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		alertSource.Teams = tms
 	}
 	if val, ok := d.GetOk("team"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			tm := ilert.TeamShort{
 				ID: int64(v["id"].(int)),
 			}
@@ -722,9 +722,9 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		alertSource.Teams = tms
 	}
 	if val, ok := d.GetOk("support_hours"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 && vL[0] != nil {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			if id := int64(v["id"].(int)); id > 0 {
 				alertSource.SupportHours = &ilert.SupportHour{
 					ID: id,
@@ -736,16 +736,16 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 					AutoRaiseIncidents: v["auto_raise_incidents"].(bool),
 					AutoRaiseAlerts:    v["auto_raise_alerts"].(bool),
 				}
-				sdA := v["support_days"].([]interface{})
+				sdA := v["support_days"].([]any)
 				if len(sdA) > 0 {
 					if sdA[0] == nil {
 						return nil, fmt.Errorf("[ERROR] Can't set support hours, support days needs at least one day to be defined")
 					}
-					sds := sdA[0].(map[string]interface{})
+					sds := sdA[0].(map[string]any)
 					for d, sd := range sds {
-						s := sd.([]interface{})
+						s := sd.([]any)
 						if len(s) > 0 && s[0] != nil {
-							v := s[0].(map[string]interface{})
+							v := s[0].(map[string]any)
 							if d == "monday" {
 								supportHours.SupportDays.MONDAY = &ilert.SupportDay{
 									Start: v["start"].(string),
@@ -796,9 +796,9 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		}
 	}
 	if val, ok := d.GetOk("heartbeat"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertSource.Heartbeat = &ilert.Heartbeat{
 				Summary:     v["summary"].(string),
 				IntervalSec: v["interval_sec"].(int),
@@ -806,9 +806,9 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		}
 	}
 	if val, ok := d.GetOk("autotask_metadata"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertSource.AutotaskMetadata = &ilert.AutotaskMetadata{
 				Username:  v["username"].(string),
 				Secret:    v["secret"].(string),
@@ -817,9 +817,9 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		}
 	}
 	if val, ok := d.GetOk("resolve_key_extractor"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertSource.ResolveKeyExtractor = &ilert.EmailPredicate{
 				Field:    v["field"].(string),
 				Criteria: v["criteria"].(string),
@@ -828,10 +828,10 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		}
 	}
 	if val, ok := d.GetOk("email_predicate"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		eps := make([]ilert.EmailPredicate, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			ep := ilert.EmailPredicate{
 				Field:    v["field"].(string),
 				Criteria: v["criteria"].(string),
@@ -842,10 +842,10 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		alertSource.EmailPredicates = eps
 	}
 	if val, ok := d.GetOk("email_resolve_predicate"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		eps := make([]ilert.EmailPredicate, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			ep := ilert.EmailPredicate{
 				Field:    v["field"].(string),
 				Criteria: v["criteria"].(string),
@@ -856,54 +856,54 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		alertSource.EmailResolvePredicates = eps
 	}
 	if val, ok := d.GetOk("summary_template"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertSource.SummaryTemplate = &ilert.Template{
 				TextTemplate: v["text_template"].(string),
 			}
 		}
 	}
 	if val, ok := d.GetOk("details_template"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertSource.DetailsTemplate = &ilert.Template{
 				TextTemplate: v["text_template"].(string),
 			}
 		}
 	}
 	if val, ok := d.GetOk("routing_template"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertSource.RoutingTemplate = &ilert.Template{
 				TextTemplate: v["text_template"].(string),
 			}
 		}
 	}
 	if val, ok := d.GetOk("alert_key_template"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertSource.AlertKeyTemplate = &ilert.Template{
 				TextTemplate: v["text_template"].(string),
 			}
 		}
 	}
 	if val, ok := d.GetOk("link_template"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		ltmps := make([]ilert.LinkTemplate, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			ltmp := ilert.LinkTemplate{}
 			if v["text"] != nil && v["text"].(string) != "" {
 				ltmp.Text = v["text"].(string)
 			}
 			htmp := ilert.Template{}
-			if v["href_template"] != nil && len(v["href_template"].([]interface{})) > 0 {
-				htL := v["href_template"].([]interface{})
-				h := htL[0].(map[string]interface{})
+			if v["href_template"] != nil && len(v["href_template"].([]any)) > 0 {
+				htL := v["href_template"].([]any)
+				h := htL[0].(map[string]any)
 				htmp.TextTemplate = h["text_template"].(string)
 
 			}
@@ -913,26 +913,26 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		alertSource.LinkTemplates = ltmps
 	}
 	if val, ok := d.GetOk("priority_template"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			ptmp := ilert.PriorityTemplate{}
 
 			vtmp := ilert.Template{}
-			if v["value_template"] != nil && len(v["value_template"].([]interface{})) > 0 {
-				htL := v["value_template"].([]interface{})
-				h := htL[0].(map[string]interface{})
+			if v["value_template"] != nil && len(v["value_template"].([]any)) > 0 {
+				htL := v["value_template"].([]any)
+				h := htL[0].(map[string]any)
 				vtmp.TextTemplate = h["text_template"].(string)
 			}
 			ptmp.ValueTemplate = &vtmp
 
 			if v["mapping"] != nil {
-				mL := v["mapping"].([]interface{})
+				mL := v["mapping"].([]any)
 				mpgs := make([]ilert.Mapping, 0)
 
 				for _, m := range mL {
 					mpg := ilert.Mapping{}
-					mp := m.(map[string]interface{})
+					mp := m.(map[string]any)
 					if mp["value"] != nil && mp["value"].(string) != "" {
 						mpg.Value = mp["value"].(string)
 					}
@@ -977,7 +977,7 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 	return alertSource, nil
 }
 
-func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	alertSource, err := buildAlertSource(d)
@@ -1015,7 +1015,7 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m in
 	return resourceAlertSourceRead(ctx, d, m)
 }
 
-func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	alertSourceID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -1062,7 +1062,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m inte
 	return nil
 }
 
-func resourceAlertSourceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAlertSourceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	alertSource, err := buildAlertSource(d)
@@ -1097,7 +1097,7 @@ func resourceAlertSourceUpdate(ctx context.Context, d *schema.ResourceData, m in
 	return resourceAlertSourceRead(ctx, d, m)
 }
 
-func resourceAlertSourceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAlertSourceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	alertSourceID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -1124,7 +1124,7 @@ func resourceAlertSourceDelete(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func resourceAlertSourceExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceAlertSourceExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	alertSourceID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -1189,79 +1189,79 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 	d.Set("event_type_filter_resolve", alertSource.EventTypeFilterResolve)
 
 	if alertSource.Heartbeat != nil {
-		d.Set("heartbeat", []interface{}{
-			map[string]interface{}{
+		d.Set("heartbeat", []any{
+			map[string]any{
 				"summary":      alertSource.Heartbeat.Summary,
 				"interval_sec": alertSource.Heartbeat.IntervalSec,
 				"status":       alertSource.Heartbeat.Status,
 			},
 		})
 	} else {
-		d.Set("heartbeat", []interface{}{})
+		d.Set("heartbeat", []any{})
 	}
 
 	if alertSource.AutotaskMetadata != nil {
-		d.Set("autotask_metadata", []interface{}{
-			map[string]interface{}{
+		d.Set("autotask_metadata", []any{
+			map[string]any{
 				"username":   alertSource.AutotaskMetadata.Username,
 				"secret":     alertSource.AutotaskMetadata.Secret,
 				"web_server": alertSource.AutotaskMetadata.WebServer,
 			},
 		})
 	} else {
-		d.Set("autotask_metadata", []interface{}{})
+		d.Set("autotask_metadata", []any{})
 	}
 
 	if alertSource.ResolveKeyExtractor != nil {
-		d.Set("resolve_key_extractor", []interface{}{
-			map[string]interface{}{
+		d.Set("resolve_key_extractor", []any{
+			map[string]any{
 				"field":    alertSource.ResolveKeyExtractor.Field,
 				"criteria": alertSource.ResolveKeyExtractor.Criteria,
 				"value":    alertSource.ResolveKeyExtractor.Value,
 			},
 		})
 	} else {
-		d.Set("resolve_key_extractor", []interface{}{})
+		d.Set("resolve_key_extractor", []any{})
 	}
 
 	if alertSource.SummaryTemplate != nil {
-		d.Set("summary_template", []interface{}{
-			map[string]interface{}{
+		d.Set("summary_template", []any{
+			map[string]any{
 				"text_template": alertSource.SummaryTemplate.TextTemplate,
 			},
 		})
 	} else {
-		d.Set("summary_template", []interface{}{})
+		d.Set("summary_template", []any{})
 	}
 
 	if alertSource.DetailsTemplate != nil {
-		d.Set("details_template", []interface{}{
-			map[string]interface{}{
+		d.Set("details_template", []any{
+			map[string]any{
 				"text_template": alertSource.DetailsTemplate.TextTemplate,
 			},
 		})
 	} else {
-		d.Set("details_template", []interface{}{})
+		d.Set("details_template", []any{})
 	}
 
 	if alertSource.RoutingTemplate != nil {
-		d.Set("routing_template", []interface{}{
-			map[string]interface{}{
+		d.Set("routing_template", []any{
+			map[string]any{
 				"text_template": alertSource.RoutingTemplate.TextTemplate,
 			},
 		})
 	} else {
-		d.Set("routing_template", []interface{}{})
+		d.Set("routing_template", []any{})
 	}
 
 	if alertSource.AlertKeyTemplate != nil {
-		d.Set("alert_key_template", []interface{}{
-			map[string]interface{}{
+		d.Set("alert_key_template", []any{
+			map[string]any{
 				"text_template": alertSource.AlertKeyTemplate.TextTemplate,
 			},
 		})
 	} else {
-		d.Set("alert_key_template", []interface{}{})
+		d.Set("alert_key_template", []any{})
 	}
 
 	linkTemplates, err := flattenLinkTemplatesList(alertSource.LinkTemplates)
@@ -1282,11 +1282,11 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 
 	if val, ok := d.GetOk("team"); ok {
 		if val != nil {
-			vL := val.([]interface{})
-			teams := make([]interface{}, 0)
+			vL := val.([]any)
+			teams := make([]any, 0)
 			for i, item := range alertSource.Teams {
-				team := make(map[string]interface{})
-				v := vL[i].(map[string]interface{})
+				team := make(map[string]any)
+				v := vL[i].(map[string]any)
 				team["id"] = item.ID
 
 				// Means: if server response has a name set, and the user typed in a name too,
@@ -1303,9 +1303,9 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 		}
 	} else if val, ok := d.GetOk("teams"); ok {
 		if val != nil {
-			teams := make([]interface{}, 0)
+			teams := make([]any, 0)
 			for _, item := range alertSource.Teams {
-				team := make(map[string]interface{})
+				team := make(map[string]any)
 				team["id"] = item.ID
 				teams = append(teams, team)
 			}
@@ -1316,9 +1316,9 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 			d.Set("teams", nil)
 		}
 	} else if d.Id() == "" && len(alertSource.Teams) > 0 {
-		teams := make([]interface{}, 0)
+		teams := make([]any, 0)
 		for _, item := range alertSource.Teams {
-			team := map[string]interface{}{
+			team := map[string]any{
 				"id": item.ID,
 			}
 			if item.Name != "" {
@@ -1361,13 +1361,13 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 	return nil
 }
 
-func flattenEmailPredicateList(predicateList []ilert.EmailPredicate) ([]interface{}, error) {
+func flattenEmailPredicateList(predicateList []ilert.EmailPredicate) ([]any, error) {
 	if predicateList == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
-	results := make([]interface{}, 0)
+	results := make([]any, 0)
 	for _, predicate := range predicateList {
-		result := make(map[string]interface{})
+		result := make(map[string]any)
 		result["criteria"] = predicate.Criteria
 		result["field"] = predicate.Field
 		result["value"] = predicate.Value
@@ -1377,10 +1377,10 @@ func flattenEmailPredicateList(predicateList []ilert.EmailPredicate) ([]interfac
 	return results, nil
 }
 
-func flattenSupportHoursInterface(supportHoursInterface interface{}) ([]interface{}, error) {
-	supportHoursMap, ok := supportHoursInterface.(map[string]interface{})
+func flattenSupportHoursInterface(supportHoursInterface any) ([]any, error) {
+	supportHoursMap, ok := supportHoursInterface.(map[string]any)
 	if !ok {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
 
 	if supportHoursMap["id"] != nil {
@@ -1398,13 +1398,13 @@ func flattenSupportHoursInterface(supportHoursInterface interface{}) ([]interfac
 	return supportHours, nil
 }
 
-func flattenSupportHours(supportHours map[string]interface{}) ([]interface{}, error) {
+func flattenSupportHours(supportHours map[string]any) ([]any, error) {
 	if supportHours == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
 
-	results := make([]interface{}, 0)
-	result := make(map[string]interface{})
+	results := make([]any, 0)
+	result := make(map[string]any)
 
 	result["id"] = supportHours["id"]
 
@@ -1413,21 +1413,21 @@ func flattenSupportHours(supportHours map[string]interface{}) ([]interface{}, er
 	return results, nil
 }
 
-func flattenSupportHoursLegacy(supportHours map[string]interface{}) ([]interface{}, error) {
+func flattenSupportHoursLegacy(supportHours map[string]any) ([]any, error) {
 	if supportHours == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
 
-	results := make([]interface{}, 0)
-	result := make(map[string]interface{})
+	results := make([]any, 0)
+	result := make(map[string]any)
 
 	result["timezone"] = supportHours["timezone"]
 	result["auto_raise_incidents"] = supportHours["autoRaiseIncidents"]
 	result["auto_raise_alerts"] = supportHours["autoRaiseAlerts"]
 
-	supportDaysMap, ok := supportHours["supportDays"].(map[string]interface{})
+	supportDaysMap, ok := supportHours["supportDays"].(map[string]any)
 	if !ok {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
 	supportDays, err := flattenSupportDaysMap(supportDaysMap)
 	if err != nil {
@@ -1440,74 +1440,74 @@ func flattenSupportHoursLegacy(supportHours map[string]interface{}) ([]interface
 	return results, nil
 }
 
-func flattenSupportDaysMap(supportDays map[string]interface{}) ([]interface{}, error) {
-	results := make([]interface{}, 0)
-	result := make(map[string]interface{})
+func flattenSupportDaysMap(supportDays map[string]any) ([]any, error) {
+	results := make([]any, 0)
+	result := make(map[string]any)
 
 	if supportDays["MONDAY"] != nil {
-		supportDay := make(map[string]interface{})
-		day := supportDays["MONDAY"].(map[string]interface{})
+		supportDay := make(map[string]any)
+		day := supportDays["MONDAY"].(map[string]any)
 		supportDay["start"] = day["start"]
 		supportDay["end"] = day["end"]
-		result["monday"] = []interface{}{supportDay}
+		result["monday"] = []any{supportDay}
 	}
 	if supportDays["TUESDAY"] != nil {
-		supportDay := make(map[string]interface{})
-		day := supportDays["TUESDAY"].(map[string]interface{})
+		supportDay := make(map[string]any)
+		day := supportDays["TUESDAY"].(map[string]any)
 		supportDay["start"] = day["start"]
 		supportDay["end"] = day["end"]
-		result["tuesday"] = []interface{}{supportDay}
+		result["tuesday"] = []any{supportDay}
 	}
 	if supportDays["WEDNESDAY"] != nil {
-		supportDay := make(map[string]interface{})
-		day := supportDays["WEDNESDAY"].(map[string]interface{})
+		supportDay := make(map[string]any)
+		day := supportDays["WEDNESDAY"].(map[string]any)
 		supportDay["start"] = day["start"]
 		supportDay["end"] = day["end"]
-		result["wednesday"] = []interface{}{supportDay}
+		result["wednesday"] = []any{supportDay}
 	}
 	if supportDays["THURSDAY"] != nil {
-		supportDay := make(map[string]interface{})
-		day := supportDays["THURSDAY"].(map[string]interface{})
+		supportDay := make(map[string]any)
+		day := supportDays["THURSDAY"].(map[string]any)
 		supportDay["start"] = day["start"]
 		supportDay["end"] = day["end"]
-		result["thursday"] = []interface{}{supportDay}
+		result["thursday"] = []any{supportDay}
 	}
 	if supportDays["FRIDAY"] != nil {
-		supportDay := make(map[string]interface{})
-		day := supportDays["FRIDAY"].(map[string]interface{})
+		supportDay := make(map[string]any)
+		day := supportDays["FRIDAY"].(map[string]any)
 		supportDay["start"] = day["start"]
 		supportDay["end"] = day["end"]
-		result["friday"] = []interface{}{supportDay}
+		result["friday"] = []any{supportDay}
 	}
 	if supportDays["SATURDAY"] != nil {
-		supportDay := make(map[string]interface{})
-		day := supportDays["SATURDAY"].(map[string]interface{})
+		supportDay := make(map[string]any)
+		day := supportDays["SATURDAY"].(map[string]any)
 		supportDay["start"] = day["start"]
 		supportDay["end"] = day["end"]
-		result["saturday"] = []interface{}{supportDay}
+		result["saturday"] = []any{supportDay}
 	}
 	if supportDays["SUNDAY"] != nil {
-		supportDay := make(map[string]interface{})
-		day := supportDays["SUNDAY"].(map[string]interface{})
+		supportDay := make(map[string]any)
+		day := supportDays["SUNDAY"].(map[string]any)
 		supportDay["start"] = day["start"]
 		supportDay["end"] = day["end"]
-		result["sunday"] = []interface{}{supportDay}
+		result["sunday"] = []any{supportDay}
 	}
 	results = append(results, result)
 	return results, nil
 }
 
-func flattenLinkTemplatesList(linkTemplatesList []ilert.LinkTemplate) ([]interface{}, error) {
+func flattenLinkTemplatesList(linkTemplatesList []ilert.LinkTemplate) ([]any, error) {
 	if linkTemplatesList == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
-	results := make([]interface{}, 0)
+	results := make([]any, 0)
 	for _, linkTemplate := range linkTemplatesList {
-		result := make(map[string]interface{})
+		result := make(map[string]any)
 		result["text"] = linkTemplate.Text
 
-		hrefTemplates := make([]interface{}, 0)
-		hrefTemplate := make(map[string]interface{})
+		hrefTemplates := make([]any, 0)
+		hrefTemplate := make(map[string]any)
 		hrefTemplate["text_template"] = linkTemplate.HrefTemplate.TextTemplate
 
 		hrefTemplates = append(hrefTemplates, hrefTemplate)
@@ -1519,24 +1519,24 @@ func flattenLinkTemplatesList(linkTemplatesList []ilert.LinkTemplate) ([]interfa
 	return results, nil
 }
 
-func flattenPriorityTemplate(priorityTemplate *ilert.PriorityTemplate) ([]interface{}, error) {
+func flattenPriorityTemplate(priorityTemplate *ilert.PriorityTemplate) ([]any, error) {
 	if priorityTemplate == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
-	results := make([]interface{}, 0)
+	results := make([]any, 0)
 
-	result := make(map[string]interface{})
+	result := make(map[string]any)
 
-	valueTemplates := make([]interface{}, 0)
-	valueTemplate := make(map[string]interface{})
+	valueTemplates := make([]any, 0)
+	valueTemplate := make(map[string]any)
 	valueTemplate["text_template"] = priorityTemplate.ValueTemplate.TextTemplate
 
 	valueTemplates = append(valueTemplates, valueTemplate)
 	result["value_template"] = valueTemplates
 
-	mappings := make([]interface{}, 0)
+	mappings := make([]any, 0)
 	for _, priorityMapping := range priorityTemplate.Mappings {
-		mapping := make(map[string]interface{})
+		mapping := make(map[string]any)
 
 		mapping["value"] = priorityMapping.Value
 		mapping["priority"] = priorityMapping.Priority
