@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-	"github.com/iLert/terraform-provider-ilert/ilert"
+	"github.com/iLert/terraform-provider-ilert/v2/ilert"
 )
 
 func main() {
