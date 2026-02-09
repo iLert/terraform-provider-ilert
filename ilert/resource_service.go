@@ -197,18 +197,9 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.Errorf("service response is empty")
 	}
 
-	d.Set("name", result.Service.Name)
-	d.Set("status", result.Service.Status)
-	d.Set("description", result.Service.Description)
-	d.Set("one_open_incident_only", result.Service.OneOpenIncidentOnly)
-	d.Set("show_uptime_history", result.Service.ShowUptimeHistory)
-
-	teams, err := flattenTeamShortList(result.Service.Teams, d)
+	err = transformServiceResource(result.Service, d)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	if err := d.Set("team", teams); err != nil {
-		return diag.Errorf("error setting teams: %s", err)
 	}
 
 	return nil
@@ -315,6 +306,26 @@ func resourceServiceExists(d *schema.ResourceData, m interface{}) (bool, error) 
 	return result, nil
 }
 
+func transformServiceResource(service *ilert.Service, d *schema.ResourceData) error {
+	d.Set("name", service.Name)
+	d.Set("status", service.Status)
+	d.Set("description", service.Description)
+	d.Set("one_open_incident_only", service.OneOpenIncidentOnly)
+	d.Set("show_uptime_history", service.ShowUptimeHistory)
+
+	teams, err := flattenTeamShortList(service.Teams, d)
+	if err != nil {
+		log.Printf("[ERROR] Error flattening teams: %s", err.Error())
+		return nil
+	}
+	if err := d.Set("team", teams); err != nil {
+		log.Printf("[ERROR] Error setting teams: %s", err.Error())
+		return nil
+	}
+
+	return nil
+}
+
 func flattenTeamShortList(list []ilert.TeamShort, d *schema.ResourceData) ([]interface{}, error) {
 	if list == nil {
 		return make([]interface{}, 0), nil
@@ -333,7 +344,16 @@ func flattenTeamShortList(list []ilert.TeamShort, d *schema.ResourceData) ([]int
 				results = append(results, result)
 			}
 		}
+	} else if d.Id() == "" {
+		for _, item := range list {
+			result := map[string]interface{}{
+				"id": item.ID,
+			}
+			if item.Name != "" {
+				result["name"] = item.Name
+			}
+			results = append(results, result)
+		}
 	}
-
 	return results, nil
 }
