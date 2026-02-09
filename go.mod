@@ -1,4 +1,4 @@
-module github.com/iLert/terraform-provider-ilert
+module github.com/iLert/terraform-provider-ilert/v2
 
 go 1.19
 
