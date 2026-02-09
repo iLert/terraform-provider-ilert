@@ -136,9 +136,9 @@ func buildAutomationRule(d *schema.ResourceData) (*ilert.AutomationRule, error) 
 	}
 
 	if val, ok := d.GetOk("template"); ok {
-		if vL, ok := val.([]interface{}); ok && len(vL) > 0 && vL[0] != nil {
+		if vL, ok := val.([]any); ok && len(vL) > 0 && vL[0] != nil {
 			tmp := &ilert.IncidentTemplate{}
-			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
+			if v, ok := vL[0].(map[string]any); ok && len(v) > 0 {
 				tmp.ID = int64(v["id"].(int))
 				if name, ok := v["name"].(string); ok && name != "" {
 					tmp.Name = name
@@ -151,9 +151,9 @@ func buildAutomationRule(d *schema.ResourceData) (*ilert.AutomationRule, error) 
 	}
 
 	if val, ok := d.GetOk("service"); ok {
-		if vL, ok := val.([]interface{}); ok && len(vL) > 0 && vL[0] != nil {
+		if vL, ok := val.([]any); ok && len(vL) > 0 && vL[0] != nil {
 			svc := &ilert.Service{}
-			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
+			if v, ok := vL[0].(map[string]any); ok && len(v) > 0 {
 				svc.ID = int64(v["id"].(int))
 				if name, ok := v["name"].(string); ok && name != "" {
 					svc.Name = name
@@ -166,9 +166,9 @@ func buildAutomationRule(d *schema.ResourceData) (*ilert.AutomationRule, error) 
 	}
 
 	if val, ok := d.GetOk("alert_source"); ok {
-		if vL, ok := val.([]interface{}); ok && len(vL) > 0 && vL[0] != nil {
+		if vL, ok := val.([]any); ok && len(vL) > 0 && vL[0] != nil {
 			asc := &ilert.AlertSource{}
-			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
+			if v, ok := vL[0].(map[string]any); ok && len(v) > 0 {
 				asc.ID = int64(v["id"].(int))
 				if name, ok := v["name"].(string); ok && name != "" {
 					asc.Name = name
@@ -187,7 +187,7 @@ func buildAutomationRule(d *schema.ResourceData) (*ilert.AutomationRule, error) 
 	return automationRule, nil
 }
 
-func resourceAutomationRuleCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAutomationRuleCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	automationRule, err := buildAutomationRule(d)
@@ -226,7 +226,7 @@ func resourceAutomationRuleCreate(ctx context.Context, d *schema.ResourceData, m
 	return resourceAutomationRuleRead(ctx, d, m)
 }
 
-func resourceAutomationRuleRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAutomationRuleRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	automationRuleID := d.Id()
@@ -266,22 +266,22 @@ func resourceAutomationRuleRead(ctx context.Context, d *schema.ResourceData, m i
 	d.Set("send_notification", result.AutomationRule.SendNotification)
 
 	if result.AutomationRule.Template != nil {
-		d.Set("template", []interface{}{
-			map[string]interface{}{
+		d.Set("template", []any{
+			map[string]any{
 				"id":   result.AutomationRule.Template.ID,
 				"name": result.AutomationRule.Template.Name,
 			},
 		})
 	} else {
-		d.Set("template", []interface{}{})
+		d.Set("template", []any{})
 	}
 
-	service := make(map[string]interface{})
+	service := make(map[string]any)
 	service["id"] = result.AutomationRule.Service.ID
 	service["name"] = result.AutomationRule.Service.Name
 	d.Set("service", service)
 
-	alertSource := make(map[string]interface{})
+	alertSource := make(map[string]any)
 	alertSource["id"] = result.AutomationRule.AlertSource.ID
 	alertSource["name"] = result.AutomationRule.AlertSource.Name
 	d.Set("alert_source", alertSource)
@@ -289,7 +289,7 @@ func resourceAutomationRuleRead(ctx context.Context, d *schema.ResourceData, m i
 	return nil
 }
 
-func resourceAutomationRuleUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAutomationRuleUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	automationRule, err := buildAutomationRule(d)
@@ -325,7 +325,7 @@ func resourceAutomationRuleUpdate(ctx context.Context, d *schema.ResourceData, m
 	return resourceAutomationRuleRead(ctx, d, m)
 }
 
-func resourceAutomationRuleDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAutomationRuleDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	automationRuleID := d.Id()
@@ -350,7 +350,7 @@ func resourceAutomationRuleDelete(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceAutomationRuleExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceAutomationRuleExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	automationRuleID := d.Id()

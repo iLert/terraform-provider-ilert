@@ -592,10 +592,10 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("alert_source"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		als := make([]ilert.AlertSource, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			asid, err := strconv.ParseInt(v["id"].(string), 10, 64)
 			if err != nil {
 				return nil, unconvertibleIDErr(v["id"].(string), err)
@@ -609,9 +609,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("connector"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertAction.ConnectorID = v["id"].(string)
 			alertAction.ConnectorType = v["type"].(string)
 		}
@@ -623,7 +623,7 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("trigger_types"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		sL := make([]string, 0)
 		for _, m := range vL {
 			v := m.(string)
@@ -633,9 +633,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("jira"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsJira{
 				Project:      v["project"].(string),
 				IssueType:    v["issue_type"].(string),
@@ -645,9 +645,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("servicenow"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsServiceNow{
 				CallerID:     v["caller_id"].(string),
 				Impact:       v["impact"].(string),
@@ -658,9 +658,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("slack"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsSlack{
 				ChannelID:   v["channel_id"].(string),
 				ChannelName: v["channel_name"].(string),
@@ -671,9 +671,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("webhook"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsWebhook{
 				WebhookURL:   v["url"].(string),
 				BodyTemplate: v["body_template"].(string),
@@ -682,9 +682,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("zendesk"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsZendesk{
 				Priority: v["priority"].(string),
 			}
@@ -692,14 +692,14 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("github"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			params := &ilert.AlertActionParamsGithub{
 				Owner:      v["owner"].(string),
 				Repository: v["repository"].(string),
 			}
-			vL := v["labels"].([]interface{})
+			vL := v["labels"].([]any)
 			sL := make([]string, 0)
 			for _, m := range vL {
 				v := m.(string)
@@ -711,9 +711,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("topdesk"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsTopdesk{
 				Status: v["status"].(string),
 			}
@@ -721,8 +721,8 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("email"); ok {
-		if vL, ok := val.([]interface{}); ok && len(vL) > 0 {
-			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
+		if vL, ok := val.([]any); ok && len(vL) > 0 {
+			if v, ok := vL[0].(map[string]any); ok && len(v) > 0 {
 				params := &ilert.AlertActionParamsEmail{}
 				if p, ok := v["subject"].(string); ok && p != "" {
 					params.Subject = p
@@ -730,7 +730,7 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 				if p, ok := v["body_template"].(string); ok && p != "" {
 					params.BodyTemplate = p
 				}
-				if vL, ok := v["recipients"].([]interface{}); ok && len(vL) > 0 {
+				if vL, ok := v["recipients"].([]any); ok && len(vL) > 0 {
 					sL := make([]string, 0)
 					for _, m := range vL {
 						if v, ok := m.(string); ok && v != "" {
@@ -745,9 +745,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("autotask"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsAutotask{
 				CompanyID:      v["company_id"].(string),
 				IssueType:      v["issue_type"].(string),
@@ -759,9 +759,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("zammad"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsZammad{
 				Email: v["email"].(string),
 			}
@@ -769,13 +769,13 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("dingtalk"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			params := &ilert.AlertActionParamsDingTalk{
 				IsAtAll: v["is_at_all"].(bool),
 			}
-			vL := v["at_mobiles"].([]interface{})
+			vL := v["at_mobiles"].([]any)
 			sL := make([]string, 0)
 			for _, m := range vL {
 				v := m.(string)
@@ -787,15 +787,15 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("dingtalk_action"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			params := &ilert.AlertActionParamsDingTalkAction{
 				URL:     v["url"].(string),
 				Secret:  v["secret"].(string),
 				IsAtAll: v["is_at_all"].(bool),
 			}
-			vL := v["at_mobiles"].([]interface{})
+			vL := v["at_mobiles"].([]any)
 			sL := make([]string, 0)
 			for _, m := range vL {
 				v := m.(string)
@@ -807,9 +807,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("automation_rule"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			params := &ilert.AlertActionParamsAutomationRule{
 				AlertType:        v["alert_type"].(string),
 				ResolveIncident:  v["resolve_incident"].(bool),
@@ -817,7 +817,7 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 				TemplateId:       int64(v["template_id"].(int)),
 				SendNotification: v["send_notification"].(bool),
 			}
-			vL := v["service_ids"].([]interface{})
+			vL := v["service_ids"].([]any)
 			sL := make([]int64, 0)
 			for _, m := range vL {
 				v := int64(m.(int))
@@ -829,9 +829,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("telegram"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsTelegram{
 				ChannelID: v["channel_id"].(string),
 			}
@@ -839,9 +839,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("microsoft_teams_bot"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsMicrosoftTeamsBot{
 				ChannelID:   v["channel_id"].(string),
 				ChannelName: v["channel_name"].(string),
@@ -853,9 +853,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("microsoft_teams_webhook"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsMicrosoftTeamsWebhook{
 				URL:          v["url"].(string),
 				BodyTemplate: v["body_template"].(string),
@@ -864,9 +864,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("slack_webhook"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsSlackWebhook{
 				URL: v["url"].(string),
 			}
@@ -874,16 +874,16 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("alert_filter"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			filter := &ilert.AlertFilter{
 				Operator: v["operator"].(string),
 			}
-			vL := v["predicate"].([]interface{})
+			vL := v["predicate"].([]any)
 			pL := make([]ilert.AlertFilterPredicate, 0)
 			for _, m := range vL {
-				v := m.(map[string]interface{})
+				v := m.(map[string]any)
 				p := ilert.AlertFilterPredicate{
 					Field:    v["field"].(string),
 					Criteria: v["criteria"].(string),
@@ -897,10 +897,10 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("team"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			tm := ilert.TeamShort{
 				ID: int64(v["id"].(int)),
 			}
@@ -943,7 +943,7 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	return alertAction, nil
 }
 
-func resourceAlertActionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAlertActionCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	alertAction, err := buildAlertAction(d)
@@ -989,7 +989,7 @@ func resourceAlertActionCreate(ctx context.Context, d *schema.ResourceData, m in
 	return resourceAlertActionRead(ctx, d, m)
 }
 
-func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	alertActionID := d.Id()
@@ -998,8 +998,8 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	result := &ilert.GetAlertActionOutput{}
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		version := 2
-		if val, ok := d.GetOk("alert_source"); ok && len(val.([]interface{})) == 1 {
-			if val, ok := d.GetOk("team"); !ok || len(val.([]interface{})) == 0 {
+		if val, ok := d.GetOk("alert_source"); ok && len(val.([]any)) == 1 {
+			if val, ok := d.GetOk("team"); !ok || len(val.([]any)) == 0 {
 				if val, ok := d.GetOk("conditions"); !ok || len(val.(string)) == 0 {
 					version = 1
 				}
@@ -1040,7 +1040,7 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m inte
 	return nil
 }
 
-func resourceAlertActionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAlertActionUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	alertAction, err := buildAlertAction(d)
@@ -1072,7 +1072,7 @@ func resourceAlertActionUpdate(ctx context.Context, d *schema.ResourceData, m in
 	return resourceAlertActionRead(ctx, d, m)
 }
 
-func resourceAlertActionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAlertActionDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	alertActionID := d.Id()
@@ -1098,7 +1098,7 @@ func resourceAlertActionDelete(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func resourceAlertActionExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceAlertActionExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	alertActionID := d.Id()
@@ -1145,12 +1145,12 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 		}
 	}
 
-	connector := map[string]interface{}{}
+	connector := map[string]any{}
 	if alertAction.ConnectorID != "" {
 		connector["id"] = alertAction.ConnectorID
 	}
 	connector["type"] = alertAction.ConnectorType
-	d.Set("connector", []interface{}{connector})
+	d.Set("connector", []any{connector})
 	d.Set("trigger_mode", alertAction.TriggerMode)
 	d.Set("trigger_types", alertAction.TriggerTypes)
 	d.Set("created_at", alertAction.CreatedAt)
@@ -1158,16 +1158,16 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 
 	switch alertAction.ConnectorType {
 	case ilert.ConnectorTypes.Jira:
-		d.Set("jira", []interface{}{
-			map[string]interface{}{
+		d.Set("jira", []any{
+			map[string]any{
 				"project":       alertAction.Params.Project,
 				"issue_type":    alertAction.Params.IssueType,
 				"body_template": alertAction.Params.BodyTemplate,
 			},
 		})
 	case ilert.ConnectorTypes.ServiceNow:
-		d.Set("servicenow", []interface{}{
-			map[string]interface{}{
+		d.Set("servicenow", []any{
+			map[string]any{
 				"caller_id":     alertAction.Params.CallerID,
 				"impact":        alertAction.Params.Impact,
 				"urgency":       alertAction.Params.Urgency,
@@ -1175,8 +1175,8 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 			},
 		})
 	case ilert.ConnectorTypes.Slack:
-		d.Set("slack", []interface{}{
-			map[string]interface{}{
+		d.Set("slack", []any{
+			map[string]any{
 				"channel_id":   alertAction.Params.ChannelID,
 				"channel_name": alertAction.Params.ChannelName,
 				"team_id":      alertAction.Params.TeamID,
@@ -1184,43 +1184,43 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 			},
 		})
 	case ilert.ConnectorTypes.Webhook:
-		d.Set("webhook", []interface{}{
-			map[string]interface{}{
+		d.Set("webhook", []any{
+			map[string]any{
 				"url":           alertAction.Params.WebhookURL,
 				"body_template": alertAction.Params.BodyTemplate,
 			},
 		})
 	case ilert.ConnectorTypes.Zendesk:
-		d.Set("zendesk", []interface{}{
-			map[string]interface{}{
+		d.Set("zendesk", []any{
+			map[string]any{
 				"priority": alertAction.Params.Priority,
 			},
 		})
 	case ilert.ConnectorTypes.Github:
-		d.Set("github", []interface{}{
-			map[string]interface{}{
+		d.Set("github", []any{
+			map[string]any{
 				"owner":      alertAction.Params.Owner,
 				"repository": alertAction.Params.Repository,
 				"labels":     alertAction.Params.Labels,
 			},
 		})
 	case ilert.ConnectorTypes.Topdesk:
-		d.Set("topdesk", []interface{}{
-			map[string]interface{}{
+		d.Set("topdesk", []any{
+			map[string]any{
 				"status": alertAction.Params.Status,
 			},
 		})
 	case ilert.ConnectorTypes.Email:
-		d.Set("email", []interface{}{
-			map[string]interface{}{
+		d.Set("email", []any{
+			map[string]any{
 				"recipients":    alertAction.Params.Recipients,
 				"subject":       alertAction.Params.Subject,
 				"body_template": alertAction.Params.BodyTemplate,
 			},
 		})
 	case ilert.ConnectorTypes.Autotask:
-		d.Set("autotask", []interface{}{
-			map[string]interface{}{
+		d.Set("autotask", []any{
+			map[string]any{
 				"company_id":      alertAction.Params.CompanyID,
 				"issue_type":      alertAction.Params.IssueType,
 				"queue_id":        alertAction.Params.QueueID,
@@ -1229,21 +1229,21 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 			},
 		})
 	case ilert.ConnectorTypes.Zammad:
-		d.Set("zammad", []interface{}{
-			map[string]interface{}{
+		d.Set("zammad", []any{
+			map[string]any{
 				"email": alertAction.Params.Email,
 			},
 		})
 	case ilert.ConnectorTypes.DingTalk:
-		d.Set("dingtalk", []interface{}{
-			map[string]interface{}{
+		d.Set("dingtalk", []any{
+			map[string]any{
 				"is_at_all":  alertAction.Params.IsAtAll,
 				"at_mobiles": alertAction.Params.AtMobiles,
 			},
 		})
 	case ilert.ConnectorTypes.DingTalkAction:
-		d.Set("dingtalk_action", []interface{}{
-			map[string]interface{}{
+		d.Set("dingtalk_action", []any{
+			map[string]any{
 				"url":        alertAction.Params.URL,
 				"secret":     alertAction.Params.Secret,
 				"is_at_all":  alertAction.Params.IsAtAll,
@@ -1251,8 +1251,8 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 			},
 		})
 	case ilert.ConnectorTypes.AutomationRule:
-		d.Set("automation_rule", []interface{}{
-			map[string]interface{}{
+		d.Set("automation_rule", []any{
+			map[string]any{
 				"alert_type":        alertAction.Params.AlertType,
 				"resolve_incident":  alertAction.Params.ResolveIncident,
 				"service_status":    alertAction.Params.ServiceStatus,
@@ -1262,14 +1262,14 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 			},
 		})
 	case ilert.ConnectorTypes.Telegram:
-		d.Set("telegram", []interface{}{
-			map[string]interface{}{
+		d.Set("telegram", []any{
+			map[string]any{
 				"channel_id": alertAction.Params.ChannelID,
 			},
 		})
 	case ilert.ConnectorTypes.MicrosoftTeamsBot:
-		d.Set("microsoft_teams_bot", []interface{}{
-			map[string]interface{}{
+		d.Set("microsoft_teams_bot", []any{
+			map[string]any{
 				"channel_id":   alertAction.Params.ChannelID,
 				"channel_name": alertAction.Params.ChannelName,
 				"team_id":      alertAction.Params.TeamID,
@@ -1278,15 +1278,15 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 			},
 		})
 	case ilert.ConnectorTypes.MicrosoftTeamsWebhook:
-		d.Set("microsoft_teams_webhook", []interface{}{
-			map[string]interface{}{
+		d.Set("microsoft_teams_webhook", []any{
+			map[string]any{
 				"url":          alertAction.Params.URL,
 				"bodyTemplate": alertAction.Params.BodyTemplate,
 			},
 		})
 	case ilert.ConnectorTypes.SlackWebhook:
-		d.Set("slack_webhook", []interface{}{
-			map[string]interface{}{
+		d.Set("slack_webhook", []any{
+			map[string]any{
 				"url": alertAction.Params.URL,
 			},
 		})
@@ -1302,14 +1302,14 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 
 	if val, ok := d.GetOk("team"); ok {
 		if val != nil && alertAction.Teams != nil {
-			vL := val.([]interface{})
-			teams := make([]interface{}, 0)
+			vL := val.([]any)
+			teams := make([]any, 0)
 			for i, item := range *alertAction.Teams {
-				team := make(map[string]interface{})
+				team := make(map[string]any)
 				if i >= len(vL) {
 					break
 				}
-				v := vL[i].(map[string]interface{})
+				v := vL[i].(map[string]any)
 				team["id"] = item.ID
 
 				// Means: if server response has a name set, and the user typed in a name too,
@@ -1325,9 +1325,9 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 			}
 		}
 	} else if d.Id() == "" && alertAction.Teams != nil {
-		teams := make([]interface{}, 0)
+		teams := make([]any, 0)
 		for _, item := range *alertAction.Teams {
-			team := map[string]interface{}{
+			team := map[string]any{
 				"id": item.ID,
 			}
 			if item.Name != "" {
@@ -1344,12 +1344,12 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 	d.Set("escalation_ended_delay_sec", alertAction.EscalationEndedDelaySec)
 	d.Set("not_resolved_delay_sec", alertAction.NotResolvedDelaySec)
 
-	if val, ok := d.GetOk("alert_source"); ok && len(val.([]interface{})) == 1 {
-		if v, ok := d.GetOk("team"); !ok || len(v.([]interface{})) == 0 {
+	if val, ok := d.GetOk("alert_source"); ok && len(val.([]any)) == 1 {
+		if v, ok := d.GetOk("team"); !ok || len(v.([]any)) == 0 {
 			sourceId := alertAction.AlertSourceIDs[0]
 
-			sources := make([]interface{}, 0)
-			source := make(map[string]interface{})
+			sources := make([]any, 0)
+			source := make(map[string]any)
 			source["id"] = strconv.FormatInt(sourceId, 10)
 			sources = append(sources, source)
 
@@ -1362,13 +1362,13 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 	return nil
 }
 
-func flattenAlertActionAlertSourcesList(list []ilert.AlertSource) ([]interface{}, error) {
+func flattenAlertActionAlertSourcesList(list []ilert.AlertSource) ([]any, error) {
 	if list == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
-	results := make([]interface{}, 0)
+	results := make([]any, 0)
 	for _, item := range list {
-		result := make(map[string]interface{})
+		result := make(map[string]any)
 		result["id"] = strconv.FormatInt(item.ID, 10)
 		results = append(results, result)
 	}
@@ -1376,17 +1376,17 @@ func flattenAlertActionAlertSourcesList(list []ilert.AlertSource) ([]interface{}
 	return results, nil
 }
 
-func flattenAlertActionAlertFilter(filter *ilert.AlertFilter) ([]interface{}, error) {
+func flattenAlertActionAlertFilter(filter *ilert.AlertFilter) ([]any, error) {
 	if filter == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
 
-	results := make([]interface{}, 0)
-	r := make(map[string]interface{})
+	results := make([]any, 0)
+	r := make(map[string]any)
 	r["operator"] = filter.Operator
-	prds := make([]interface{}, 0)
+	prds := make([]any, 0)
 	for _, p := range filter.Predicates {
-		prd := make(map[string]interface{})
+		prd := make(map[string]any)
 		prd["field"] = p.Field
 		prd["criteria"] = p.Criteria
 		prd["value"] = p.Value

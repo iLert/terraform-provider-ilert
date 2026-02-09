@@ -92,7 +92,7 @@ func Provider() *schema.Provider {
 			"ilert_user_update_preference":       resourceUserUpdatePreference(),
 		},
 	}
-	p.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	p.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 		terraformVersion := p.TerraformVersion
 		if terraformVersion == "" {
 			terraformVersion = "0.11+compatible"
@@ -102,7 +102,7 @@ func Provider() *schema.Provider {
 	return p
 }
 
-func providerConfigure(ctx context.Context, d *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
+func providerConfigure(_ context.Context, d *schema.ResourceData, terraformVersion string) (any, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	endpoint := d.Get("endpoint").(string)
 	apiToken := d.Get("api_token").(string)

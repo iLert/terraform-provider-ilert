@@ -133,10 +133,10 @@ func buildSupportHour(d *schema.ResourceData) (*ilert.SupportHour, error) {
 	}
 
 	if val, ok := d.GetOk("team"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			tm := ilert.TeamShort{
 				ID: int64(v["id"].(int)),
 			}
@@ -149,14 +149,14 @@ func buildSupportHour(d *schema.ResourceData) (*ilert.SupportHour, error) {
 	}
 
 	if val, ok := d.GetOk("support_days"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		days := ilert.SupportDays{}
 		if len(vL) > 0 && vL[0] != nil {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			for d, sd := range v {
-				s := sd.([]interface{})
+				s := sd.([]any)
 				if len(s) > 0 && s[0] != nil {
-					ds := s[0].(map[string]interface{})
+					ds := s[0].(map[string]any)
 					if d == "monday" {
 						day := ilert.SupportDay{
 							Start: ds["start"].(string),
@@ -213,9 +213,9 @@ func buildSupportHour(d *schema.ResourceData) (*ilert.SupportHour, error) {
 	}
 
 	// if val, ok := d.GetOk("support_days"); ok {
-	// 	vL := val.([]interface{})
+	// 	vL := val.([]any)
 	// 	if len(vL) > 0 && vL[0] != nil {
-	// 		dL := vL[0].(map[string]interface{})
+	// 		dL := vL[0].(map[string]any)
 	// 		for day, times := range dL {
 	// 			if
 
@@ -227,7 +227,7 @@ func buildSupportHour(d *schema.ResourceData) (*ilert.SupportHour, error) {
 	return supportHour, nil
 }
 
-func resourceSupportHourCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSupportHourCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	supportHour, err := buildSupportHour(d)
@@ -267,7 +267,7 @@ func resourceSupportHourCreate(ctx context.Context, d *schema.ResourceData, m in
 	return resourceSupportHourRead(ctx, d, m)
 }
 
-func resourceSupportHourRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSupportHourRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	supportHourID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -327,7 +327,7 @@ func resourceSupportHourRead(ctx context.Context, d *schema.ResourceData, m inte
 	return nil
 }
 
-func resourceSupportHourUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSupportHourUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	supportHour, err := buildSupportHour(d)
@@ -363,7 +363,7 @@ func resourceSupportHourUpdate(ctx context.Context, d *schema.ResourceData, m in
 	return resourceSupportHourRead(ctx, d, m)
 }
 
-func resourceSupportHourDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSupportHourDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	supportHourID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -392,7 +392,7 @@ func resourceSupportHourDelete(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func resourceSupportHourExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceSupportHourExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	supportHourID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -428,55 +428,55 @@ func resourceSupportHourExists(d *schema.ResourceData, m interface{}) (bool, err
 	return result, nil
 }
 
-func flattenSupportDays(supportDays *ilert.SupportDays) ([]interface{}, error) {
+func flattenSupportDays(supportDays *ilert.SupportDays) ([]any, error) {
 	if supportDays == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
 
-	results := make([]interface{}, 0)
-	result := make(map[string]interface{})
+	results := make([]any, 0)
+	result := make(map[string]any)
 
 	if supportDays.MONDAY != nil {
-		supportDay := make(map[string]interface{})
+		supportDay := make(map[string]any)
 		supportDay["start"] = supportDays.MONDAY.Start
 		supportDay["end"] = supportDays.MONDAY.End
-		result["monday"] = []interface{}{supportDay}
+		result["monday"] = []any{supportDay}
 	}
 	if supportDays.TUESDAY != nil {
-		supportDay := make(map[string]interface{})
+		supportDay := make(map[string]any)
 		supportDay["start"] = supportDays.TUESDAY.Start
 		supportDay["end"] = supportDays.TUESDAY.End
-		result["tuesday"] = []interface{}{supportDay}
+		result["tuesday"] = []any{supportDay}
 	}
 	if supportDays.WEDNESDAY != nil {
-		supportDay := make(map[string]interface{})
+		supportDay := make(map[string]any)
 		supportDay["start"] = supportDays.WEDNESDAY.Start
 		supportDay["end"] = supportDays.WEDNESDAY.End
-		result["wednesday"] = []interface{}{supportDay}
+		result["wednesday"] = []any{supportDay}
 	}
 	if supportDays.THURSDAY != nil {
-		supportDay := make(map[string]interface{})
+		supportDay := make(map[string]any)
 		supportDay["start"] = supportDays.THURSDAY.Start
 		supportDay["end"] = supportDays.THURSDAY.End
-		result["thursday"] = []interface{}{supportDay}
+		result["thursday"] = []any{supportDay}
 	}
 	if supportDays.FRIDAY != nil {
-		supportDay := make(map[string]interface{})
+		supportDay := make(map[string]any)
 		supportDay["start"] = supportDays.FRIDAY.Start
 		supportDay["end"] = supportDays.FRIDAY.End
-		result["friday"] = []interface{}{supportDay}
+		result["friday"] = []any{supportDay}
 	}
 	if supportDays.SATURDAY != nil {
-		supportDay := make(map[string]interface{})
+		supportDay := make(map[string]any)
 		supportDay["start"] = supportDays.SATURDAY.Start
 		supportDay["end"] = supportDays.SATURDAY.End
-		result["saturday"] = []interface{}{supportDay}
+		result["saturday"] = []any{supportDay}
 	}
 	if supportDays.SUNDAY != nil {
-		supportDay := make(map[string]interface{})
+		supportDay := make(map[string]any)
 		supportDay["start"] = supportDays.SUNDAY.Start
 		supportDay["end"] = supportDays.SUNDAY.End
-		result["sunday"] = []interface{}{supportDay}
+		result["sunday"] = []any{supportDay}
 	}
 	results = append(results, result)
 

@@ -128,10 +128,10 @@ func buildMetricDataSource(d *schema.ResourceData) (*ilert.MetricDataSource, err
 	}
 
 	if val, ok := d.GetOk("team"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			tm := ilert.TeamShort{
 				ID: int64(v["id"].(int)),
 			}
@@ -144,8 +144,8 @@ func buildMetricDataSource(d *schema.ResourceData) (*ilert.MetricDataSource, err
 	}
 
 	if val, ok := d.GetOk("metadata"); ok {
-		vL := val.([]interface{})
-		v := vL[0].(map[string]interface{})
+		vL := val.([]any)
+		v := vL[0].(map[string]any)
 		mt := ilert.MetricDataSourceMetadata{}
 		if v["region"] != nil && v["region"].(string) != "" {
 			mt.Region = v["region"].(string)
@@ -181,7 +181,7 @@ func buildMetricDataSource(d *schema.ResourceData) (*ilert.MetricDataSource, err
 	return metricDataSource, nil
 }
 
-func resourceMetricDataSourceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMetricDataSourceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	metricDataSource, err := buildMetricDataSource(d)
@@ -220,7 +220,7 @@ func resourceMetricDataSourceCreate(ctx context.Context, d *schema.ResourceData,
 	return resourceMetricDataSourceRead(ctx, d, m)
 }
 
-func resourceMetricDataSourceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMetricDataSourceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	metricDataSourceID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -280,7 +280,7 @@ func resourceMetricDataSourceRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceMetricDataSourceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMetricDataSourceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	metricdatasource, err := buildMetricDataSource(d)
@@ -316,7 +316,7 @@ func resourceMetricDataSourceUpdate(ctx context.Context, d *schema.ResourceData,
 	return resourceMetricDataSourceRead(ctx, d, m)
 }
 
-func resourceMetricDataSourceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMetricDataSourceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	metricdatasourceID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -345,7 +345,7 @@ func resourceMetricDataSourceDelete(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceMetricDataSourceExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceMetricDataSourceExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	metricdatasourceID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -381,12 +381,12 @@ func resourceMetricDataSourceExists(d *schema.ResourceData, m interface{}) (bool
 	return result, nil
 }
 
-func flattenProviderMetadata(metadata *ilert.MetricDataSourceMetadata, d *schema.ResourceData) ([]interface{}, error) {
+func flattenProviderMetadata(metadata *ilert.MetricDataSourceMetadata, d *schema.ResourceData) ([]any, error) {
 	if metadata == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
-	results := make([]interface{}, 0)
-	result := make(map[string]interface{}, 0)
+	results := make([]any, 0)
+	result := make(map[string]any, 0)
 	if metadata.Region != "" {
 		result["region"] = metadata.Region
 	}

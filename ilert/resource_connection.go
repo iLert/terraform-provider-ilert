@@ -797,10 +797,10 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("alert_source"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		aids := make([]int64, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			aid, err := strconv.ParseInt(v["id"].(string), 10, 64)
 			if err != nil {
 				return nil, unconvertibleIDErr(v["id"].(string), err)
@@ -811,9 +811,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("connector"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.ConnectorID = v["id"].(string)
 			connection.ConnectorType = v["type"].(string)
 		}
@@ -825,7 +825,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("trigger_types"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		sL := make([]string, 0)
 		for _, m := range vL {
 			v := m.(string)
@@ -835,14 +835,14 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("datadog"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			params := &ilert.ConnectionParamsDatadog{
 				Site:     v["site"].(string),
 				Priority: v["priority"].(string),
 			}
-			vL := v["tags"].([]interface{})
+			vL := v["tags"].([]any)
 			sL := make([]string, 0)
 			for _, m := range vL {
 				v := m.(string)
@@ -854,9 +854,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("jira"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.Params = &ilert.ConnectionParamsJira{
 				Project:      v["project"].(string),
 				IssueType:    v["issue_type"].(string),
@@ -866,9 +866,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("servicenow"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.Params = &ilert.ConnectionParamsServiceNow{
 				CallerID: v["caller_id"].(string),
 				Impact:   v["impact"].(string),
@@ -878,9 +878,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("slack"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.Params = &ilert.ConnectionParamsSlack{
 				ChannelID:   v["channel_id"].(string),
 				ChannelName: v["channel_name"].(string),
@@ -891,9 +891,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("webhook"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.Params = &ilert.ConnectionParamsWebhook{
 				WebhookURL:   v["url"].(string),
 				BodyTemplate: v["body_template"].(string),
@@ -902,9 +902,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("zendesk"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.Params = &ilert.ConnectionParamsZendesk{
 				Priority: v["priority"].(string),
 			}
@@ -912,14 +912,14 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("github"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			params := &ilert.ConnectionParamsGithub{
 				Owner:      v["owner"].(string),
 				Repository: v["repository"].(string),
 			}
-			vL := v["labels"].([]interface{})
+			vL := v["labels"].([]any)
 			sL := make([]string, 0)
 			for _, m := range vL {
 				v := m.(string)
@@ -931,9 +931,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("topdesk"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.Params = &ilert.ConnectionParamsTopdesk{
 				Status: v["status"].(string),
 			}
@@ -941,9 +941,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("aws_lambda"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.Params = &ilert.ConnectionParamsAWSLambda{
 				WebhookURL:   v["url"].(string),
 				BodyTemplate: v["body_template"].(string),
@@ -952,9 +952,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("azure_faas"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.Params = &ilert.ConnectionParamsAzureFunction{
 				WebhookURL:   v["url"].(string),
 				BodyTemplate: v["body_template"].(string),
@@ -963,9 +963,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("google_faas"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.Params = &ilert.ConnectionParamsGoogleFunction{
 				WebhookURL:   v["url"].(string),
 				BodyTemplate: v["body_template"].(string),
@@ -974,8 +974,8 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("email"); ok {
-		if vL, ok := val.([]interface{}); ok && len(vL) > 0 {
-			if v, ok := vL[0].(map[string]interface{}); ok && len(v) > 0 {
+		if vL, ok := val.([]any); ok && len(vL) > 0 {
+			if v, ok := vL[0].(map[string]any); ok && len(v) > 0 {
 				params := &ilert.ConnectionParamsEmail{}
 				if p, ok := v["subject"].(string); ok && p != "" {
 					params.Subject = p
@@ -983,7 +983,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 				if p, ok := v["body_template"].(string); ok && p != "" {
 					params.BodyTemplate = p
 				}
-				if vL, ok := v["recipients"].([]interface{}); ok && len(vL) > 0 {
+				if vL, ok := v["recipients"].([]any); ok && len(vL) > 0 {
 					sL := make([]string, 0)
 					for _, m := range vL {
 						if v, ok := m.(string); ok && v != "" {
@@ -998,13 +998,13 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("sysdig"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			params := &ilert.ConnectionParamsSysdig{
 				EventFilter: v["event_filter"].(string),
 			}
-			vL := v["tags"].([]interface{})
+			vL := v["tags"].([]any)
 			sL := make([]string, 0)
 			for _, m := range vL {
 				v := m.(string)
@@ -1016,9 +1016,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("zapier"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.Params = &ilert.ConnectionParamsZapier{
 				WebhookURL: v["url"].(string),
 			}
@@ -1026,9 +1026,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("autotask"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.Params = &ilert.ConnectionParamsAutotask{
 				CompanyID:      v["company_id"].(string),
 				IssueType:      v["issue_type"].(string),
@@ -1040,9 +1040,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("zammad"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.Params = &ilert.ConnectionParamsZammad{
 				Email: v["email"].(string),
 			}
@@ -1050,9 +1050,9 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	}
 
 	if val, ok := d.GetOk("status_page_io"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connection.Params = &ilert.ConnectionParamsStatusPageIO{
 				PageID: v["page_id"].(string),
 			}
@@ -1062,7 +1062,7 @@ func buildConnection(d *schema.ResourceData) (*ilert.Connection, error) {
 	return connection, nil
 }
 
-func resourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connection, err := buildConnection(d)
@@ -1107,7 +1107,7 @@ func resourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceConnectionRead(ctx, d, m)
 }
 
-func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connectionID := d.Id()
@@ -1151,13 +1151,13 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.Errorf("error setting alert sources: %s", err)
 	}
 
-	connector := map[string]interface{}{}
+	connector := map[string]any{}
 	log.Printf("[DEBUG] Reading ilert connection: %s , connector id: %s", d.Id(), result.Connection.ConnectorID)
 	if result.Connection.ConnectorID != "" {
 		connector["id"] = result.Connection.ConnectorID
 		connector["type"] = result.Connection.ConnectorType
 	}
-	d.Set("connector", []interface{}{connector})
+	d.Set("connector", []any{connector})
 	d.Set("trigger_mode", result.Connection.TriggerMode)
 	d.Set("trigger_types", result.Connection.TriggerTypes)
 	d.Set("created_at", result.Connection.CreatedAt)
@@ -1165,24 +1165,24 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	switch result.Connection.ConnectorType {
 	case ilert.ConnectorTypes.Jira:
-		d.Set("jira", []interface{}{
-			map[string]interface{}{
+		d.Set("jira", []any{
+			map[string]any{
 				"project":       result.Connection.Params.Project,
 				"issue_type":    result.Connection.Params.IssueType,
 				"body_template": result.Connection.Params.BodyTemplate,
 			},
 		})
 	case ilert.ConnectorTypes.ServiceNow:
-		d.Set("servicenow", []interface{}{
-			map[string]interface{}{
+		d.Set("servicenow", []any{
+			map[string]any{
 				"caller_id": result.Connection.Params.CallerID,
 				"impact":    result.Connection.Params.Impact,
 				"urgency":   result.Connection.Params.Urgency,
 			},
 		})
 	case ilert.ConnectorTypes.Slack:
-		d.Set("slack", []interface{}{
-			map[string]interface{}{
+		d.Set("slack", []any{
+			map[string]any{
 				"channel_id":   result.Connection.Params.ChannelID,
 				"channel_name": result.Connection.Params.ChannelName,
 				"team_id":      result.Connection.Params.TeamID,
@@ -1190,43 +1190,43 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 			},
 		})
 	case ilert.ConnectorTypes.Webhook:
-		d.Set("webhook", []interface{}{
-			map[string]interface{}{
+		d.Set("webhook", []any{
+			map[string]any{
 				"url":           result.Connection.Params.WebhookURL,
 				"body_template": result.Connection.Params.BodyTemplate,
 			},
 		})
 	case ilert.ConnectorTypes.Zendesk:
-		d.Set("zendesk", []interface{}{
-			map[string]interface{}{
+		d.Set("zendesk", []any{
+			map[string]any{
 				"priority": result.Connection.Params.Priority,
 			},
 		})
 	case ilert.ConnectorTypes.Github:
-		d.Set("github", []interface{}{
-			map[string]interface{}{
+		d.Set("github", []any{
+			map[string]any{
 				"owner":      result.Connection.Params.Owner,
 				"repository": result.Connection.Params.Repository,
 				"labels":     result.Connection.Params.Labels,
 			},
 		})
 	case ilert.ConnectorTypes.Topdesk:
-		d.Set("topdesk", []interface{}{
-			map[string]interface{}{
+		d.Set("topdesk", []any{
+			map[string]any{
 				"status": result.Connection.Params.Status,
 			},
 		})
 	case ilert.ConnectorTypes.Email:
-		d.Set("email", []interface{}{
-			map[string]interface{}{
+		d.Set("email", []any{
+			map[string]any{
 				"recipients":    result.Connection.Params.Recipients,
 				"subject":       result.Connection.Params.Subject,
 				"body_template": result.Connection.Params.BodyTemplate,
 			},
 		})
 	case ilert.ConnectorTypes.Autotask:
-		d.Set("autotask", []interface{}{
-			map[string]interface{}{
+		d.Set("autotask", []any{
+			map[string]any{
 				"company_id":      result.Connection.Params.CompanyID,
 				"issue_type":      result.Connection.Params.IssueType,
 				"queue_id":        result.Connection.Params.QueueID,
@@ -1235,8 +1235,8 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 			},
 		})
 	case ilert.ConnectorTypes.Zammad:
-		d.Set("zammad", []interface{}{
-			map[string]interface{}{
+		d.Set("zammad", []any{
+			map[string]any{
 				"email": result.Connection.Params.Email,
 			},
 		})
@@ -1245,7 +1245,7 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func resourceConnectionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceConnectionUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connection, err := buildConnection(d)
@@ -1277,7 +1277,7 @@ func resourceConnectionUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceConnectionRead(ctx, d, m)
 }
 
-func resourceConnectionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceConnectionDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connectionID := d.Id()
@@ -1303,7 +1303,7 @@ func resourceConnectionDelete(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func resourceConnectionExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceConnectionExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	connectionID := d.Id()
@@ -1334,13 +1334,13 @@ func resourceConnectionExists(d *schema.ResourceData, m interface{}) (bool, erro
 	return result, nil
 }
 
-func flattenConnectionAlertSourceIDList(list []int64) ([]interface{}, error) {
+func flattenConnectionAlertSourceIDList(list []int64) ([]any, error) {
 	if list == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
-	results := make([]interface{}, 0)
+	results := make([]any, 0)
 	for _, item := range list {
-		result := make(map[string]interface{})
+		result := make(map[string]any)
 		result["id"] = strconv.FormatInt(item, 10)
 		results = append(results, result)
 	}

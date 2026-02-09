@@ -90,10 +90,10 @@ func buildUserDutyPreference(d *schema.ResourceData) (*ilert.UserDutyPreference,
 		Type:      dutyType,
 	}
 
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}
@@ -102,10 +102,10 @@ func buildUserDutyPreference(d *schema.ResourceData) (*ilert.UserDutyPreference,
 		if preference.Method == "PUSH" {
 			return nil, nil, fmt.Errorf("[ERROR] Field 'contact' must not be set when method is 'PUSH'")
 		}
-		contactList := val.([]interface{})
+		contactList := val.([]any)
 		contact := &ilert.UserContactShort{}
 		if len(contactList) > 0 && contactList[0] != nil {
-			cnt := contactList[0].(map[string]interface{})
+			cnt := contactList[0].(map[string]any)
 			contact.ID = int64(cnt["id"].(int))
 		}
 		preference.Contact = contact
@@ -118,7 +118,7 @@ func buildUserDutyPreference(d *schema.ResourceData) (*ilert.UserDutyPreference,
 	return preference, ilert.Int64(userId), nil
 }
 
-func resourceUserDutyPreferenceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserDutyPreferenceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	preference, userId, err := buildUserDutyPreference(d)
@@ -154,8 +154,8 @@ func resourceUserDutyPreferenceCreate(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(strconv.FormatInt(result.UserDutyPreference.ID, 10))
 
-	usr := make([]interface{}, 0)
-	u := make(map[string]interface{}, 0)
+	usr := make([]any, 0)
+	u := make(map[string]any, 0)
 	u["id"] = int(*userId)
 	usr = append(usr, u)
 	d.Set("user", usr)
@@ -163,17 +163,17 @@ func resourceUserDutyPreferenceCreate(ctx context.Context, d *schema.ResourceDat
 	return resourceUserDutyPreferenceRead(ctx, d, m)
 }
 
-func resourceUserDutyPreferenceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserDutyPreferenceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	preferenceId, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}
@@ -220,8 +220,8 @@ func resourceUserDutyPreferenceRead(ctx context.Context, d *schema.ResourceData,
 	d.Set("before_min", result.UserDutyPreference.BeforeMin)
 	d.Set("type", result.UserDutyPreference.Type)
 
-	usr := make([]interface{}, 0)
-	u := make(map[string]interface{}, 0)
+	usr := make([]any, 0)
+	u := make(map[string]any, 0)
 	u["id"] = int(userId)
 	usr = append(usr, u)
 	d.Set("user", usr)
@@ -229,7 +229,7 @@ func resourceUserDutyPreferenceRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceUserDutyPreferenceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserDutyPreferenceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	preference, userId, err := buildUserDutyPreference(d)
@@ -264,17 +264,17 @@ func resourceUserDutyPreferenceUpdate(ctx context.Context, d *schema.ResourceDat
 	return resourceUserDutyPreferenceRead(ctx, d, m)
 }
 
-func resourceUserDutyPreferenceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserDutyPreferenceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	preferenceId, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}
@@ -299,17 +299,17 @@ func resourceUserDutyPreferenceDelete(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceUserDutyPreferenceExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceUserDutyPreferenceExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	preferenceId, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return false, unconvertibleIDErr(d.Id(), err)
 	}
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}

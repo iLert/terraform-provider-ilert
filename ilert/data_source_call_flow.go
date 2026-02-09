@@ -58,7 +58,7 @@ func dataSourceCallFlow() *schema.Resource {
 	}
 }
 
-func dataSourceCallFlowRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceCallFlowRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
 	log.Printf("[DEBUG] Reading ilert call flow")
@@ -87,24 +87,24 @@ func dataSourceCallFlowRead(ctx context.Context, d *schema.ResourceData, meta in
 		d.Set("name", found.Name)
 
 		if found.AssignedNumber != nil {
-			assigned := make(map[string]interface{})
+			assigned := make(map[string]any)
 			assigned["id"] = found.AssignedNumber.ID
 			assigned["name"] = found.AssignedNumber.Name
 			if found.AssignedNumber.PhoneNumber != nil {
-				assigned["phone_number"] = []interface{}{
-					map[string]interface{}{
+				assigned["phone_number"] = []any{
+					map[string]any{
 						"region_code": found.AssignedNumber.PhoneNumber.RegionCode,
 						"number":      found.AssignedNumber.PhoneNumber.Number,
 					},
 				}
 			} else {
-				assigned["phone_number"] = []interface{}{}
+				assigned["phone_number"] = []any{}
 			}
-			if err := d.Set("assigned_number", []interface{}{assigned}); err != nil {
+			if err := d.Set("assigned_number", []any{assigned}); err != nil {
 				return resource.NonRetryableError(fmt.Errorf("error setting assigned_number: %s", err))
 			}
 		} else {
-			if err := d.Set("assigned_number", []interface{}{}); err != nil {
+			if err := d.Set("assigned_number", []any{}); err != nil {
 				return resource.NonRetryableError(fmt.Errorf("error setting assigned_number: %s", err))
 			}
 		}

@@ -83,10 +83,10 @@ func buildUserUpdatePreference(d *schema.ResourceData) (*ilert.UserUpdatePrefere
 		Type:   updateType,
 	}
 
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}
@@ -95,10 +95,10 @@ func buildUserUpdatePreference(d *schema.ResourceData) (*ilert.UserUpdatePrefere
 		if preference.Method == "PUSH" {
 			return nil, nil, fmt.Errorf("[ERROR] Field 'contact' must not be set when method is 'PUSH'")
 		}
-		contactList := val.([]interface{})
+		contactList := val.([]any)
 		contact := &ilert.UserContactShort{}
 		if len(contactList) > 0 && contactList[0] != nil {
-			cnt := contactList[0].(map[string]interface{})
+			cnt := contactList[0].(map[string]any)
 			contact.ID = int64(cnt["id"].(int))
 		}
 		preference.Contact = contact
@@ -111,7 +111,7 @@ func buildUserUpdatePreference(d *schema.ResourceData) (*ilert.UserUpdatePrefere
 	return preference, ilert.Int64(userId), nil
 }
 
-func resourceUserUpdatePreferenceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserUpdatePreferenceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	preference, userId, err := buildUserUpdatePreference(d)
@@ -147,8 +147,8 @@ func resourceUserUpdatePreferenceCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(strconv.FormatInt(result.UserUpdatePreference.ID, 10))
 
-	usr := make([]interface{}, 0)
-	u := make(map[string]interface{}, 0)
+	usr := make([]any, 0)
+	u := make(map[string]any, 0)
 	u["id"] = int(*userId)
 	usr = append(usr, u)
 	d.Set("user", usr)
@@ -156,17 +156,17 @@ func resourceUserUpdatePreferenceCreate(ctx context.Context, d *schema.ResourceD
 	return resourceUserUpdatePreferenceRead(ctx, d, m)
 }
 
-func resourceUserUpdatePreferenceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserUpdatePreferenceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	preferenceId, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}
@@ -211,8 +211,8 @@ func resourceUserUpdatePreferenceRead(ctx context.Context, d *schema.ResourceDat
 		return diag.Errorf("error setting contact: %s", err)
 	}
 
-	usr := make([]interface{}, 0)
-	u := make(map[string]interface{}, 0)
+	usr := make([]any, 0)
+	u := make(map[string]any, 0)
 	u["id"] = int(userId)
 	usr = append(usr, u)
 	d.Set("user", usr)
@@ -220,7 +220,7 @@ func resourceUserUpdatePreferenceRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceUserUpdatePreferenceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserUpdatePreferenceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	preference, userId, err := buildUserUpdatePreference(d)
@@ -255,17 +255,17 @@ func resourceUserUpdatePreferenceUpdate(ctx context.Context, d *schema.ResourceD
 	return resourceUserUpdatePreferenceRead(ctx, d, m)
 }
 
-func resourceUserUpdatePreferenceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserUpdatePreferenceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	preferenceId, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}
@@ -290,17 +290,17 @@ func resourceUserUpdatePreferenceDelete(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceUserUpdatePreferenceExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceUserUpdatePreferenceExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	preferenceId, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return false, unconvertibleIDErr(d.Id(), err)
 	}
-	user := d.Get("user").([]interface{})
+	user := d.Get("user").([]any)
 	userId := int64(-1)
 	if len(user) > 0 && user[0] != nil {
-		usr := user[0].(map[string]interface{})
+		usr := user[0].(map[string]any)
 		id := int64(usr["id"].(int))
 		userId = id
 	}

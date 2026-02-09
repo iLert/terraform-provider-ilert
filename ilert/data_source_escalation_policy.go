@@ -26,7 +26,7 @@ func dataSourceEscalationPolicy() *schema.Resource {
 	}
 }
 
-func dataSourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
 	log.Printf("[DEBUG] Reading ilert escalation policy")

@@ -26,7 +26,7 @@ func dataSourceDeploymentPipeline() *schema.Resource {
 	}
 }
 
-func dataSourceDeploymentPipelineRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceDeploymentPipelineRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*ilert.Client)
 
 	log.Printf("[DEBUG] Reading ilert deployment pipeline")

@@ -61,10 +61,10 @@ func buildStatusPageGroup(d *schema.ResourceData) (*ilert.StatusPageGroup, *int6
 		Name: name,
 	}
 
-	spL := d.Get("status_page").([]interface{})
+	spL := d.Get("status_page").([]any)
 	StatusPageID := int64(-1)
 	if len(spL) > 0 && spL[0] != nil {
-		sp := spL[0].(map[string]interface{})
+		sp := spL[0].(map[string]any)
 		id := int64(sp["id"].(int))
 		StatusPageID = id
 	}
@@ -72,7 +72,7 @@ func buildStatusPageGroup(d *schema.ResourceData) (*ilert.StatusPageGroup, *int6
 	return StatusPageGroup, &StatusPageID, nil
 }
 
-func resourceStatusPageGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceStatusPageGroupCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	statusPageGroup, statusPageID, err := buildStatusPageGroup(d)
@@ -109,8 +109,8 @@ func resourceStatusPageGroupCreate(ctx context.Context, d *schema.ResourceData, 
 
 	d.SetId(strconv.FormatInt(result.StatusPageGroup.ID, 10))
 
-	sp := make([]interface{}, 0)
-	s := make(map[string]interface{}, 0)
+	sp := make([]any, 0)
+	s := make(map[string]any, 0)
 	s["id"] = int(*statusPageID)
 	sp = append(sp, s)
 	d.Set("status_page", sp)
@@ -118,7 +118,7 @@ func resourceStatusPageGroupCreate(ctx context.Context, d *schema.ResourceData, 
 	return resourceStatusPageGroupRead(ctx, d, m)
 }
 
-func resourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	statusPageGroupID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -126,10 +126,10 @@ func resourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, m 
 		log.Printf("[ERROR] Could not parse status page group id %s", err.Error())
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
-	spL := d.Get("status_page").([]interface{})
+	spL := d.Get("status_page").([]any)
 	statusPageID := int64(-1)
 	if len(spL) > 0 && spL[0] != nil {
-		sp := spL[0].(map[string]interface{})
+		sp := spL[0].(map[string]any)
 		id := int64(sp["id"].(int))
 		statusPageID = id
 	}
@@ -166,8 +166,8 @@ func resourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, m 
 
 	d.Set("name", result.StatusPageGroup.Name)
 
-	sp := make([]interface{}, 0)
-	s := make(map[string]interface{}, 0)
+	sp := make([]any, 0)
+	s := make(map[string]any, 0)
 	s["id"] = int(statusPageID)
 	sp = append(sp, s)
 	d.Set("status_page", sp)
@@ -175,7 +175,7 @@ func resourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, m 
 	return nil
 }
 
-func resourceStatusPageGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceStatusPageGroupUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	statusPageGroup, statusPageID, err := buildStatusPageGroup(d)
@@ -211,7 +211,7 @@ func resourceStatusPageGroupUpdate(ctx context.Context, d *schema.ResourceData, 
 	return resourceStatusPageGroupRead(ctx, d, m)
 }
 
-func resourceStatusPageGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceStatusPageGroupDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	statusPageGroupID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -219,10 +219,10 @@ func resourceStatusPageGroupDelete(ctx context.Context, d *schema.ResourceData, 
 		log.Printf("[ERROR] Could not parse status page group id %s", err.Error())
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
-	spL := d.Get("status_page").([]interface{})
+	spL := d.Get("status_page").([]any)
 	statusPageID := int64(-1)
 	if len(spL) > 0 && spL[0] != nil {
-		sp := spL[0].(map[string]interface{})
+		sp := spL[0].(map[string]any)
 		id := int64(sp["id"].(int))
 		statusPageID = id
 	}
@@ -247,7 +247,7 @@ func resourceStatusPageGroupDelete(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceStatusPageGroupExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceStatusPageGroupExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	statusPageGroupID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -255,10 +255,10 @@ func resourceStatusPageGroupExists(d *schema.ResourceData, m interface{}) (bool,
 		log.Printf("[ERROR] Could not parse status page group id %s", err.Error())
 		return false, unconvertibleIDErr(d.Id(), err)
 	}
-	spL := d.Get("status_page").([]interface{})
+	spL := d.Get("status_page").([]any)
 	statusPageID := int64(-1)
 	if len(spL) > 0 && spL[0] != nil {
-		sp := spL[0].(map[string]interface{})
+		sp := spL[0].(map[string]any)
 		id := int64(sp["id"].(int))
 		statusPageID = id
 	}

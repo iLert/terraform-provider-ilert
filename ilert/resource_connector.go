@@ -284,9 +284,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("datadog"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsDatadog{
 				APIKey: v["api_key"].(string),
 			}
@@ -294,9 +294,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("jira"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsJira{
 				URL:      v["url"].(string),
 				Email:    v["email"].(string),
@@ -306,9 +306,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("microsoft_teams"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsMicrosoftTeams{
 				URL: v["url"].(string),
 			}
@@ -316,9 +316,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("servicenow"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsServiceNow{
 				URL:      v["url"].(string),
 				Username: v["username"].(string),
@@ -328,9 +328,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("zendesk"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsZendesk{
 				URL:    v["url"].(string),
 				Email:  v["email"].(string),
@@ -340,9 +340,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("discord"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsDiscord{
 				URL: v["url"].(string),
 			}
@@ -350,9 +350,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("github"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsGithub{
 				APIKey: v["api_key"].(string),
 			}
@@ -360,9 +360,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("topdesk"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsTopdesk{
 				URL:      v["url"].(string),
 				Username: v["username"].(string),
@@ -372,9 +372,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("aws_lambda"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsAWSLambda{
 				Authorization: v["authorization"].(string),
 			}
@@ -382,9 +382,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("azure_faas"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsAzureFunction{
 				Authorization: v["authorization"].(string),
 			}
@@ -392,9 +392,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("google_faas"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsGoogleFunction{
 				Authorization: v["authorization"].(string),
 			}
@@ -402,9 +402,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("sysdig"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsSysdig{
 				APIKey: v["api_key"].(string),
 			}
@@ -412,9 +412,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("autotask"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsAutotask{
 				URL:      v["url"].(string),
 				Email:    v["email"].(string),
@@ -424,9 +424,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("mattermost"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsMattermost{
 				URL: v["url"].(string),
 			}
@@ -434,9 +434,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("zammad"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsZammad{
 				URL:    v["url"].(string),
 				APIKey: v["api_key"].(string),
@@ -445,9 +445,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("status_page_io"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsStatusPageIO{
 				APIKey: v["api_key"].(string),
 			}
@@ -455,9 +455,9 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	}
 
 	if val, ok := d.GetOk("dingtalk"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		if len(vL) > 0 {
-			v := vL[0].(map[string]interface{})
+			v := vL[0].(map[string]any)
 			connector.Params = &ilert.ConnectorParamsDingTalk{
 				URL:    v["url"].(string),
 				Secret: v["secret"].(string),
@@ -468,7 +468,7 @@ func buildConnector(d *schema.ResourceData) (*ilert.Connector, error) {
 	return connector, nil
 }
 
-func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connector, err := buildConnector(d)
@@ -508,7 +508,7 @@ func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m inte
 	return resourceConnectorRead(ctx, d, m)
 }
 
-func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connectorID := d.Id()
@@ -550,79 +550,79 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 
 	switch result.Connector.Type {
 	case ilert.ConnectorTypes.Jira:
-		d.Set("jira", []interface{}{
-			map[string]interface{}{
+		d.Set("jira", []any{
+			map[string]any{
 				"url":      result.Connector.Params.URL,
 				"email":    result.Connector.Params.Email,
 				"password": result.Connector.Params.Password,
 			},
 		})
 	case ilert.ConnectorTypes.MicrosoftTeams:
-		d.Set("microsoft_teams", []interface{}{
-			map[string]interface{}{
+		d.Set("microsoft_teams", []any{
+			map[string]any{
 				"url": result.Connector.Params.URL,
 			},
 		})
 	case ilert.ConnectorTypes.ServiceNow:
-		d.Set("servicenow", []interface{}{
-			map[string]interface{}{
+		d.Set("servicenow", []any{
+			map[string]any{
 				"url":      result.Connector.Params.URL,
 				"username": result.Connector.Params.Username,
 				"password": result.Connector.Params.Password,
 			},
 		})
 	case ilert.ConnectorTypes.Zendesk:
-		d.Set("zendesk", []interface{}{
-			map[string]interface{}{
+		d.Set("zendesk", []any{
+			map[string]any{
 				"url":     result.Connector.Params.URL,
 				"email":   result.Connector.Params.Email,
 				"api_key": result.Connector.Params.APIKey,
 			},
 		})
 	case ilert.ConnectorTypes.Discord:
-		d.Set("discord", []interface{}{
-			map[string]interface{}{
+		d.Set("discord", []any{
+			map[string]any{
 				"url": result.Connector.Params.URL,
 			},
 		})
 	case ilert.ConnectorTypes.Github:
-		d.Set("github", []interface{}{
-			map[string]interface{}{
+		d.Set("github", []any{
+			map[string]any{
 				"api_key": result.Connector.Params.APIKey,
 			},
 		})
 	case ilert.ConnectorTypes.Topdesk:
-		d.Set("topdesk", []interface{}{
-			map[string]interface{}{
+		d.Set("topdesk", []any{
+			map[string]any{
 				"url":      result.Connector.Params.URL,
 				"username": result.Connector.Params.Username,
 				"password": result.Connector.Params.Password,
 			},
 		})
 	case ilert.ConnectorTypes.Autotask:
-		d.Set("autotask", []interface{}{
-			map[string]interface{}{
+		d.Set("autotask", []any{
+			map[string]any{
 				"url":      result.Connector.Params.URL,
 				"email":    result.Connector.Params.Email,
 				"password": result.Connector.Params.Password,
 			},
 		})
 	case ilert.ConnectorTypes.Mattermost:
-		d.Set("mattermost", []interface{}{
-			map[string]interface{}{
+		d.Set("mattermost", []any{
+			map[string]any{
 				"url": result.Connector.Params.URL,
 			},
 		})
 	case ilert.ConnectorTypes.Zammad:
-		d.Set("zammad", []interface{}{
-			map[string]interface{}{
+		d.Set("zammad", []any{
+			map[string]any{
 				"url":     result.Connector.Params.URL,
 				"api_key": result.Connector.Params.APIKey,
 			},
 		})
 	case ilert.ConnectorTypes.DingTalk:
-		d.Set("dingtalk", []interface{}{
-			map[string]interface{}{
+		d.Set("dingtalk", []any{
+			map[string]any{
 				"url":    result.Connector.Params.URL,
 				"secret": result.Connector.Params.Secret,
 			},
@@ -632,7 +632,7 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 	return nil
 }
 
-func resourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connector, err := buildConnector(d)
@@ -664,7 +664,7 @@ func resourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	return resourceConnectorRead(ctx, d, m)
 }
 
-func resourceConnectorDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceConnectorDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	connectorID := d.Id()
@@ -688,7 +688,7 @@ func resourceConnectorDelete(ctx context.Context, d *schema.ResourceData, m inte
 	return nil
 }
 
-func resourceConnectorExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceConnectorExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	connectorID := d.Id()

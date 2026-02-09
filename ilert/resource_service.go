@@ -102,10 +102,10 @@ func buildService(d *schema.ResourceData) (*ilert.Service, error) {
 	}
 
 	if val, ok := d.GetOk("team"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			tm := ilert.TeamShort{
 				ID: int64(v["id"].(int)),
 			}
@@ -120,7 +120,7 @@ func buildService(d *schema.ResourceData) (*ilert.Service, error) {
 	return service, nil
 }
 
-func resourceServiceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceServiceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	service, err := buildService(d)
@@ -159,7 +159,7 @@ func resourceServiceCreate(ctx context.Context, d *schema.ResourceData, m interf
 	return resourceServiceRead(ctx, d, m)
 }
 
-func resourceServiceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceServiceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	serviceID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -205,7 +205,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, m interfac
 	return nil
 }
 
-func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	service, err := buildService(d)
@@ -241,7 +241,7 @@ func resourceServiceUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	return resourceServiceRead(ctx, d, m)
 }
 
-func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	serviceID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -270,7 +270,7 @@ func resourceServiceDelete(ctx context.Context, d *schema.ResourceData, m interf
 	return nil
 }
 
-func resourceServiceExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceServiceExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	serviceID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -326,17 +326,17 @@ func transformServiceResource(service *ilert.Service, d *schema.ResourceData) er
 	return nil
 }
 
-func flattenTeamShortList(list []ilert.TeamShort, d *schema.ResourceData) ([]interface{}, error) {
+func flattenTeamShortList(list []ilert.TeamShort, d *schema.ResourceData) ([]any, error) {
 	if list == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
-	results := make([]interface{}, 0)
+	results := make([]any, 0)
 	if val, ok := d.GetOk("team"); ok && val != nil {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		for i, item := range list {
 			if vL != nil && i < len(vL) && vL[i] != nil {
-				result := make(map[string]interface{})
-				v := vL[i].(map[string]interface{})
+				result := make(map[string]any)
+				v := vL[i].(map[string]any)
 				result["id"] = item.ID
 				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
 					result["name"] = item.Name
@@ -346,7 +346,7 @@ func flattenTeamShortList(list []ilert.TeamShort, d *schema.ResourceData) ([]int
 		}
 	} else if d.Id() == "" {
 		for _, item := range list {
-			result := map[string]interface{}{
+			result := map[string]any{
 				"id": item.ID,
 			}
 			if item.Name != "" {

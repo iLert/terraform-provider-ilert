@@ -155,10 +155,10 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 	}
 
 	if val, ok := d.GetOk("escalation_rule"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		nps := make([]ilert.EscalationRule, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			ep := ilert.EscalationRule{
 				EscalationTimeout: v["escalation_timeout"].(int),
 			}
@@ -186,11 +186,11 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 					ID: scheduleID,
 				}
 			} else {
-				if v["users"] != nil && len(v["users"].([]interface{})) > 0 {
+				if v["users"] != nil && len(v["users"].([]any)) > 0 {
 					usr := make([]ilert.User, 0)
-					uL := v["users"].([]interface{})
+					uL := v["users"].([]any)
 					for _, u := range uL {
-						v := u.(map[string]interface{})
+						v := u.(map[string]any)
 						uid, err := strconv.ParseInt(v["id"].(string), 10, 64)
 						if err != nil {
 							log.Printf("[ERROR] Could not parse user id %s", err.Error())
@@ -209,11 +209,11 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 					}
 					ep.Users = usr
 				}
-				if v["schedules"] != nil && len(v["schedules"].([]interface{})) > 0 {
+				if v["schedules"] != nil && len(v["schedules"].([]any)) > 0 {
 					sdl := make([]ilert.Schedule, 0)
-					sL := v["schedules"].([]interface{})
+					sL := v["schedules"].([]any)
 					for _, u := range sL {
-						v := u.(map[string]interface{})
+						v := u.(map[string]any)
 						sid, err := strconv.ParseInt(v["id"].(string), 10, 64)
 						if err != nil {
 							log.Printf("[ERROR] Could not parse user id %s", err.Error())
@@ -236,7 +236,7 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 	}
 
 	if val, ok := d.GetOk("teams"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		tms := make([]ilert.TeamShort, 0)
 
 		for _, m := range vL {
@@ -247,10 +247,10 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 	}
 
 	if val, ok := d.GetOk("team"); ok {
-		vL := val.([]interface{})
+		vL := val.([]any)
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
-			v := m.(map[string]interface{})
+			v := m.(map[string]any)
 			tm := ilert.TeamShort{
 				ID: int64(v["id"].(int)),
 			}
@@ -281,7 +281,7 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 	return escalationPolicy, nil
 }
 
-func resourceEscalationPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceEscalationPolicyCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	escalationPolicy, err := buildEscalationPolicy(d)
@@ -321,7 +321,7 @@ func resourceEscalationPolicyCreate(ctx context.Context, d *schema.ResourceData,
 	return resourceEscalationPolicyRead(ctx, d, m)
 }
 
-func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	escalationPolicyID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -372,9 +372,9 @@ func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m
 
 	if val, ok := d.GetOk("teams"); ok {
 		if val != nil {
-			teams := make([]interface{}, 0)
+			teams := make([]any, 0)
 			for _, item := range result.EscalationPolicy.Teams {
-				team := make(map[string]interface{})
+				team := make(map[string]any)
 				team["id"] = item.ID
 				teams = append(teams, team)
 			}
@@ -388,11 +388,11 @@ func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m
 
 	if val, ok := d.GetOk("team"); ok {
 		if val != nil {
-			vL := val.([]interface{})
-			teams := make([]interface{}, 0)
+			vL := val.([]any)
+			teams := make([]any, 0)
 			for i, item := range result.EscalationPolicy.Teams {
-				team := make(map[string]interface{})
-				v := vL[i].(map[string]interface{})
+				team := make(map[string]any)
+				v := vL[i].(map[string]any)
 				team["id"] = item.ID
 
 				// Means: if server response has a name set, and the user typed in a name too,
@@ -417,7 +417,7 @@ func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceEscalationPolicyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceEscalationPolicyUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	escalationPolicy, err := buildEscalationPolicy(d)
@@ -453,7 +453,7 @@ func resourceEscalationPolicyUpdate(ctx context.Context, d *schema.ResourceData,
 	return resourceEscalationPolicyRead(ctx, d, m)
 }
 
-func resourceEscalationPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceEscalationPolicyDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	escalationPolicyID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -483,7 +483,7 @@ func resourceEscalationPolicyDelete(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceEscalationPolicyExists(d *schema.ResourceData, m interface{}) (bool, error) {
+func resourceEscalationPolicyExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
 	escalationPolicyID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -519,19 +519,19 @@ func resourceEscalationPolicyExists(d *schema.ResourceData, m interface{}) (bool
 	return result, nil
 }
 
-func flattenEscalationRulesList(list []ilert.EscalationRule, d *schema.ResourceData) ([]interface{}, error) {
+func flattenEscalationRulesList(list []ilert.EscalationRule, d *schema.ResourceData) ([]any, error) {
 	if list == nil {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
 
-	usL := d.Get("escalation_rule").([]interface{})
+	usL := d.Get("escalation_rule").([]any)
 
-	results := make([]interface{}, 0)
+	results := make([]any, 0)
 	for i, item := range list {
 		if usL != nil && i < len(usL) && usL[i] != nil {
-			result := make(map[string]interface{})
+			result := make(map[string]any)
 			result["escalation_timeout"] = item.EscalationTimeout
-			v := usL[i].(map[string]interface{})
+			v := usL[i].(map[string]any)
 			if item.User != nil && v["user"] != nil && v["user"].(string) != "" {
 				result["user"] = strconv.FormatInt(item.User.ID, 10)
 			}
@@ -539,14 +539,14 @@ func flattenEscalationRulesList(list []ilert.EscalationRule, d *schema.ResourceD
 				result["schedule"] = strconv.FormatInt(item.Schedule.ID, 10)
 			}
 
-			user := v["users"].([]interface{})
+			user := v["users"].([]any)
 			users, err := flattenUserShortList(item.Users, user)
 			if err != nil {
 				return nil, err
 			}
 			result["users"] = users
 
-			schedule := v["schedules"].([]interface{})
+			schedule := v["schedules"].([]any)
 			schedules, err := flattenScheduleShortList(item.Schedules, schedule)
 			if err != nil {
 				return nil, err
@@ -560,54 +560,52 @@ func flattenEscalationRulesList(list []ilert.EscalationRule, d *schema.ResourceD
 	return results, nil
 }
 
-func flattenScheduleShortList(list []ilert.Schedule, schedule []interface{}) ([]interface{}, error) {
+func flattenScheduleShortList(list []ilert.Schedule, schedule []any) ([]any, error) {
 	if list == nil || schedule == nil || len(schedule) <= 0 {
-		return make([]interface{}, 0), nil
+		return make([]any, 0), nil
 	}
 
-	results := make([]interface{}, 0)
+	results := make([]any, 0)
 	for i, item := range list {
-		if schedule != nil {
-			result := make(map[string]interface{})
-			result["id"] = strconv.FormatInt(item.ID, 10)
-			var sdn interface{}
-			if len(schedule) > 0 && i < len(schedule) && schedule[i] != nil && len(schedule[i].(map[string]interface{})) > 0 {
-				sdn = schedule[i].(map[string]interface{})["name"]
-			}
-
-			if item.Name != "" && sdn != nil && sdn.(string) != "" {
-				result["name"] = item.Name
-			}
-			results = append(results, result)
+		result := make(map[string]any)
+		result["id"] = strconv.FormatInt(item.ID, 10)
+		var sdn any
+		if len(schedule) > 0 && i < len(schedule) && schedule[i] != nil && len(schedule[i].(map[string]any)) > 0 {
+			sdn = schedule[i].(map[string]any)["name"]
 		}
+
+		if item.Name != "" && sdn != nil && sdn.(string) != "" {
+			result["name"] = item.Name
+		}
+		results = append(results, result)
 	}
 
 	return results, nil
 }
 
-func checkEscalationRuleSchema(rule map[string]interface{}) error {
+func checkEscalationRuleSchema(rule map[string]any) error {
 	if rule["user"] != nil && rule["user"].(string) != "" {
-		if (rule["schedule"] != nil && rule["schedule"].(string) != "") || (rule["users"] != nil && len(rule["users"].([]interface{})) > 0) || (rule["schedules"] != nil && len(rule["schedules"].([]interface{})) > 0) {
+		if (rule["schedule"] != nil && rule["schedule"].(string) != "") || (rule["users"] != nil && len(rule["users"].([]any)) > 0) || (rule["schedules"] != nil && len(rule["schedules"].([]any)) > 0) {
 			err := errors.New("fields 'schedule', 'users', or 'schedules' are not allowed when setting 'user'")
 			return err
 		}
 
 	}
 	if rule["schedule"] != nil && rule["schedule"].(string) != "" {
-		if (rule["user"] != nil && rule["user"].(string) != "") || (rule["users"] != nil && len(rule["users"].([]interface{})) > 0) || (rule["schedules"] != nil && len(rule["schedules"].([]interface{})) > 0) {
+		if (rule["user"] != nil && rule["user"].(string) != "") || (rule["users"] != nil && len(rule["users"].([]any)) > 0) || (rule["schedules"] != nil && len(rule["schedules"].([]any)) > 0) {
 			err := errors.New("fields 'user', 'users', or 'schedules' are not allowed when setting 'schedule'")
 			return err
 		}
 
 	}
-	if rule["users"] != nil && len(rule["users"].([]interface{})) > 0 {
+	if rule["users"] != nil && len(rule["users"].([]any)) > 0 {
 		if (rule["user"] != nil && rule["user"].(string) != "") || (rule["schedule"] != nil && rule["schedule"].(string) != "") {
 			err := errors.New("fields 'user' or 'schedule' are not allowed when setting 'users'")
 			return err
 		}
 
 	}
-	if rule["schedules"] != nil && len(rule["schedules"].([]interface{})) > 0 {
+	if rule["schedules"] != nil && len(rule["schedules"].([]any)) > 0 {
 		if (rule["user"] != nil && rule["user"].(string) != "") || (rule["schedule"] != nil && rule["schedule"].(string) != "") {
 			err := errors.New("fields 'user' or 'schedule' are not allowed when setting 'schedules'")
 			return err
