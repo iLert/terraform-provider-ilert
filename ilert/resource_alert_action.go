@@ -1344,7 +1344,7 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 	d.Set("escalation_ended_delay_sec", alertAction.EscalationEndedDelaySec)
 	d.Set("not_resolved_delay_sec", alertAction.NotResolvedDelaySec)
 
-	if val, ok := d.GetOk("alert_source"); ok && len(val.([]any)) == 1 {
+	if val, ok := d.GetOk("alert_source"); ok && len(val.([]any)) == 1 && d.Id() != "" {
 		if v, ok := d.GetOk("team"); !ok || len(v.([]any)) == 0 {
 			sourceId := alertAction.AlertSourceIDs[0]
 
