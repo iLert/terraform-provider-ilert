@@ -212,18 +212,6 @@ func buildSupportHour(d *schema.ResourceData) (*ilert.SupportHour, error) {
 		supportHour.SupportDays = &days
 	}
 
-	// if val, ok := d.GetOk("support_days"); ok {
-	// 	vL := val.([]any)
-	// 	if len(vL) > 0 && vL[0] != nil {
-	// 		dL := vL[0].(map[string]any)
-	// 		for day, times := range dL {
-	// 			if
-
-	// 		}
-
-	// 	}
-	// }
-
 	return supportHour, nil
 }
 
