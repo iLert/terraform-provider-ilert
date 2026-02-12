@@ -221,17 +221,10 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.Errorf("user response is empty")
 	}
 
-	d.Set("first_name", result.User.FirstName)
-	d.Set("last_name", result.User.LastName)
-	d.Set("username", result.User.Username)
-	d.Set("email", result.User.Email)
-	d.Set("timezone", result.User.Timezone)
-	d.Set("position", result.User.Position)
-	d.Set("department", result.User.Department)
-	d.Set("language", result.User.Language)
-	d.Set("region", result.User.Region)
-	d.Set("role", result.User.Role)
-	d.Set("shift_color", result.User.ShiftColor)
+	err = transformUserResource(result.User, d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -334,4 +327,20 @@ func resourceUserExists(d *schema.ResourceData, m any) (bool, error) {
 		return false, err
 	}
 	return result, nil
+}
+
+func transformUserResource(user *ilert.User, d *schema.ResourceData) error {
+	d.Set("first_name", user.FirstName)
+	d.Set("last_name", user.LastName)
+	d.Set("username", user.Username)
+	d.Set("email", user.Email)
+	d.Set("timezone", user.Timezone)
+	d.Set("position", user.Position)
+	d.Set("department", user.Department)
+	d.Set("language", user.Language)
+	d.Set("region", user.Region)
+	d.Set("role", user.Role)
+	d.Set("shift_color", user.ShiftColor)
+
+	return nil
 }
