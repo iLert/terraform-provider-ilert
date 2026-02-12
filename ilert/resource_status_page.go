@@ -576,91 +576,9 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.Errorf("status page response is empty")
 	}
 
-	d.Set("name", result.StatusPage.Name)
-	d.Set("domain", result.StatusPage.Domain)
-	d.Set("subdomain", result.StatusPage.Subdomain)
-
-	if val, ok := d.GetOk("timezone"); ok && val != nil && val.(string) != "" {
-		d.Set("timezone", result.StatusPage.Timezone)
-	}
-
-	d.Set("custom_css", result.StatusPage.CustomCss)
-	d.Set("favicon_url", result.StatusPage.FaviconUrl)
-	d.Set("logo_url", result.StatusPage.LogoUrl)
-	d.Set("visibility", result.StatusPage.Visibility)
-
-	if val, ok := d.GetOk("hidden_from_search"); ok && val != nil {
-		d.Set("hidden_from_search", result.StatusPage.HiddenFromSearch)
-	}
-
-	d.Set("show_subscribe_action", result.StatusPage.ShowSubscribeAction)
-	d.Set("show_incident_history_option", result.StatusPage.ShowIncidentHistoryOption)
-	d.Set("page_title", result.StatusPage.PageTitle)
-	d.Set("page_description", result.StatusPage.PageDescription)
-	d.Set("page_layout", result.StatusPage.PageLayout)
-	d.Set("logo_redirect_url", result.StatusPage.LogoRedirectUrl)
-	d.Set("activated", result.StatusPage.Activated)
-
-	teams, err := flattenTeamShortList(result.StatusPage.Teams, d)
+	err = transformStatusPageResource(result.StatusPage, d)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	if err := d.Set("team", teams); err != nil {
-		return diag.Errorf("error setting teams: %s", err)
-	}
-
-	services, err := flattenServicesList(result.StatusPage.Services, d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("service", services); err != nil {
-		return diag.Errorf("error setting services: %s", err)
-	}
-
-	if val, ok := d.GetOk("ip_whitelist"); ok && val.([]any) != nil && len(val.([]any)) > 0 {
-		d.Set("ip_whitelist", result.StatusPage.IpWhitelist)
-	}
-
-	d.Set("account_wide_view", result.StatusPage.AccountWideView)
-
-	structure, err := flattenStatusPageStructure(result.StatusPage.Structure)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("structure", structure); err != nil {
-		return diag.Errorf("error setting structure: %s", err)
-	}
-
-	if _, ok := d.GetOk("theme_mode"); ok {
-		d.Set("theme_mode", result.StatusPage.Appearance)
-	}
-
-	if _, ok := d.GetOk("appearance"); ok {
-		d.Set("appearance", result.StatusPage.Appearance)
-	}
-
-	if val, ok := d.GetOk("email_whitelist"); ok && val.([]any) != nil && len(val.([]any)) > 0 {
-		d.Set("email_whitelist", result.StatusPage.EmailWhitelist)
-	}
-
-	if _, ok := d.GetOk("announcement"); ok {
-		d.Set("announcement", result.StatusPage.Announcement)
-	}
-
-	if _, ok := d.GetOk("announcement_on_page"); ok {
-		d.Set("announcement_on_page", result.StatusPage.AnnouncementOnPage)
-	}
-
-	if _, ok := d.GetOk("announcement_in_widget"); ok {
-		d.Set("announcement_in_widget", result.StatusPage.AnnouncementInWidget)
-	}
-
-	metrics, err := flattenMetricsList(result.StatusPage.Metrics, d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("metric", metrics); err != nil {
-		return diag.Errorf("error setting metrics: %s", err)
 	}
 
 	return nil
@@ -767,6 +685,97 @@ func resourceStatusPageExists(d *schema.ResourceData, m any) (bool, error) {
 	return result, nil
 }
 
+func transformStatusPageResource(statusPage *ilert.StatusPage, d *schema.ResourceData) error {
+	d.Set("name", statusPage.Name)
+	d.Set("domain", statusPage.Domain)
+	d.Set("subdomain", statusPage.Subdomain)
+
+	if val, ok := d.GetOk("timezone"); (ok && val != nil && val.(string) != "") || d.Id() == "" {
+		d.Set("timezone", statusPage.Timezone)
+	}
+
+	d.Set("custom_css", statusPage.CustomCss)
+	d.Set("favicon_url", statusPage.FaviconUrl)
+	d.Set("logo_url", statusPage.LogoUrl)
+	d.Set("visibility", statusPage.Visibility)
+
+	if val, ok := d.GetOk("hidden_from_search"); ok && val != nil || d.Id() == "" {
+		d.Set("hidden_from_search", statusPage.HiddenFromSearch)
+	}
+
+	d.Set("show_subscribe_action", statusPage.ShowSubscribeAction)
+	d.Set("show_incident_history_option", statusPage.ShowIncidentHistoryOption)
+	d.Set("page_title", statusPage.PageTitle)
+	d.Set("page_description", statusPage.PageDescription)
+	d.Set("page_layout", statusPage.PageLayout)
+	d.Set("logo_redirect_url", statusPage.LogoRedirectUrl)
+	d.Set("activated", statusPage.Activated)
+
+	teams, err := flattenTeamShortList(statusPage.Teams, d)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("team", teams); err != nil {
+		return fmt.Errorf("error setting teams: %s", err)
+	}
+
+	services, err := flattenServicesList(statusPage.Services, d)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("service", services); err != nil {
+		return fmt.Errorf("error setting services: %s", err)
+	}
+
+	if val, ok := d.GetOk("ip_whitelist"); (ok && val.([]any) != nil && len(val.([]any)) > 0) || d.Id() == "" {
+		d.Set("ip_whitelist", statusPage.IpWhitelist)
+	}
+
+	d.Set("account_wide_view", statusPage.AccountWideView)
+
+	structure, err := flattenStatusPageStructure(statusPage.Structure)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("structure", structure); err != nil {
+		return fmt.Errorf("error setting structure: %s", err)
+	}
+
+	if _, ok := d.GetOk("theme_mode"); ok || d.Id() == "" {
+		d.Set("theme_mode", statusPage.Appearance)
+	}
+
+	if _, ok := d.GetOk("appearance"); ok || d.Id() == "" {
+		d.Set("appearance", statusPage.Appearance)
+	}
+
+	if val, ok := d.GetOk("email_whitelist"); (ok && val.([]any) != nil && len(val.([]any)) > 0) || d.Id() == "" {
+		d.Set("email_whitelist", statusPage.EmailWhitelist)
+	}
+
+	if _, ok := d.GetOk("announcement"); ok || d.Id() == "" {
+		d.Set("announcement", statusPage.Announcement)
+	}
+
+	if _, ok := d.GetOk("announcement_on_page"); ok || d.Id() == "" {
+		d.Set("announcement_on_page", statusPage.AnnouncementOnPage)
+	}
+
+	if _, ok := d.GetOk("announcement_in_widget"); ok || d.Id() == "" {
+		d.Set("announcement_in_widget", statusPage.AnnouncementInWidget)
+	}
+
+	metrics, err := flattenMetricsList(statusPage.Metrics, d)
+	if err != nil {
+		return err
+	}
+	if err := d.Set("metric", metrics); err != nil {
+		return fmt.Errorf("error setting metrics: %s", err)
+	}
+
+	return nil
+}
+
 func flattenServicesList(list []ilert.Service, d *schema.ResourceData) ([]any, error) {
 	if list == nil {
 		return make([]any, 0), nil
@@ -784,6 +793,16 @@ func flattenServicesList(list []ilert.Service, d *schema.ResourceData) ([]any, e
 				}
 				results = append(results, result)
 			}
+		}
+	} else if d.Id() == "" {
+		for _, item := range list {
+			result := map[string]any{
+				"id": item.ID,
+			}
+			if item.Name != "" {
+				result["name"] = item.Name
+			}
+			results = append(results, result)
 		}
 	}
 	return results, nil
@@ -806,6 +825,16 @@ func flattenMetricsList(list []ilert.Metric, d *schema.ResourceData) ([]any, err
 				}
 				results = append(results, result)
 			}
+		}
+	} else if d.Id() == "" {
+		for _, item := range list {
+			result := map[string]any{
+				"id": item.ID,
+			}
+			if item.Name != "" {
+				result["name"] = item.Name
+			}
+			results = append(results, result)
 		}
 	}
 	return results, nil
