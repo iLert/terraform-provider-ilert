@@ -543,90 +543,9 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.Errorf("connector response is empty")
 	}
 
-	d.Set("name", result.Connector.Name)
-	d.Set("type", result.Connector.Type)
-	d.Set("created_at", result.Connector.CreatedAt)
-	d.Set("updated_at", result.Connector.UpdatedAt)
-
-	switch result.Connector.Type {
-	case ilert.ConnectorTypes.Jira:
-		d.Set("jira", []any{
-			map[string]any{
-				"url":      result.Connector.Params.URL,
-				"email":    result.Connector.Params.Email,
-				"password": result.Connector.Params.Password,
-			},
-		})
-	case ilert.ConnectorTypes.MicrosoftTeams:
-		d.Set("microsoft_teams", []any{
-			map[string]any{
-				"url": result.Connector.Params.URL,
-			},
-		})
-	case ilert.ConnectorTypes.ServiceNow:
-		d.Set("servicenow", []any{
-			map[string]any{
-				"url":      result.Connector.Params.URL,
-				"username": result.Connector.Params.Username,
-				"password": result.Connector.Params.Password,
-			},
-		})
-	case ilert.ConnectorTypes.Zendesk:
-		d.Set("zendesk", []any{
-			map[string]any{
-				"url":     result.Connector.Params.URL,
-				"email":   result.Connector.Params.Email,
-				"api_key": result.Connector.Params.APIKey,
-			},
-		})
-	case ilert.ConnectorTypes.Discord:
-		d.Set("discord", []any{
-			map[string]any{
-				"url": result.Connector.Params.URL,
-			},
-		})
-	case ilert.ConnectorTypes.Github:
-		d.Set("github", []any{
-			map[string]any{
-				"api_key": result.Connector.Params.APIKey,
-			},
-		})
-	case ilert.ConnectorTypes.Topdesk:
-		d.Set("topdesk", []any{
-			map[string]any{
-				"url":      result.Connector.Params.URL,
-				"username": result.Connector.Params.Username,
-				"password": result.Connector.Params.Password,
-			},
-		})
-	case ilert.ConnectorTypes.Autotask:
-		d.Set("autotask", []any{
-			map[string]any{
-				"url":      result.Connector.Params.URL,
-				"email":    result.Connector.Params.Email,
-				"password": result.Connector.Params.Password,
-			},
-		})
-	case ilert.ConnectorTypes.Mattermost:
-		d.Set("mattermost", []any{
-			map[string]any{
-				"url": result.Connector.Params.URL,
-			},
-		})
-	case ilert.ConnectorTypes.Zammad:
-		d.Set("zammad", []any{
-			map[string]any{
-				"url":     result.Connector.Params.URL,
-				"api_key": result.Connector.Params.APIKey,
-			},
-		})
-	case ilert.ConnectorTypes.DingTalk:
-		d.Set("dingtalk", []any{
-			map[string]any{
-				"url":    result.Connector.Params.URL,
-				"secret": result.Connector.Params.Secret,
-			},
-		})
+	err = transformConnectorResource(result.Connector, d)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
@@ -718,4 +637,94 @@ func resourceConnectorExists(d *schema.ResourceData, m any) (bool, error) {
 		return false, err
 	}
 	return result, nil
+}
+
+func transformConnectorResource(connector *ilert.ConnectorOutput, d *schema.ResourceData) error {
+	d.Set("name", connector.Name)
+	d.Set("type", connector.Type)
+	d.Set("created_at", connector.CreatedAt)
+	d.Set("updated_at", connector.UpdatedAt)
+
+	switch connector.Type {
+	case ilert.ConnectorTypes.Jira:
+		d.Set("jira", []any{
+			map[string]any{
+				"url":      connector.Params.URL,
+				"email":    connector.Params.Email,
+				"password": connector.Params.Password,
+			},
+		})
+	case ilert.ConnectorTypes.MicrosoftTeams:
+		d.Set("microsoft_teams", []any{
+			map[string]any{
+				"url": connector.Params.URL,
+			},
+		})
+	case ilert.ConnectorTypes.ServiceNow:
+		d.Set("servicenow", []any{
+			map[string]any{
+				"url":      connector.Params.URL,
+				"username": connector.Params.Username,
+				"password": connector.Params.Password,
+			},
+		})
+	case ilert.ConnectorTypes.Zendesk:
+		d.Set("zendesk", []any{
+			map[string]any{
+				"url":     connector.Params.URL,
+				"email":   connector.Params.Email,
+				"api_key": connector.Params.APIKey,
+			},
+		})
+	case ilert.ConnectorTypes.Discord:
+		d.Set("discord", []any{
+			map[string]any{
+				"url": connector.Params.URL,
+			},
+		})
+	case ilert.ConnectorTypes.Github:
+		d.Set("github", []any{
+			map[string]any{
+				"api_key": connector.Params.APIKey,
+			},
+		})
+	case ilert.ConnectorTypes.Topdesk:
+		d.Set("topdesk", []any{
+			map[string]any{
+				"url":      connector.Params.URL,
+				"username": connector.Params.Username,
+				"password": connector.Params.Password,
+			},
+		})
+	case ilert.ConnectorTypes.Autotask:
+		d.Set("autotask", []any{
+			map[string]any{
+				"url":      connector.Params.URL,
+				"email":    connector.Params.Email,
+				"password": connector.Params.Password,
+			},
+		})
+	case ilert.ConnectorTypes.Mattermost:
+		d.Set("mattermost", []any{
+			map[string]any{
+				"url": connector.Params.URL,
+			},
+		})
+	case ilert.ConnectorTypes.Zammad:
+		d.Set("zammad", []any{
+			map[string]any{
+				"url":     connector.Params.URL,
+				"api_key": connector.Params.APIKey,
+			},
+		})
+	case ilert.ConnectorTypes.DingTalk:
+		d.Set("dingtalk", []any{
+			map[string]any{
+				"url":    connector.Params.URL,
+				"secret": connector.Params.Secret,
+			},
+		})
+	}
+
+	return nil
 }

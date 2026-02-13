@@ -1266,18 +1266,18 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 
 	linkTemplates, err := flattenLinkTemplatesList(alertSource.LinkTemplates)
 	if err != nil {
-		return err
+		return fmt.Errorf("[ERROR] Error flattening link template: %s", err.Error())
 	}
 	if err := d.Set("link_template", linkTemplates); err != nil {
-		return fmt.Errorf("error setting link templates: %s", err)
+		return fmt.Errorf("[ERROR] Error setting link template: %s", err.Error())
 	}
 
 	priorityTemplate, err := flattenPriorityTemplate(alertSource.PriorityTemplate)
 	if err != nil {
-		return err
+		return fmt.Errorf("[ERROR] Error flattening priority template: %s", err.Error())
 	}
 	if err := d.Set("priority_template", priorityTemplate); err != nil {
-		return fmt.Errorf("error setting priority template: %s", err)
+		return fmt.Errorf("[ERROR] Error setting priority template: %s", err.Error())
 	}
 
 	if val, ok := d.GetOk("team"); ok {
@@ -1298,7 +1298,7 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 			}
 
 			if err := d.Set("team", teams); err != nil {
-				return fmt.Errorf("error setting teams: %s", err)
+				return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
 			}
 		}
 	} else if val, ok := d.GetOk("teams"); ok {
@@ -1310,51 +1310,44 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 				teams = append(teams, team)
 			}
 			if err := d.Set("team", teams); err != nil {
-				return fmt.Errorf("error setting teams: %s", err)
+				return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
 			}
 
 			d.Set("teams", nil)
 		}
 	} else if d.Id() == "" && len(alertSource.Teams) > 0 {
-		teams := make([]any, 0)
-		for _, item := range alertSource.Teams {
-			team := map[string]any{
-				"id": item.ID,
-			}
-			if item.Name != "" {
-				team["name"] = item.Name
-			}
-			teams = append(teams, team)
+		teams, err := flattenTeamShortList(alertSource.Teams, d)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error flattening teams: %s", err.Error())
 		}
 		if err := d.Set("team", teams); err != nil {
-			return fmt.Errorf("error setting teams: %s", err)
+			return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
 		}
 	}
 
 	emailPredicates, err := flattenEmailPredicateList(alertSource.EmailPredicates)
 	if err != nil {
-		return err
+		return fmt.Errorf("[ERROR] Error flattening email predicates: %s", err.Error())
 	}
 	if err := d.Set("email_predicate", emailPredicates); err != nil {
-		return fmt.Errorf("error setting email predicates: %s", err)
+		return fmt.Errorf("[ERROR] Error setting email predicates: %s", err.Error())
 	}
 
 	emailResolvePredicates, err := flattenEmailPredicateList(alertSource.EmailResolvePredicates)
 	if err != nil {
-		return err
+		return fmt.Errorf("[ERROR] Error flattening email resolve predicates: %s", err.Error())
 	}
 	if err := d.Set("email_resolve_predicate", emailResolvePredicates); err != nil {
-		return fmt.Errorf("error setting email resolve predicates: %s", err)
+		return fmt.Errorf("[ERROR] Error setting email resolve predicates: %s", err.Error())
 	}
 
-	// never set support hours when user doesn't define them, even if server returns some
 	if _, ok := d.GetOk("support_hours"); ok || d.Id() == "" {
 		supportHours, err := flattenSupportHoursInterface(alertSource.SupportHours)
 		if err != nil {
-			return err
+			return fmt.Errorf("[ERROR] Error flattening support hours: %s", err.Error())
 		}
 		if err := d.Set("support_hours", supportHours); err != nil {
-			return fmt.Errorf("error setting support hours: %s", err)
+			return fmt.Errorf("[ERROR] Error setting support hours: %s", err.Error())
 		}
 	}
 

@@ -291,10 +291,10 @@ func transformTeamResource(team *ilert.Team, d *schema.ResourceData) error {
 
 	members, err := flattenMembersListSorted(team.Members, d)
 	if err != nil {
-		return err
+		return fmt.Errorf("[ERROR] Error flattening members: %s", err.Error())
 	}
 	if err := d.Set("member", members); err != nil {
-		return fmt.Errorf("error setting members: %s", err)
+		return fmt.Errorf("[ERROR] Error setting members: %s", err.Error())
 	}
 
 	return nil
@@ -307,7 +307,10 @@ func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) (
 
 	configMembers := d.Get("member")
 	if configMembers == nil {
-		return make([]any, 0), nil
+		if d.Id() != "" {
+			return make([]any, 0), nil
+		}
+		configMembers = make([]any, 0)
 	}
 
 	configMembersList, ok := configMembers.([]any)

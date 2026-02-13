@@ -1137,10 +1137,10 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 		if alertAction.AlertSources != nil {
 			alertSources, err := flattenAlertActionAlertSourcesList(*alertAction.AlertSources)
 			if err != nil {
-				return err
+				return fmt.Errorf("[ERROR] Error flattening alert sources: %s", err.Error())
 			}
 			if err := d.Set("alert_source", alertSources); err != nil {
-				return fmt.Errorf("error setting alert sources: %s", err)
+				return fmt.Errorf("[ERROR] Error setting alert sources: %s", err.Error())
 			}
 		}
 	}
@@ -1294,50 +1294,18 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 
 	alertFilter, err := flattenAlertActionAlertFilter(alertAction.AlertFilter)
 	if err != nil {
-		return err
+		return fmt.Errorf("[ERROR] Error flattening alert filter: %s", err.Error())
 	}
 	if err := d.Set("alert_filter", alertFilter); err != nil {
-		return fmt.Errorf("error setting alert filter: %s", err)
+		return fmt.Errorf("[ERROR] Error setting alert filter: %s", err.Error())
 	}
 
-	if val, ok := d.GetOk("team"); ok {
-		if val != nil && alertAction.Teams != nil {
-			vL := val.([]any)
-			teams := make([]any, 0)
-			for i, item := range *alertAction.Teams {
-				team := make(map[string]any)
-				if i >= len(vL) {
-					break
-				}
-				v := vL[i].(map[string]any)
-				team["id"] = item.ID
-
-				// Means: if server response has a name set, and the user typed in a name too,
-				// only then team name is stored in the terraform state
-				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
-					team["name"] = item.Name
-				}
-				teams = append(teams, team)
-			}
-
-			if err := d.Set("team", teams); err != nil {
-				return fmt.Errorf("error setting teams: %s", err)
-			}
-		}
-	} else if d.Id() == "" && alertAction.Teams != nil {
-		teams := make([]any, 0)
-		for _, item := range *alertAction.Teams {
-			team := map[string]any{
-				"id": item.ID,
-			}
-			if item.Name != "" {
-				team["name"] = item.Name
-			}
-			teams = append(teams, team)
-		}
-		if err := d.Set("team", teams); err != nil {
-			return fmt.Errorf("error setting teams: %s", err)
-		}
+	teams, err := flattenTeamShortList(*alertAction.Teams, d)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening teams: %s", err.Error())
+	}
+	if err := d.Set("team", teams); err != nil {
+		return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
 	}
 
 	d.Set("delay_sec", alertAction.DelaySec)

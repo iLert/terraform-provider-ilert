@@ -487,81 +487,9 @@ func resourceScheduleRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.Errorf("schedule response is empty")
 	}
 
-	d.Set("name", result.Schedule.Name)
-	d.Set("timezone", result.Schedule.Timezone)
-	d.Set("type", result.Schedule.Type)
-
-	layers, err := flattenScheduleLayerList(result.Schedule.ScheduleLayers, d)
+	err = transformScheduleResource(result.Schedule, d)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	if err := d.Set("schedule_layer", layers); err != nil {
-		return diag.Errorf("error setting schedule layers: %s", err)
-	}
-
-	shifts, err := flattenShiftList(result.Schedule.Shifts)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("shift", shifts); err != nil {
-		return diag.Errorf("error setting shifts: %s", err)
-	}
-
-	d.Set("show_gaps", result.Schedule.ShowGaps)
-
-	if _, ok := d.GetOk("default_shift_duration"); ok {
-		d.Set("default_shift_duration", result.Schedule.DefaultShiftDuration)
-	} else {
-		d.Set("default_shift_duration", nil)
-	}
-
-	if result.Schedule.CurrentShift != nil {
-		d.Set("current_shift", []any{
-			map[string]any{
-				"user":  result.Schedule.CurrentShift.User,
-				"start": result.Schedule.CurrentShift.Start,
-				"end":   result.Schedule.CurrentShift.End,
-			},
-		})
-	} else {
-		d.Set("current_shift", []any{})
-	}
-
-	if result.Schedule.NextShift != nil {
-		d.Set("next_shift", []any{
-			map[string]any{
-				"user":  result.Schedule.NextShift.User,
-				"start": result.Schedule.NextShift.Start,
-				"end":   result.Schedule.NextShift.End,
-			},
-		})
-	} else {
-		d.Set("next_shift", []any{})
-	}
-
-	if val, ok := d.GetOk("team"); ok {
-		if val != nil {
-			vL := val.([]any)
-			teams := make([]any, 0)
-			for i, item := range result.Schedule.Teams {
-				if vL != nil && i < len(vL) && vL[i] != nil {
-					team := make(map[string]any)
-					v := vL[i].(map[string]any)
-					team["id"] = item.ID
-
-					// Means: if server response has a name set, and the user typed in a name too,
-					// only then team name is stored in the terraform state
-					if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
-						team["name"] = item.Name
-					}
-					teams = append(teams, team)
-				}
-			}
-
-			if err := d.Set("team", teams); err != nil {
-				return diag.Errorf("error setting teams: %s", err)
-			}
-		}
 	}
 
 	return nil
@@ -668,23 +596,116 @@ func resourceScheduleExists(d *schema.ResourceData, m any) (bool, error) {
 	return result, nil
 }
 
+func transformScheduleResource(schedule *ilert.Schedule, d *schema.ResourceData) error {
+
+	d.Set("name", schedule.Name)
+	d.Set("timezone", schedule.Timezone)
+	d.Set("type", schedule.Type)
+
+	layers, err := flattenScheduleLayerList(schedule.ScheduleLayers, d)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening schedule layers: %s", err.Error())
+	}
+	if err := d.Set("schedule_layer", layers); err != nil {
+		return fmt.Errorf("[ERROR] Error setting schedule layers: %s", err.Error())
+	}
+
+	shifts, err := flattenShiftList(schedule.Shifts)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening shifts: %s", err.Error())
+	}
+	if err := d.Set("shift", shifts); err != nil {
+		return fmt.Errorf("[ERROR] Error setting shifts: %s", err.Error())
+	}
+
+	d.Set("show_gaps", schedule.ShowGaps)
+
+	if _, ok := d.GetOk("default_shift_duration"); ok || d.Id() == "" {
+		d.Set("default_shift_duration", schedule.DefaultShiftDuration)
+	} else {
+		d.Set("default_shift_duration", nil)
+	}
+
+	if schedule.CurrentShift != nil {
+		d.Set("current_shift", []any{
+			map[string]any{
+				"user":  schedule.CurrentShift.User,
+				"start": schedule.CurrentShift.Start,
+				"end":   schedule.CurrentShift.End,
+			},
+		})
+	} else {
+		d.Set("current_shift", []any{})
+	}
+
+	if schedule.NextShift != nil {
+		d.Set("next_shift", []any{
+			map[string]any{
+				"user":  schedule.NextShift.User,
+				"start": schedule.NextShift.Start,
+				"end":   schedule.NextShift.End,
+			},
+		})
+	} else {
+		d.Set("next_shift", []any{})
+	}
+
+	teams, err := flattenTeamShortList(schedule.Teams, d)
+	if err != nil {
+		log.Printf("[ERROR] Error flattening teams: %s", err.Error())
+		return nil
+	}
+	if err := d.Set("team", teams); err != nil {
+		log.Printf("[ERROR] Error setting teams: %s", err.Error())
+		return nil
+	}
+
+	return nil
+}
+
 func flattenScheduleLayerList(list []ilert.ScheduleLayer, d *schema.ResourceData) ([]any, error) {
 	if list == nil {
 		return make([]any, 0), nil
 	}
 
-	scL := d.Get("schedule_layer").([]any)
-
 	results := make([]any, 0)
-	for i, item := range list {
-		if scL != nil && i < len(scL) && scL[i] != nil {
+	if val, ok := d.GetOk("schedule_layer"); ok && len(val.([]any)) > 0 {
+		vL := val.([]any)
+		for i, item := range list {
+			if vL != nil && i < len(vL) && vL[i] != nil {
+				result := make(map[string]any)
+				result["name"] = item.Name
+				result["starts_on"] = item.StartsOn
+
+				user := vL[i].(map[string]any)["user"].([]any)
+
+				users, err := flattenResponderUserShortList(item.Users, user)
+				if err != nil {
+					return nil, err
+				}
+				result["user"] = users
+
+				result["rotation"] = item.Rotation
+				if item.RestrictionType != "" {
+					result["restriction_type"] = item.RestrictionType
+				}
+
+				restr, err := flattenRestrictionList(item.Restrictions)
+				if err != nil {
+					return nil, err
+				}
+				result["restriction"] = restr
+
+				results = append(results, result)
+			}
+		}
+	} else if d.Id() == "" {
+		for _, item := range list {
 			result := make(map[string]any)
 			result["name"] = item.Name
 			result["starts_on"] = item.StartsOn
 
-			user := scL[i].(map[string]any)["user"].([]any)
-
-			users, err := flattenUserShortList(item.Users, user)
+			users, err := flattenUserShortList(item.Users)
 			if err != nil {
 				return nil, err
 			}
@@ -708,7 +729,28 @@ func flattenScheduleLayerList(list []ilert.ScheduleLayer, d *schema.ResourceData
 	return results, nil
 }
 
-func flattenUserShortList(list []ilert.User, user []any) ([]any, error) {
+func flattenUserShortList(list []ilert.User) ([]any, error) {
+	if list == nil {
+		return make([]any, 0), nil
+	}
+
+	results := make([]any, 0)
+	for _, item := range list {
+		result := make(map[string]any)
+		result["id"] = strconv.Itoa(int(item.ID))
+		if item.FirstName != "" {
+			result["first_name"] = item.FirstName
+		}
+		if item.LastName != "" {
+			result["last_name"] = item.LastName
+		}
+		results = append(results, result)
+	}
+
+	return results, nil
+}
+
+func flattenResponderUserShortList(list []ilert.User, user []any) ([]any, error) {
 	if list == nil || user == nil || len(user) <= 0 {
 		return make([]any, 0), nil
 	}
@@ -781,19 +823,3 @@ func flattenShiftList(list []ilert.Shift) ([]any, error) {
 
 	return results, nil
 }
-
-// func flattenShift(shift *ilert.Shift) (map[string]any, error) {
-// 	if shift == nil {
-// 		return make(map[string]any), nil
-// 	}
-
-// 	result := make(map[string]any)
-// 	user := make(map[string]any)
-// 	user["id"] = strconv.Itoa(int(shift.User.ID))
-// 	result["user"] = user
-
-// 	result["start"] = shift.Start
-// 	result["end"] = shift.End
-
-// 	return result, nil
-// }

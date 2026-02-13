@@ -193,18 +193,9 @@ func resourceIncidentTemplateRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("incident template response is empty")
 	}
 
-	d.Set("name", result.IncidentTemplate.Name)
-	d.Set("summary", result.IncidentTemplate.Summary)
-	d.Set("status", result.IncidentTemplate.Status)
-	d.Set("message", result.IncidentTemplate.Message)
-	d.Set("send_notification", result.IncidentTemplate.SendNotification)
-
-	teams, err := flattenTeamShortList(result.IncidentTemplate.Teams, d)
+	err = transformIncidentTemplateResource(result.IncidentTemplate, d)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	if err := d.Set("team", teams); err != nil {
-		return diag.Errorf("error setting teams: %s", err)
 	}
 
 	return nil
@@ -309,4 +300,22 @@ func resourceIncidentTemplateExists(d *schema.ResourceData, m any) (bool, error)
 		return false, err
 	}
 	return result, nil
+}
+
+func transformIncidentTemplateResource(incidentTemplate *ilert.IncidentTemplate, d *schema.ResourceData) error {
+	d.Set("name", incidentTemplate.Name)
+	d.Set("summary", incidentTemplate.Summary)
+	d.Set("status", incidentTemplate.Status)
+	d.Set("message", incidentTemplate.Message)
+	d.Set("send_notification", incidentTemplate.SendNotification)
+
+	teams, err := flattenTeamShortList(incidentTemplate.Teams, d)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening teams: %s", err.Error())
+	}
+	if err := d.Set("team", teams); err != nil {
+		return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
+	}
+
+	return nil
 }

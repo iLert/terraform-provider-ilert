@@ -294,38 +294,9 @@ func resourceDeploymentPipelineRead(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("deployment pipeline response is empty")
 	}
 
-	d.Set("name", result.DeploymentPipeline.Name)
-	d.Set("integration_type", result.DeploymentPipeline.IntegrationType)
-	d.Set("integration_key", result.DeploymentPipeline.IntegrationKey)
-
-	teams, err := flattenTeamShortList(result.DeploymentPipeline.Teams, d)
+	err = transformDeploymentPipelineResource(result.DeploymentPipeline, d)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	if err := d.Set("team", teams); err != nil {
-		return diag.Errorf("error setting teams: %s", err)
-	}
-
-	d.Set("created_at", result.DeploymentPipeline.CreatedAt)
-	d.Set("updated_at", result.DeploymentPipeline.UpdatedAt)
-	d.Set("integration_url", result.DeploymentPipeline.IntegrationUrl)
-
-	if result.DeploymentPipeline.IntegrationType == ilert.DeploymentPipelineIntegrationType.GitHub {
-		d.Set("github", []any{
-			map[string]any{
-				"branch_filter": result.DeploymentPipeline.Params.BranchFilters,
-				"event_filter":  result.DeploymentPipeline.Params.EventFilters,
-			},
-		})
-	}
-
-	if result.DeploymentPipeline.IntegrationType == ilert.DeploymentPipelineIntegrationType.GitLab {
-		d.Set("gitlab", []any{
-			map[string]any{
-				"branch_filter": result.DeploymentPipeline.Params.BranchFilters,
-				"event_filter":  result.DeploymentPipeline.Params.EventFilters,
-			},
-		})
 	}
 
 	return nil
@@ -433,4 +404,42 @@ func resourceDeploymentPipelineExists(d *schema.ResourceData, m any) (bool, erro
 		return false, err
 	}
 	return result, nil
+}
+
+func transformDeploymentPipelineResource(deploymentPipeline *ilert.DeploymentPipelineOutput, d *schema.ResourceData) error {
+	d.Set("name", deploymentPipeline.Name)
+	d.Set("integration_type", deploymentPipeline.IntegrationType)
+	d.Set("integration_key", deploymentPipeline.IntegrationKey)
+
+	teams, err := flattenTeamShortList(deploymentPipeline.Teams, d)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening teams: %s", err.Error())
+	}
+	if err := d.Set("team", teams); err != nil {
+		return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
+	}
+
+	d.Set("created_at", deploymentPipeline.CreatedAt)
+	d.Set("updated_at", deploymentPipeline.UpdatedAt)
+	d.Set("integration_url", deploymentPipeline.IntegrationUrl)
+
+	if deploymentPipeline.IntegrationType == ilert.DeploymentPipelineIntegrationType.GitHub {
+		d.Set("github", []any{
+			map[string]any{
+				"branch_filter": deploymentPipeline.Params.BranchFilters,
+				"event_filter":  deploymentPipeline.Params.EventFilters,
+			},
+		})
+	}
+
+	if deploymentPipeline.IntegrationType == ilert.DeploymentPipelineIntegrationType.GitLab {
+		d.Set("gitlab", []any{
+			map[string]any{
+				"branch_filter": deploymentPipeline.Params.BranchFilters,
+				"event_filter":  deploymentPipeline.Params.EventFilters,
+			},
+		})
+	}
+
+	return nil
 }

@@ -293,23 +293,9 @@ func resourceSupportHourRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.Errorf("support hour response is empty")
 	}
 
-	d.Set("name", result.SupportHour.Name)
-	d.Set("timezone", result.SupportHour.Timezone)
-
-	teams, err := flattenTeamShortList(result.SupportHour.Teams, d)
+	err = transformSupportHourResource(result.SupportHour, d)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	if err := d.Set("team", teams); err != nil {
-		return diag.Errorf("error setting teams: %s", err)
-	}
-
-	supportDays, err := flattenSupportDays(result.SupportHour.SupportDays)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("support_days", supportDays); err != nil {
-		return diag.Errorf("error setting support days: %s", err)
 	}
 
 	return nil
@@ -414,6 +400,29 @@ func resourceSupportHourExists(d *schema.ResourceData, m any) (bool, error) {
 		return false, err
 	}
 	return result, nil
+}
+
+func transformSupportHourResource(supportHour *ilert.SupportHour, d *schema.ResourceData) error {
+	d.Set("name", supportHour.Name)
+	d.Set("timezone", supportHour.Timezone)
+
+	teams, err := flattenTeamShortList(supportHour.Teams, d)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening teams: %s", err.Error())
+	}
+	if err := d.Set("team", teams); err != nil {
+		return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
+	}
+
+	supportDays, err := flattenSupportDays(supportHour.SupportDays)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening support days: %s", err.Error())
+	}
+	if err := d.Set("support_days", supportDays); err != nil {
+		return fmt.Errorf("[ERROR] Error setting support days: %s", err.Error())
+	}
+
+	return nil
 }
 
 func flattenSupportDays(supportDays *ilert.SupportDays) ([]any, error) {

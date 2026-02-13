@@ -283,35 +283,9 @@ func resourceMetricRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.Errorf("metric response is empty")
 	}
 
-	d.Set("name", result.Metric.Name)
-	d.Set("aggregation_type", result.Metric.AggregationType)
-	d.Set("display_type", result.Metric.DisplayType)
-	d.Set("interpolate_gaps", result.Metric.InterpolateGaps)
-	d.Set("lock_y_axis_max", result.Metric.LockYAxisMax)
-	d.Set("lock_y_axis_min", result.Metric.LockYAxisMin)
-	d.Set("mouse_over_decimal", int(result.Metric.MouseOverDecimal))
-	d.Set("show_values_on_mouse_over", result.Metric.ShowValuesOnMouseOver)
-
-	teams, err := flattenTeamShortList(result.Metric.Teams, d)
+	err = transformMetricResource(result.Metric, d)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	if err := d.Set("team", teams); err != nil {
-		return diag.Errorf("error setting teams: %s", err)
-	}
-
-	d.Set("unit_label", result.Metric.UnitLabel)
-
-	if result.Metric.Metadata != nil {
-		d.Set("metadata", []any{map[string]any{
-			"query": result.Metric.Metadata.Query,
-		}})
-	}
-
-	if result.Metric.DataSource != nil {
-		d.Set("data_source", []any{map[string]any{
-			"id": int(result.Metric.DataSource.ID),
-		}})
 	}
 
 	return nil
@@ -416,4 +390,39 @@ func resourceMetricExists(d *schema.ResourceData, m any) (bool, error) {
 		return false, err
 	}
 	return result, nil
+}
+
+func transformMetricResource(metric *ilert.Metric, d *schema.ResourceData) error {
+	d.Set("name", metric.Name)
+	d.Set("aggregation_type", metric.AggregationType)
+	d.Set("display_type", metric.DisplayType)
+	d.Set("interpolate_gaps", metric.InterpolateGaps)
+	d.Set("lock_y_axis_max", metric.LockYAxisMax)
+	d.Set("lock_y_axis_min", metric.LockYAxisMin)
+	d.Set("mouse_over_decimal", int(metric.MouseOverDecimal))
+	d.Set("show_values_on_mouse_over", metric.ShowValuesOnMouseOver)
+
+	teams, err := flattenTeamShortList(metric.Teams, d)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening teams: %s", err.Error())
+	}
+	if err := d.Set("team", teams); err != nil {
+		return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
+	}
+
+	d.Set("unit_label", metric.UnitLabel)
+
+	if metric.Metadata != nil {
+		d.Set("metadata", []any{map[string]any{
+			"query": metric.Metadata.Query,
+		}})
+	}
+
+	if metric.DataSource != nil {
+		d.Set("data_source", []any{map[string]any{
+			"id": int(metric.DataSource.ID),
+		}})
+	}
+
+	return nil
 }
