@@ -1300,12 +1300,14 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 		return fmt.Errorf("[ERROR] Error setting alert filter: %s", err.Error())
 	}
 
-	teams, err := flattenTeamShortList(*alertAction.Teams, d)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error flattening teams: %s", err.Error())
-	}
-	if err := d.Set("team", teams); err != nil {
-		return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
+	if alertAction.Teams != nil {
+		teams, err := flattenTeamShortList(*alertAction.Teams, d)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error flattening teams: %s", err.Error())
+		}
+		if err := d.Set("team", teams); err != nil {
+			return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
+		}
 	}
 
 	d.Set("delay_sec", alertAction.DelaySec)
