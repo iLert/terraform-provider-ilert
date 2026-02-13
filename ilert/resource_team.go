@@ -176,15 +176,9 @@ func resourceTeamRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.Errorf("team response is empty")
 	}
 
-	d.Set("name", result.Team.Name)
-	d.Set("visibility", result.Team.Visibility)
-
-	members, err := flattenMembersListSorted(result.Team.Members, d)
+	err = transformTeamResource(result.Team, d)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	if err := d.Set("member", members); err != nil {
-		return diag.Errorf("error setting members: %s", err)
 	}
 
 	return nil
@@ -291,6 +285,21 @@ func resourceTeamExists(d *schema.ResourceData, m any) (bool, error) {
 	return result, nil
 }
 
+func transformTeamResource(team *ilert.Team, d *schema.ResourceData) error {
+	d.Set("name", team.Name)
+	d.Set("visibility", team.Visibility)
+
+	members, err := flattenMembersListSorted(team.Members, d)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening members: %s", err.Error())
+	}
+	if err := d.Set("member", members); err != nil {
+		return fmt.Errorf("[ERROR] Error setting members: %s", err.Error())
+	}
+
+	return nil
+}
+
 func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) ([]any, error) {
 	if list == nil {
 		return make([]any, 0), nil
@@ -298,7 +307,10 @@ func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) (
 
 	configMembers := d.Get("member")
 	if configMembers == nil {
-		return make([]any, 0), nil
+		if d.Id() != "" {
+			return make([]any, 0), nil
+		}
+		configMembers = make([]any, 0)
 	}
 
 	configMembersList, ok := configMembers.([]any)

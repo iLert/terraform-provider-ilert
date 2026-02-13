@@ -360,59 +360,10 @@ func resourceEscalationPolicyRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("escalation policy response is empty")
 	}
 
-	d.Set("name", result.EscalationPolicy.Name)
-
-	escalationRules, err := flattenEscalationRulesList(result.EscalationPolicy.EscalationRules, d)
+	err = transformEscalationPolicyResource(result.EscalationPolicy, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("escalation_rule", escalationRules); err != nil {
-		return diag.Errorf("error setting escalation rules: %s", err)
-	}
-
-	if val, ok := d.GetOk("teams"); ok {
-		if val != nil {
-			teams := make([]any, 0)
-			for _, item := range result.EscalationPolicy.Teams {
-				team := make(map[string]any)
-				team["id"] = item.ID
-				teams = append(teams, team)
-			}
-			if err := d.Set("team", teams); err != nil {
-				return diag.Errorf("error setting teams: %s", err)
-			}
-
-			d.Set("teams", nil)
-		}
-	}
-
-	if val, ok := d.GetOk("team"); ok {
-		if val != nil {
-			vL := val.([]any)
-			teams := make([]any, 0)
-			for i, item := range result.EscalationPolicy.Teams {
-				team := make(map[string]any)
-				v := vL[i].(map[string]any)
-				team["id"] = item.ID
-
-				// Means: if server response has a name set, and the user typed in a name too,
-				// only then team name is stored in the terraform state
-				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
-					team["name"] = item.Name
-				}
-				teams = append(teams, team)
-			}
-
-			if err := d.Set("team", teams); err != nil {
-				return diag.Errorf("error setting teams: %s", err)
-			}
-		}
-	}
-
-	d.Set("repeating", result.EscalationPolicy.Repeating)
-	d.Set("frequency", result.EscalationPolicy.Frequency)
-	d.Set("delay_min", result.EscalationPolicy.DelayMin)
-	d.Set("routing_key", result.EscalationPolicy.RoutingKey)
 
 	return nil
 }
@@ -519,35 +470,119 @@ func resourceEscalationPolicyExists(d *schema.ResourceData, m any) (bool, error)
 	return result, nil
 }
 
+func transformEscalationPolicyResource(escalationPolicy *ilert.EscalationPolicy, d *schema.ResourceData) error {
+	d.Set("name", escalationPolicy.Name)
+
+	escalationRules, err := flattenEscalationRulesList(escalationPolicy.EscalationRules, d)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening escalation rules: %s", err.Error())
+	}
+	if err := d.Set("escalation_rule", escalationRules); err != nil {
+		return fmt.Errorf("[ERROR] Error setting escalation rules: %s", err.Error())
+	}
+
+	if val, ok := d.GetOk("team"); ok {
+		if val != nil {
+			vL := val.([]any)
+			teams := make([]any, 0)
+			for i, item := range escalationPolicy.Teams {
+				team := make(map[string]any)
+				v := vL[i].(map[string]any)
+				team["id"] = item.ID
+
+				// Means: if server response has a name set, and the user typed in a name too,
+				// only then team name is stored in the terraform state
+				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+					team["name"] = item.Name
+				}
+				teams = append(teams, team)
+			}
+
+			if err := d.Set("team", teams); err != nil {
+				return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
+			}
+		}
+	} else if val, ok := d.GetOk("teams"); ok {
+		if val != nil {
+			teams := make([]any, 0)
+			for _, item := range escalationPolicy.Teams {
+				team := make(map[string]any)
+				team["id"] = item.ID
+				teams = append(teams, team)
+			}
+			if err := d.Set("team", teams); err != nil {
+				return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
+			}
+
+			d.Set("teams", nil)
+		}
+	} else if d.Id() == "" && len(escalationPolicy.Teams) > 0 {
+		teams, err := flattenTeamShortList(escalationPolicy.Teams, d)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error flattening teams: %s", err.Error())
+		}
+		if err := d.Set("team", teams); err != nil {
+			return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
+		}
+	}
+
+	d.Set("repeating", escalationPolicy.Repeating)
+	d.Set("frequency", escalationPolicy.Frequency)
+	d.Set("delay_min", escalationPolicy.DelayMin)
+	d.Set("routing_key", escalationPolicy.RoutingKey)
+
+	return nil
+}
+
 func flattenEscalationRulesList(list []ilert.EscalationRule, d *schema.ResourceData) ([]any, error) {
 	if list == nil {
 		return make([]any, 0), nil
 	}
 
-	usL := d.Get("escalation_rule").([]any)
-
 	results := make([]any, 0)
-	for i, item := range list {
-		if usL != nil && i < len(usL) && usL[i] != nil {
+	if val, ok := d.GetOk("escalation_rule"); ok && len(val.([]any)) > 0 {
+		vL := val.([]any)
+		for i, item := range list {
+			if vL != nil && i < len(vL) && vL[i] != nil {
+				result := make(map[string]any)
+				result["escalation_timeout"] = item.EscalationTimeout
+				v := vL[i].(map[string]any)
+				if item.User != nil && v["user"] != nil && v["user"].(string) != "" {
+					result["user"] = strconv.FormatInt(item.User.ID, 10)
+				}
+				if item.Schedule != nil && v["schedule"] != nil && v["schedule"].(string) != "" {
+					result["schedule"] = strconv.FormatInt(item.Schedule.ID, 10)
+				}
+
+				user := v["users"].([]any)
+				users, err := flattenResponderUserShortList(item.Users, user)
+				if err != nil {
+					return nil, err
+				}
+				result["users"] = users
+
+				schedule := v["schedules"].([]any)
+				schedules, err := flattenResponderScheduleList(item.Schedules, schedule)
+				if err != nil {
+					return nil, err
+				}
+				result["schedules"] = schedules
+
+				results = append(results, result)
+			}
+		}
+	} else if d.Id() == "" {
+		for _, item := range list {
 			result := make(map[string]any)
 			result["escalation_timeout"] = item.EscalationTimeout
-			v := usL[i].(map[string]any)
-			if item.User != nil && v["user"] != nil && v["user"].(string) != "" {
-				result["user"] = strconv.FormatInt(item.User.ID, 10)
-			}
-			if item.Schedule != nil && v["schedule"] != nil && v["schedule"].(string) != "" {
-				result["schedule"] = strconv.FormatInt(item.Schedule.ID, 10)
-			}
 
-			user := v["users"].([]any)
-			users, err := flattenUserShortList(item.Users, user)
+			users, err := flattenUserShortList(item.Users)
 			if err != nil {
 				return nil, err
 			}
 			result["users"] = users
 
-			schedule := v["schedules"].([]any)
-			schedules, err := flattenScheduleShortList(item.Schedules, schedule)
+			schedules, err := flattenScheduleList(item.Schedules)
 			if err != nil {
 				return nil, err
 			}
@@ -560,7 +595,25 @@ func flattenEscalationRulesList(list []ilert.EscalationRule, d *schema.ResourceD
 	return results, nil
 }
 
-func flattenScheduleShortList(list []ilert.Schedule, schedule []any) ([]any, error) {
+func flattenScheduleList(list []ilert.Schedule) ([]any, error) {
+	if list == nil {
+		return make([]any, 0), nil
+	}
+
+	results := make([]any, 0)
+	for _, item := range list {
+		result := make(map[string]any)
+		result["id"] = strconv.FormatInt(item.ID, 10)
+		if item.Name != "" {
+			result["name"] = item.Name
+		}
+		results = append(results, result)
+	}
+
+	return results, nil
+}
+
+func flattenResponderScheduleList(list []ilert.Schedule, schedule []any) ([]any, error) {
 	if list == nil || schedule == nil || len(schedule) <= 0 {
 		return make([]any, 0), nil
 	}

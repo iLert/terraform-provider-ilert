@@ -258,23 +258,9 @@ func resourceMetricDataSourceRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("metric data source response is empty")
 	}
 
-	d.Set("name", result.MetricDataSource.Name)
-	d.Set("type", result.MetricDataSource.Type)
-
-	teams, err := flattenTeamShortList(result.MetricDataSource.Teams, d)
+	err = transformMetricDataSourceResource(result.MetricDataSource, d)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	if err := d.Set("team", teams); err != nil {
-		return diag.Errorf("error setting teams: %s", err)
-	}
-
-	metadata, err := flattenProviderMetadata(result.MetricDataSource.Metadata, d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("metadata", metadata); err != nil {
-		return diag.Errorf("error setting metadata: %s", err)
 	}
 
 	return nil
@@ -381,7 +367,30 @@ func resourceMetricDataSourceExists(d *schema.ResourceData, m any) (bool, error)
 	return result, nil
 }
 
-func flattenProviderMetadata(metadata *ilert.MetricDataSourceMetadata, d *schema.ResourceData) ([]any, error) {
+func transformMetricDataSourceResource(metricDataSource *ilert.MetricDataSource, d *schema.ResourceData) error {
+	d.Set("name", metricDataSource.Name)
+	d.Set("type", metricDataSource.Type)
+
+	teams, err := flattenTeamShortList(metricDataSource.Teams, d)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening teams: %s", err.Error())
+	}
+	if err := d.Set("team", teams); err != nil {
+		return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
+	}
+
+	metadata, err := flattenProviderMetadata(metricDataSource.Metadata)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening metadata: %s", err.Error())
+	}
+	if err := d.Set("metadata", metadata); err != nil {
+		return fmt.Errorf("[ERROR] Error setting metadata: %s", err.Error())
+	}
+
+	return nil
+}
+
+func flattenProviderMetadata(metadata *ilert.MetricDataSourceMetadata) ([]any, error) {
 	if metadata == nil {
 		return make([]any, 0), nil
 	}

@@ -164,13 +164,10 @@ func resourceStatusPageGroupRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.Errorf("status page group response is empty")
 	}
 
-	d.Set("name", result.StatusPageGroup.Name)
-
-	sp := make([]any, 0)
-	s := make(map[string]any, 0)
-	s["id"] = int(statusPageID)
-	sp = append(sp, s)
-	d.Set("status_page", sp)
+	err = transformStatusPageGroupResource(result.StatusPageGroup, statusPageID, d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -288,4 +285,16 @@ func resourceStatusPageGroupExists(d *schema.ResourceData, m any) (bool, error) 
 		return false, err
 	}
 	return result, nil
+}
+
+func transformStatusPageGroupResource(statusPageGroup *ilert.StatusPageGroup, statusPageID int64, d *schema.ResourceData) error {
+	d.Set("name", statusPageGroup.Name)
+
+	sp := make([]any, 0)
+	s := make(map[string]any, 0)
+	s["id"] = int(statusPageID)
+	sp = append(sp, s)
+	d.Set("status_page", sp)
+
+	return nil
 }

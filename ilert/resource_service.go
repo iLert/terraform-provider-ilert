@@ -315,12 +315,10 @@ func transformServiceResource(service *ilert.Service, d *schema.ResourceData) er
 
 	teams, err := flattenTeamShortList(service.Teams, d)
 	if err != nil {
-		log.Printf("[ERROR] Error flattening teams: %s", err.Error())
-		return nil
+		return fmt.Errorf("[ERROR] Error flattening teams: %s", err.Error())
 	}
 	if err := d.Set("team", teams); err != nil {
-		log.Printf("[ERROR] Error setting teams: %s", err.Error())
-		return nil
+		return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
 	}
 
 	return nil
