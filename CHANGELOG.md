@@ -1,5 +1,9 @@
 # Changelog
 
+## 13.02.2026, Version 2.16.0
+
+- feature/resource-registry-expansion in [#118](https://github.com/iLert/terraform-provider-ilert/pull/118)
+
 ## 09.02.2026, Version 2.15.1
 
 - maintenance release:
