@@ -179,12 +179,12 @@ func resourceHeartbeatMonitorCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	if result == nil || heartbeatMonitor == nil {
+	if result == nil || result.HeartbeatMonitor == nil {
 		log.Printf("[ERROR] Creating ilert heartbeat monitor error: empty response")
 		return diag.Errorf("heartbeat monitor response is empty")
 	}
 
-	d.SetId(strconv.FormatInt(heartbeatMonitor.ID, 10))
+	d.SetId(strconv.FormatInt(result.HeartbeatMonitor.ID, 10))
 
 	return resourceHeartbeatMonitorRead(ctx, d, m)
 }
@@ -352,25 +352,25 @@ func transformHeartbeatMonitorResource(heartbeatMonitor *ilert.HeartbeatMonitor,
 		if heartbeatMonitor.AlertSource != nil {
 			v := *heartbeatMonitor.AlertSource
 			as := val.([]any)[0].(map[string]any)
-			alertSource := make(map[string]any)
-
-			alertSource["id"] = v.ID
+			alertSource := map[string]any{
+				"id": int(v.ID),
+			}
 			if v.Name != "" && as["name"] != nil && as["name"].(string) != "" {
 				alertSource["name"] = v.Name
 			}
-
 			d.Set("alert_source", alertSource)
 		}
 	} else if d.Id() == "" {
-		as := heartbeatMonitor.AlertSource
-		alertSource := map[string]any{
-			"id": as.ID,
+		if heartbeatMonitor.AlertSource != nil {
+			as := heartbeatMonitor.AlertSource
+			alertSource := map[string]any{
+				"id": int(as.ID),
+			}
+			if as.Name != "" {
+				alertSource["name"] = as.Name
+			}
+			d.Set("alert_source", []any{alertSource})
 		}
-		if as.Name != "" {
-			alertSource["name"] = as.Name
-		}
-
-		d.Set("alert_source", alertSource)
 	}
 
 	teams, err := flattenTeamShortList(heartbeatMonitor.Teams, d)
