@@ -664,10 +664,8 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		integrationURL := val.(string)
 		alertSource.IntegrationURL = integrationURL
 	}
-	if val, ok := d.GetOk("active"); ok {
-		active := val.(bool)
-		alertSource.Active = active
-	}
+	active := d.Get("active").(bool)
+	alertSource.Active = active
 	if val, ok := d.GetOk("incident_priority_rule"); ok {
 		incidentPriorityRule := val.(string)
 		alertSource.IncidentPriorityRule = incidentPriorityRule

@@ -1,5 +1,9 @@
 # Changelog
 
+## 24.02.2026, Version 2.16.2
+
+- fix/cross-cutting in [#121](https://github.com/iLert/terraform-provider-ilert/pull/121)
+
 ## 13.02.2026, Version 2.16.1
 
 - fix regression in alert action resource
