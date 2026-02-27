@@ -1316,14 +1316,18 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 
 	if val, ok := d.GetOk("alert_source"); ok && len(val.([]any)) == 1 && d.Id() != "" {
 		if v, ok := d.GetOk("team"); !ok || len(v.([]any)) == 0 {
-			sourceId := alertAction.AlertSourceIDs[0]
+			if len(alertAction.AlertSourceIDs) == 0 {
+				d.Set("alert_source", []any{})
+			} else {
+				sourceId := alertAction.AlertSourceIDs[0]
 
-			sources := make([]any, 0)
-			source := make(map[string]any)
-			source["id"] = strconv.FormatInt(sourceId, 10)
-			sources = append(sources, source)
+				sources := make([]any, 0)
+				source := make(map[string]any)
+				source["id"] = strconv.FormatInt(sourceId, 10)
+				sources = append(sources, source)
 
-			d.Set("alert_source", sources)
+				d.Set("alert_source", sources)
+			}
 		}
 	}
 

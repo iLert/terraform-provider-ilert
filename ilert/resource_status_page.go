@@ -15,6 +15,14 @@ import (
 	"github.com/iLert/ilert-go/v3"
 )
 
+func statusPageElementTypeAllFirst() []string {
+	if len(ilert.StatusPageElementTypeAll) == 0 {
+		return []string{}
+	}
+
+	return []string{ilert.StatusPageElementTypeAll[0]}
+}
+
 func resourceStatusPage() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -178,7 +186,7 @@ func resourceStatusPage() *schema.Resource {
 												"type": {
 													Type:         schema.TypeString,
 													Required:     true,
-													ValidateFunc: validation.StringInSlice([]string{ilert.StatusPageElementTypeAll[0]}, false),
+													ValidateFunc: validation.StringInSlice(statusPageElementTypeAllFirst(), false),
 												},
 												"options": {
 													Type:     schema.TypeList,
