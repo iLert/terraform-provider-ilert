@@ -2,10 +2,7 @@
 
 ## 27.02.2026, Version 2.16.3
 
-- fix/provider-panic-guards in escalation policy, alert source, and alert action resource transforms
-- fix/status-page-safe-validation-initialization for element type validation
-- test/add-resource-specific-regression-tests for alert action, alert source, and escalation policy
-- chore/add-make-test-target for running full non-acceptance test suite
+- bug/fix-out-of-range-index in [#123](https://github.com/iLert/terraform-provider-ilert/pull/123)
 
 ## 24.02.2026, Version 2.16.2
 
