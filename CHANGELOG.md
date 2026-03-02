@@ -1,5 +1,9 @@
 # Changelog
 
+## 27.02.2026, Version 2.16.3
+
+- bug/fix-out-of-range-index in [#123](https://github.com/iLert/terraform-provider-ilert/pull/123)
+
 ## 24.02.2026, Version 2.16.2
 
 - fix/cross-cutting in [#121](https://github.com/iLert/terraform-provider-ilert/pull/121)

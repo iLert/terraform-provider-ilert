@@ -487,12 +487,20 @@ func transformEscalationPolicyResource(escalationPolicy *ilert.EscalationPolicy,
 			teams := make([]any, 0)
 			for i, item := range escalationPolicy.Teams {
 				team := make(map[string]any)
-				v := vL[i].(map[string]any)
 				team["id"] = item.ID
+
+				var requestedTeamName string
+				if i < len(vL) && vL[i] != nil {
+					if v, ok := vL[i].(map[string]any); ok && v["name"] != nil {
+						if vName, ok := v["name"].(string); ok {
+							requestedTeamName = vName
+						}
+					}
+				}
 
 				// Means: if server response has a name set, and the user typed in a name too,
 				// only then team name is stored in the terraform state
-				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+				if item.Name != "" && requestedTeamName != "" {
 					team["name"] = item.Name
 				}
 				teams = append(teams, team)

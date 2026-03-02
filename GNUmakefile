@@ -29,6 +29,9 @@ lint:
 	@echo "==> Checking source code against linters..."
 	golangci-lint run ./...
 
+test: fmtcheck
+	go test $(TEST) -v $(TESTARGS) -timeout 30m
+
 testacc: fmtcheck
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
