@@ -1,5 +1,9 @@
 # Changelog
 
+## 02.03.2026, Version 2.16.4
+
+- fix/call-flow-node-validation in [#124](https://github.com/iLert/terraform-provider-ilert/pull/124)
+
 ## 27.02.2026, Version 2.16.3
 
 - bug/fix-out-of-range-index in [#123](https://github.com/iLert/terraform-provider-ilert/pull/123)
