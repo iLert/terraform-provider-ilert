@@ -435,7 +435,32 @@ func buildCallFlow(d *schema.ResourceData) (*ilert.CallFlow, error) {
 		}
 	}
 
+	if err := validateCallFlowNodeRouteCallStyle(callFlow.RootNode); err != nil {
+		return nil, err
+	}
+
 	return callFlow, nil
+}
+
+func validateCallFlowNodeRouteCallStyle(node *ilert.CallFlowNode) error {
+	if node == nil {
+		return nil
+	}
+
+	if node.NodeType == ilert.CallFlowNodeType.RouteCall {
+		md, ok := node.Metadata.(*ilert.CallFlowNodeMetadata)
+		if !ok || md == nil || md.CallStyle == "" {
+			return fmt.Errorf("Node type 'ROUTE_CALL' requires 'call_style' metadata to be set")
+		}
+	}
+
+	for _, b := range node.Branches {
+		if err := validateCallFlowNodeRouteCallStyle(b.Target); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func buildCallFlowNodeFromMap(rn map[string]any) (*ilert.CallFlowNode, error) {
