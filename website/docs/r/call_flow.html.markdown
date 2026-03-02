@@ -69,7 +69,7 @@ The following arguments are supported:
 - `support_hours_id` - (Optional) Used by node type: `SUPPORT_HOURS`.
 - `hold_audio_url` - (Optional) Used by node type: `ROUTE_CALL`.
 - `targets` - (Optional) Used by node type: `ROUTE_CALL`. A list of targets with attributes `target` and `type`. `type` allowed values: `USER`, `ON_CALL_SCHEDULE`, `NUMBER`.
-- `call_style` - (Optional) Used by node type: `ROUTE_CALL`. Allowed values: `ORDERED`, `RANDOM`, `PARALLEL`.
+- `call_style` - (Optional) Required with node type: `ROUTE_CALL`. Allowed values: `ORDERED`, `RANDOM`, `PARALLEL`.
 - `alert_source_id` - (Optional) Used by node type: `CREATE_ALERT`.
 - `retries` - (Optional) Used by node types: `IVR_MENU`, `PIN_CODE`, `ROUTE_CALL`.
 - `call_timeout_sec` - (Optional) Used by node type: `ROUTE_CALL`.
