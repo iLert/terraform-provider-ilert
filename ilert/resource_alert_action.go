@@ -1135,7 +1135,8 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 
 	if _, ok := d.GetOk("alert_source"); ok || d.Id() == "" {
 		if alertAction.AlertSources != nil {
-			alertSources, err := flattenAlertActionAlertSourcesList(*alertAction.AlertSources)
+			configAlertSources, _ := d.Get("alert_source").([]any)
+			alertSources, err := flattenAlertActionAlertSourcesListSorted(*alertAction.AlertSources, configAlertSources)
 			if err != nil {
 				return fmt.Errorf("[ERROR] Error flattening alert sources: %s", err.Error())
 			}
@@ -1342,6 +1343,60 @@ func flattenAlertActionAlertSourcesList(list []ilert.AlertSource) ([]any, error)
 	}
 	results := make([]any, 0)
 	for _, item := range list {
+		result := make(map[string]any)
+		result["id"] = strconv.FormatInt(item.ID, 10)
+		results = append(results, result)
+	}
+
+	return results, nil
+}
+
+func flattenAlertActionAlertSourcesListSorted(list []ilert.AlertSource, configAlertSources []any) ([]any, error) {
+	if list == nil {
+		return make([]any, 0), nil
+	}
+
+	if len(configAlertSources) == 0 {
+		return flattenAlertActionAlertSourcesList(list)
+	}
+
+	indexBySourceID := make(map[string][]int)
+	for i, item := range list {
+		sourceID := strconv.FormatInt(item.ID, 10)
+		indexBySourceID[sourceID] = append(indexBySourceID[sourceID], i)
+	}
+
+	used := make([]bool, len(list))
+	results := make([]any, 0, len(list))
+
+	for _, configAlertSource := range configAlertSources {
+		configAlertSourceMap, ok := configAlertSource.(map[string]any)
+		if !ok || configAlertSourceMap == nil {
+			continue
+		}
+		sourceID, ok := configAlertSourceMap["id"].(string)
+		if !ok || sourceID == "" {
+			continue
+		}
+
+		indexes, ok := indexBySourceID[sourceID]
+		if !ok || len(indexes) == 0 {
+			continue
+		}
+
+		matchIndex := indexes[0]
+		indexBySourceID[sourceID] = indexes[1:]
+		used[matchIndex] = true
+
+		result := make(map[string]any)
+		result["id"] = strconv.FormatInt(list[matchIndex].ID, 10)
+		results = append(results, result)
+	}
+
+	for i, item := range list {
+		if used[i] {
+			continue
+		}
 		result := make(map[string]any)
 		result["id"] = strconv.FormatInt(item.ID, 10)
 		results = append(results, result)

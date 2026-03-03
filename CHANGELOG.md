@@ -1,5 +1,9 @@
 # Changelog
 
+## 03.03.2026, Version 2.16.5
+
+- fix/resource-ordering in [#125](https://github.com/iLert/terraform-provider-ilert/pull/125)
+
 ## 02.03.2026, Version 2.16.4
 
 - fix/call-flow-node-validation in [#124](https://github.com/iLert/terraform-provider-ilert/pull/124)
