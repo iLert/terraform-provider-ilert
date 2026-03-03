@@ -673,11 +673,15 @@ func flattenScheduleLayerList(list []ilert.ScheduleLayer, d *schema.ResourceData
 		vL := val.([]any)
 		for i, item := range list {
 			if vL != nil && i < len(vL) && vL[i] != nil {
+				layerConfig, _ := vL[i].(map[string]any)
 				result := make(map[string]any)
 				result["name"] = item.Name
 				result["starts_on"] = item.StartsOn
 
-				user := vL[i].(map[string]any)["user"].([]any)
+				var user []any
+				if layerConfig != nil {
+					user, _ = layerConfig["user"].([]any)
+				}
 
 				users, err := flattenResponderUserShortList(item.Users, user)
 				if err != nil {
@@ -690,7 +694,11 @@ func flattenScheduleLayerList(list []ilert.ScheduleLayer, d *schema.ResourceData
 					result["restriction_type"] = item.RestrictionType
 				}
 
-				restr, err := flattenRestrictionList(item.Restrictions)
+				var restrConfig []any
+				if layerConfig != nil {
+					restrConfig, _ = layerConfig["restriction"].([]any)
+				}
+				restr, err := flattenRestrictionListSorted(item.Restrictions, restrConfig)
 				if err != nil {
 					return nil, err
 				}
@@ -783,27 +791,137 @@ func flattenRestrictionList(list []ilert.LayerRestriction) ([]any, error) {
 
 	results := make([]any, 0)
 	for _, item := range list {
-		result := make(map[string]any)
-
-		fromL := make([]any, 0)
-		fromL = append(fromL, make(map[string]any))
-		from := fromL[0].(map[string]any)
-		from["day_of_week"] = item.From.DayOfWeek
-		from["time"] = item.From.Time
-
-		toL := make([]any, 0)
-		toL = append(toL, make(map[string]any))
-		to := toL[0].(map[string]any)
-		to["day_of_week"] = item.To.DayOfWeek
-		to["time"] = item.To.Time
-
-		result["from"] = fromL
-		result["to"] = toL
-
-		results = append(results, result)
+		flattenedRestriction, ok := flattenRestriction(item)
+		if !ok {
+			continue
+		}
+		results = append(results, flattenedRestriction)
 	}
 
 	return results, nil
+}
+
+func flattenRestrictionListSorted(list []ilert.LayerRestriction, configRestrictions []any) ([]any, error) {
+	if list == nil {
+		return make([]any, 0), nil
+	}
+
+	if len(configRestrictions) == 0 {
+		return flattenRestrictionList(list)
+	}
+
+	indexByKey := make(map[string][]int)
+	for i, item := range list {
+		if item.From == nil || item.To == nil {
+			continue
+		}
+		key := buildRestrictionKey(item.From.DayOfWeek, item.From.Time, item.To.DayOfWeek, item.To.Time)
+		indexByKey[key] = append(indexByKey[key], i)
+	}
+
+	used := make([]bool, len(list))
+	results := make([]any, 0, len(list))
+
+	for _, cfg := range configRestrictions {
+		cfgMap, ok := cfg.(map[string]any)
+		if !ok || cfgMap == nil {
+			continue
+		}
+
+		fromList, ok := cfgMap["from"].([]any)
+		if !ok || len(fromList) == 0 || fromList[0] == nil {
+			continue
+		}
+		toList, ok := cfgMap["to"].([]any)
+		if !ok || len(toList) == 0 || toList[0] == nil {
+			continue
+		}
+
+		fromMap, ok := fromList[0].(map[string]any)
+		if !ok || fromMap == nil {
+			continue
+		}
+		toMap, ok := toList[0].(map[string]any)
+		if !ok || toMap == nil {
+			continue
+		}
+
+		fromDay, ok := fromMap["day_of_week"].(string)
+		if !ok {
+			continue
+		}
+		fromTime, ok := fromMap["time"].(string)
+		if !ok {
+			continue
+		}
+		toDay, ok := toMap["day_of_week"].(string)
+		if !ok {
+			continue
+		}
+		toTime, ok := toMap["time"].(string)
+		if !ok {
+			continue
+		}
+
+		key := buildRestrictionKey(fromDay, fromTime, toDay, toTime)
+		indexes, ok := indexByKey[key]
+		if !ok || len(indexes) == 0 {
+			continue
+		}
+
+		matchIndex := indexes[0]
+		indexByKey[key] = indexes[1:]
+		used[matchIndex] = true
+
+		restr, ok := flattenRestriction(list[matchIndex])
+		if !ok {
+			continue
+		}
+		results = append(results, restr)
+	}
+
+	for i, item := range list {
+		if used[i] {
+			continue
+		}
+		restr, ok := flattenRestriction(item)
+		if !ok {
+			continue
+		}
+		results = append(results, restr)
+	}
+
+	return results, nil
+}
+
+func flattenRestriction(item ilert.LayerRestriction) (map[string]any, bool) {
+	if item.From == nil || item.To == nil {
+		return nil, false
+	}
+
+	result := make(map[string]any)
+
+	fromL := []any{
+		map[string]any{
+			"day_of_week": item.From.DayOfWeek,
+			"time":        item.From.Time,
+		},
+	}
+	toL := []any{
+		map[string]any{
+			"day_of_week": item.To.DayOfWeek,
+			"time":        item.To.Time,
+		},
+	}
+
+	result["from"] = fromL
+	result["to"] = toL
+
+	return result, true
+}
+
+func buildRestrictionKey(fromDayOfWeek, fromTime, toDayOfWeek, toTime string) string {
+	return fromDayOfWeek + "|" + fromTime + "|" + toDayOfWeek + "|" + toTime
 }
 
 func flattenShiftList(list []ilert.Shift) ([]any, error) {
