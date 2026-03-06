@@ -110,7 +110,7 @@ func resourceSupportHour() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"name": {
 							Type:         schema.TypeString,
-							Optional:     true,
+							Required:     true,
 							ValidateFunc: validation.StringLenBetween(1, 255),
 						},
 						"start": {
