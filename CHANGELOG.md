@@ -1,5 +1,9 @@
 # Changelog
 
+## 06.03.2026, Version 2.17.0
+
+- feature/support-hour-exceptions in [#126](https://github.com/iLert/terraform-provider-ilert/pull/126)
+
 ## 03.03.2026, Version 2.16.5
 
 - fix/resource-ordering in [#125](https://github.com/iLert/terraform-provider-ilert/pull/125)
