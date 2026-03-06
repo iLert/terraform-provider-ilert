@@ -103,6 +103,33 @@ func resourceSupportHour() *schema.Resource {
 					},
 				},
 			},
+			"exception": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringLenBetween(1, 255),
+						},
+						"start": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"end": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"support_status": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Default:      ilert.SupportStatus.During,
+							ValidateFunc: validation.StringInSlice(ilert.SupportStatusAll, false),
+						},
+					},
+				},
+			},
 		},
 		CreateContext: resourceSupportHourCreate,
 		ReadContext:   resourceSupportHourRead,
@@ -210,6 +237,35 @@ func buildSupportHour(d *schema.ResourceData) (*ilert.SupportHour, error) {
 			}
 		}
 		supportHour.SupportDays = &days
+	}
+
+	if val, ok := d.GetOk("exception"); ok {
+		vL := val.([]any)
+		exceptions := make([]ilert.SupportHourException, 0, len(vL))
+		for _, exception := range vL {
+			if exception == nil {
+				continue
+			}
+
+			v := exception.(map[string]any)
+			ex := ilert.SupportHourException{
+				Start:         v["start"].(string),
+				End:           v["end"].(string),
+				SupportStatus: ilert.SupportStatus.During,
+			}
+
+			if v["name"] != nil && v["name"].(string) != "" {
+				ex.Name = v["name"].(string)
+			}
+
+			if v["support_status"] != nil && v["support_status"].(string) != "" {
+				ex.SupportStatus = v["support_status"].(string)
+			}
+
+			exceptions = append(exceptions, ex)
+		}
+
+		supportHour.Exceptions = exceptions
 	}
 
 	return supportHour, nil
@@ -422,6 +478,11 @@ func transformSupportHourResource(supportHour *ilert.SupportHour, d *schema.Reso
 		return fmt.Errorf("[ERROR] Error setting support days: %s", err.Error())
 	}
 
+	exceptions := flattenSupportHourExceptions(supportHour.Exceptions)
+	if err := d.Set("exception", exceptions); err != nil {
+		return fmt.Errorf("[ERROR] Error setting exceptions: %s", err.Error())
+	}
+
 	return nil
 }
 
@@ -478,4 +539,32 @@ func flattenSupportDays(supportDays *ilert.SupportDays) ([]any, error) {
 	results = append(results, result)
 
 	return results, nil
+}
+
+func flattenSupportHourExceptions(exceptionList []ilert.SupportHourException) []any {
+	if exceptionList == nil {
+		return make([]any, 0)
+	}
+
+	results := make([]any, 0)
+	for _, exception := range exceptionList {
+		result := map[string]any{
+			"start": exception.Start,
+			"end":   exception.End,
+		}
+
+		if exception.Name != "" {
+			result["name"] = exception.Name
+		}
+
+		if exception.SupportStatus == "" {
+			result["support_status"] = ilert.SupportStatus.During
+		} else {
+			result["support_status"] = exception.SupportStatus
+		}
+
+		results = append(results, result)
+	}
+
+	return results
 }
