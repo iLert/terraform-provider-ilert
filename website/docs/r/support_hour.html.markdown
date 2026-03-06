@@ -53,6 +53,7 @@ The following arguments are supported:
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 - `timezone` - (Required) The timezone of the support hours (IANA tz database names) e.g. `America/Los_Angeles` or `Europe/Zurich`.
 - `support_days` - The [support days](#support-days-arguments) block of the support hours.
+- `exception` - (Optional) One or more [exception](#exception-arguments) blocks.
 
 #### Team Arguments
 
@@ -73,6 +74,13 @@ The following arguments are supported:
 
 - `start` - The start time of the support day.
 - `end` - The end time of the support day.
+
+#### Exception Arguments
+
+- `name` - (Optional) The name of the exception.
+- `start` - (Required) The start date and time of the exception.
+- `end` - (Required) The end date and time of the exception.
+- `support_status` - (Optional) The support status of the exception. Allowed values are `DURING` or `OUTSIDE`. Default: `DURING`
 
 ## Import
 
