@@ -32,6 +32,12 @@ var resourceRegistry = map[string]struct {
 			return transformAlertSourceResource(e.(*ilert.AlertSource), d)
 		},
 	},
+	"ilert_call_flow": {
+		factory: func() any { return &ilert.CallFlowOutput{} },
+		transformer: func(e any, d *schema.ResourceData) error {
+			return transformCallFlowResource(e.(*ilert.CallFlowOutput), d)
+		},
+	},
 	"ilert_connector": {
 		factory: func() any { return &ilert.ConnectorOutput{} },
 		transformer: func(e any, d *schema.ResourceData) error {
@@ -48,6 +54,12 @@ var resourceRegistry = map[string]struct {
 		factory: func() any { return &ilert.EscalationPolicy{} },
 		transformer: func(e any, d *schema.ResourceData) error {
 			return transformEscalationPolicyResource(e.(*ilert.EscalationPolicy), d)
+		},
+	},
+	"ilert_event_flow": {
+		factory: func() any { return &ilert.EventFlowOutput{} },
+		transformer: func(e any, d *schema.ResourceData) error {
+			return transformEventFlowResource(e.(*ilert.EventFlowOutput), d)
 		},
 	},
 	"ilert_heartbeat_monitor": {
@@ -112,12 +124,16 @@ func getResourceType(resourceType string) string {
 		return "ilert_alert_action"
 	case "ALERT_SOURCE":
 		return "ilert_alert_source"
+	case "CALL_FLOW":
+		return "ilert_call_flow"
 	case "ALERT_ACTION_CONNECTOR":
 		return "ilert_connector"
 	case "DEPLOYMENT_PIPELINE":
 		return "ilert_deployment_pipeline"
 	case "ESCALATION_POLICY":
 		return "ilert_escalation_policy"
+	case "EVENT_FLOW":
+		return "ilert_event_flow"
 	case "HEARTBEAT_MONITOR":
 		return "ilert_heartbeat_monitor"
 	case "INCIDENT_TEMPLATE":
