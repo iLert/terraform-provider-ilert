@@ -772,42 +772,8 @@ func resourceCallFlowRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.Errorf("Call Flow response is empty")
 	}
 
-	d.Set("name", result.CallFlow.Name)
-	d.Set("language", result.CallFlow.Language)
-
-	teams, err := flattenTeamShortList(result.CallFlow.Teams, d)
-	if err != nil {
+	if err := transformCallFlowResource(result.CallFlow, d); err != nil {
 		return diag.FromErr(err)
-	}
-	if err := d.Set("team", teams); err != nil {
-		return diag.Errorf("error setting teams: %s", err)
-	}
-
-	if result.CallFlow.AssignedNumber != nil {
-		assigned := make(map[string]any)
-		assigned["id"] = result.CallFlow.AssignedNumber.ID
-		assigned["name"] = result.CallFlow.AssignedNumber.Name
-		if result.CallFlow.AssignedNumber.PhoneNumber != nil {
-			assigned["phone_number"] = []any{
-				map[string]any{
-					"region_code": result.CallFlow.AssignedNumber.PhoneNumber.RegionCode,
-					"number":      result.CallFlow.AssignedNumber.PhoneNumber.Number,
-				},
-			}
-		} else {
-			assigned["phone_number"] = []any{}
-		}
-		d.Set("assigned_number", []any{assigned})
-	} else {
-		d.Set("assigned_number", []any{})
-	}
-
-	rn, err := flattenCallFlowNodeOutput(result.CallFlow.RootNode)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("root_node", rn); err != nil {
-		return diag.Errorf("error setting root_node: %s", err)
 	}
 
 	return nil
@@ -912,6 +878,53 @@ func resourceCallFlowExists(d *schema.ResourceData, m any) (bool, error) {
 		return false, err
 	}
 	return result, nil
+}
+
+func transformCallFlowResource(callFlow *ilert.CallFlowOutput, d *schema.ResourceData) error {
+	d.Set("name", callFlow.Name)
+	d.Set("language", callFlow.Language)
+
+	teams, err := flattenTeamShortList(callFlow.Teams, d)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening teams: %s", err.Error())
+	}
+	if err := d.Set("team", teams); err != nil {
+		return fmt.Errorf("[ERROR] Error setting teams: %s", err.Error())
+	}
+
+	if callFlow.AssignedNumber != nil {
+		assigned := make(map[string]any)
+		assigned["id"] = callFlow.AssignedNumber.ID
+		assigned["name"] = callFlow.AssignedNumber.Name
+		if callFlow.AssignedNumber.PhoneNumber != nil {
+			assigned["phone_number"] = []any{
+				map[string]any{
+					"region_code": callFlow.AssignedNumber.PhoneNumber.RegionCode,
+					"number":      callFlow.AssignedNumber.PhoneNumber.Number,
+				},
+			}
+		} else {
+			assigned["phone_number"] = []any{}
+		}
+
+		if err := d.Set("assigned_number", []any{assigned}); err != nil {
+			return fmt.Errorf("[ERROR] Error setting assigned number: %s", err.Error())
+		}
+	} else {
+		if err := d.Set("assigned_number", []any{}); err != nil {
+			return fmt.Errorf("[ERROR] Error setting assigned number: %s", err.Error())
+		}
+	}
+
+	rootNode, err := flattenCallFlowNodeOutput(callFlow.RootNode)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening root node: %s", err.Error())
+	}
+	if err := d.Set("root_node", rootNode); err != nil {
+		return fmt.Errorf("[ERROR] Error setting root node: %s", err.Error())
+	}
+
+	return nil
 }
 
 func flattenCallFlowNodeOutput(node *ilert.CallFlowNodeOutput) ([]any, error) {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 11.03.2026, Version 2.18.0
+
+- feature/event-flows in [#127](https://github.com/iLert/terraform-provider-ilert/pull/127) 
+
 ## 06.03.2026, Version 2.17.0
 
 - feature/support-hour-exceptions in [#126](https://github.com/iLert/terraform-provider-ilert/pull/126)
