@@ -94,6 +94,73 @@ func TestFlattenAlertActionAlertSourcesListSorted_AppendsUnmatchedServerAlertSou
 	}
 }
 
+func TestBuildAlertAction_WebhookHeaders(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertAction().Schema, map[string]any{
+		"name": "test-alert-action",
+		"connector": []any{
+			map[string]any{
+				"type": ilertapi.ConnectorTypes.Webhook,
+			},
+		},
+		"webhook": []any{
+			map[string]any{
+				"url":           "https://example.com/webhook",
+				"body_template": "body-template",
+				"headers": []any{
+					map[string]any{
+						"key":   "Authorization",
+						"value": "Bearer test-token",
+					},
+				},
+			},
+		},
+	})
+
+	alertAction, err := buildAlertAction(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert action: %v", err)
+	}
+
+	params, ok := alertAction.Params.(*ilertapi.AlertActionParamsWebhook)
+	if !ok {
+		t.Fatalf("expected webhook params type, got: %#v", alertAction.Params)
+	}
+
+	if len(params.Headers) != 1 {
+		t.Fatalf("expected 1 webhook header, got %d", len(params.Headers))
+	}
+
+	if params.Headers[0].Key != "Authorization" {
+		t.Fatalf("expected header key Authorization, got %s", params.Headers[0].Key)
+	}
+
+	if params.Headers[0].Value != "Bearer test-token" {
+		t.Fatalf("expected header value Bearer test-token, got %s", params.Headers[0].Value)
+	}
+}
+
+func TestFlattenAlertActionWebhookHeadersList(t *testing.T) {
+	webhookHeaders := []ilertapi.AlertActionParamsWebhookHeader{
+		{
+			Key:   "X-Header-Key",
+			Value: "X-Header-Value",
+		},
+	}
+
+	got := flattenAlertActionWebhookHeadersList(webhookHeaders)
+
+	want := []any{
+		map[string]any{
+			"key":   "X-Header-Key",
+			"value": "X-Header-Value",
+		},
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("expected webhook headers to be %#v, got %#v", want, got)
+	}
+}
+
 func alertSourceIDOrder(alertSources []any) []string {
 	ids := make([]string, 0, len(alertSources))
 	for _, alertSource := range alertSources {

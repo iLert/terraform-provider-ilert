@@ -135,6 +135,12 @@ The following arguments are supported:
 
 - `url` - (Required) The Webhook URL.
 - `body_template` - (Optional) The Webhook template body.
+- `headers` - (Optional) One or more [headers](#headers-arguments) blocks.
+
+#### Headers Arguments
+
+- `key` - (Required) The header key.
+- `value` - (Required) The header value.
 
 #### Zendesk Arguments
 
