@@ -1,5 +1,10 @@
 # Changelog
 
+## 13.03.2026, Version 2.19.0
+
+- feature/teams-escalation-rule in [#129](https://github.com/iLert/terraform-provider-ilert/pull/129)
+- feature/custom-http-headers-webhook-alert-action in [#128](https://github.com/iLert/terraform-provider-ilert/pull/128)
+
 ## 11.03.2026, Version 2.18.0
 
 - feature/event-flows in [#127](https://github.com/iLert/terraform-provider-ilert/pull/127) 
