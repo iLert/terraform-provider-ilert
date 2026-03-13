@@ -91,9 +91,8 @@ func resourceEscalationPolicy() *schema.Resource {
 										Required: true,
 									},
 									"name": {
-										Type:         schema.TypeString,
-										Optional:     true,
-										ValidateFunc: validation.StringLenBetween(1, 255),
+										Type:     schema.TypeString,
+										Computed: true,
 									},
 								},
 							},
@@ -701,7 +700,7 @@ func flattenResponderTeamShortList(list []ilert.TeamShort) ([]any, error) {
 	results := make([]any, 0)
 	for _, item := range list {
 		result := map[string]any{
-			"id": item.ID,
+			"id": strconv.FormatInt(item.ID, 10),
 		}
 		if item.Name != "" {
 			result["name"] = item.Name
