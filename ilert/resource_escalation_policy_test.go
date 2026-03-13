@@ -163,12 +163,8 @@ func TestFlattenEscalationRulesList_WithRuleTeams(t *testing.T) {
 	}
 
 	team := teams[0].(map[string]any)
-	teamID, ok := team["id"].(int64)
-	if !ok {
-		t.Fatalf("expected flattened team id to be int64, got %T", team["id"])
-	}
-	if teamID != 1 {
-		t.Fatalf("expected flattened team id '1', got %d", teamID)
+	if team["id"].(string) != "1" {
+		t.Fatalf("expected flattened team id '1', got %s", team["id"].(string))
 	}
 	if team["name"].(string) != "Team 1" {
 		t.Fatalf("expected flattened team name 'Team 1', got %s", team["name"].(string))
