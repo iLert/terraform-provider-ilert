@@ -164,6 +164,22 @@ func resourceAlertAction() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
+						"headers": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"value": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -674,10 +690,23 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		vL := val.([]any)
 		if len(vL) > 0 {
 			v := vL[0].(map[string]any)
-			alertAction.Params = &ilert.AlertActionParamsWebhook{
+			params := &ilert.AlertActionParamsWebhook{
 				WebhookURL:   v["url"].(string),
 				BodyTemplate: v["body_template"].(string),
 			}
+			if vL, ok := v["headers"].([]any); ok && len(vL) > 0 {
+				hL := make([]ilert.AlertActionParamsWebhookHeader, 0)
+				for _, m := range vL {
+					v := m.(map[string]any)
+					h := ilert.AlertActionParamsWebhookHeader{
+						Key:   v["key"].(string),
+						Value: v["value"].(string),
+					}
+					hL = append(hL, h)
+				}
+				params.Headers = hL
+			}
+			alertAction.Params = params
 		}
 	}
 
@@ -1189,6 +1218,7 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 			map[string]any{
 				"url":           alertAction.Params.WebhookURL,
 				"body_template": alertAction.Params.BodyTemplate,
+				"headers":       flattenAlertActionWebhookHeadersList(alertAction.Params.Headers),
 			},
 		})
 	case ilert.ConnectorTypes.Zendesk:
@@ -1349,6 +1379,20 @@ func flattenAlertActionAlertSourcesList(list []ilert.AlertSource) ([]any, error)
 	}
 
 	return results, nil
+}
+
+func flattenAlertActionWebhookHeadersList(list []ilert.AlertActionParamsWebhookHeader) []any {
+	if list == nil {
+		return make([]any, 0)
+	}
+	results := make([]any, 0)
+	for _, item := range list {
+		result := make(map[string]any)
+		result["key"] = item.Key
+		result["value"] = item.Value
+		results = append(results, result)
+	}
+	return results
 }
 
 func flattenAlertActionAlertSourcesListSorted(list []ilert.AlertSource, configAlertSources []any) ([]any, error) {
