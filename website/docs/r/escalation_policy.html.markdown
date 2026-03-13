@@ -51,10 +51,11 @@ The following arguments are supported:
 #### Escalation Rule Arguments
 
 - `escalation_timeout` - (Required) The number of minutes before an unacknowledged incident escalates away from this rule.
-- `user` - (Optional) The user id of the escalation rule. Conflicts with `schedule`, `users` and `schedules`.
-- `schedule` - (Optional) The schedule id of the escalation rule. Conflicts with `user`, `users` and `schedules`.
+- `user` - (Optional) The user id of the escalation rule. Conflicts with `schedule`, `users`, `schedules` and `teams`.
+- `schedule` - (Optional) The schedule id of the escalation rule. Conflicts with `user`, `users`, `schedules` and `teams`.
 - `users` - (Optional) One or more [users](#user-arguments) blocks. Conflicts with `user` and `schedule`.
 - `schedules` - (Optional) One or more [schedules](#schedule-arguments) blocks. Conflicts with `user` and `schedule`.
+- `teams` - (Optional) One or more [escalation rule teams](#escalation-rule-team-arguments) blocks. Conflicts with `user` and `schedule`.
 
 #### User Arguments
 
@@ -66,6 +67,11 @@ The following arguments are supported:
 
 - `id` - (Required) The ID of the schedule.
 - `name` - (Optional) The name of the schedule.
+
+#### Escalation Rule Team Arguments
+
+- `id` - (Required) The ID of the team.
+- `name` - (Optional) The name of the team.
 
 ## Attributes Reference
 
