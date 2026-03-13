@@ -80,6 +80,24 @@ func resourceEscalationPolicy() *schema.Resource {
 								},
 							},
 						},
+						"teams": {
+							Type:     schema.TypeList,
+							Optional: true,
+							MinItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"name": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										ValidateFunc: validation.StringLenBetween(1, 255),
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -228,6 +246,26 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 						sdl = append(sdl, sd)
 					}
 					ep.Schedules = sdl
+				}
+				if v["teams"] != nil && len(v["teams"].([]any)) > 0 {
+					tml := make([]ilert.TeamShort, 0)
+					tL := v["teams"].([]any)
+					for _, u := range tL {
+						v := u.(map[string]any)
+						tid, err := strconv.ParseInt(v["id"].(string), 10, 64)
+						if err != nil {
+							log.Printf("[ERROR] Could not parse team id %s", err.Error())
+							return nil, unconvertibleIDErr(v["id"].(string), err)
+						}
+						tm := ilert.TeamShort{
+							ID: tid,
+						}
+						if v["name"] != nil && v["name"].(string) != "" {
+							tm.Name = v["name"].(string)
+						}
+						tml = append(tml, tm)
+					}
+					ep.Teams = tml
 				}
 			}
 			nps = append(nps, ep)
@@ -576,6 +614,12 @@ func flattenEscalationRulesList(list []ilert.EscalationRule, d *schema.ResourceD
 				}
 				result["schedules"] = schedules
 
+				teams, err := flattenResponderTeamShortList(item.Teams)
+				if err != nil {
+					return nil, err
+				}
+				result["teams"] = teams
+
 				results = append(results, result)
 			}
 		}
@@ -595,6 +639,12 @@ func flattenEscalationRulesList(list []ilert.EscalationRule, d *schema.ResourceD
 				return nil, err
 			}
 			result["schedules"] = schedules
+
+			teams, err := flattenResponderTeamShortList(item.Teams)
+			if err != nil {
+				return nil, err
+			}
+			result["teams"] = teams
 
 			results = append(results, result)
 		}
@@ -644,17 +694,34 @@ func flattenResponderScheduleList(list []ilert.Schedule, schedule []any) ([]any,
 	return results, nil
 }
 
+func flattenResponderTeamShortList(list []ilert.TeamShort) ([]any, error) {
+	if list == nil {
+		return make([]any, 0), nil
+	}
+	results := make([]any, 0)
+	for _, item := range list {
+		result := map[string]any{
+			"id": item.ID,
+		}
+		if item.Name != "" {
+			result["name"] = item.Name
+		}
+		results = append(results, result)
+	}
+	return results, nil
+}
+
 func checkEscalationRuleSchema(rule map[string]any) error {
 	if rule["user"] != nil && rule["user"].(string) != "" {
-		if (rule["schedule"] != nil && rule["schedule"].(string) != "") || (rule["users"] != nil && len(rule["users"].([]any)) > 0) || (rule["schedules"] != nil && len(rule["schedules"].([]any)) > 0) {
-			err := errors.New("fields 'schedule', 'users', or 'schedules' are not allowed when setting 'user'")
+		if (rule["schedule"] != nil && rule["schedule"].(string) != "") || (rule["users"] != nil && len(rule["users"].([]any)) > 0) || (rule["schedules"] != nil && len(rule["schedules"].([]any)) > 0) || (rule["teams"] != nil && len(rule["teams"].([]any)) > 0) {
+			err := errors.New("fields 'schedule', 'users', 'schedules', or 'teams' are not allowed when setting 'user'")
 			return err
 		}
 
 	}
 	if rule["schedule"] != nil && rule["schedule"].(string) != "" {
-		if (rule["user"] != nil && rule["user"].(string) != "") || (rule["users"] != nil && len(rule["users"].([]any)) > 0) || (rule["schedules"] != nil && len(rule["schedules"].([]any)) > 0) {
-			err := errors.New("fields 'user', 'users', or 'schedules' are not allowed when setting 'schedule'")
+		if (rule["user"] != nil && rule["user"].(string) != "") || (rule["users"] != nil && len(rule["users"].([]any)) > 0) || (rule["schedules"] != nil && len(rule["schedules"].([]any)) > 0) || (rule["teams"] != nil && len(rule["teams"].([]any)) > 0) {
+			err := errors.New("fields 'user', 'users', 'schedules', or 'teams' are not allowed when setting 'schedule'")
 			return err
 		}
 
@@ -669,6 +736,13 @@ func checkEscalationRuleSchema(rule map[string]any) error {
 	if rule["schedules"] != nil && len(rule["schedules"].([]any)) > 0 {
 		if (rule["user"] != nil && rule["user"].(string) != "") || (rule["schedule"] != nil && rule["schedule"].(string) != "") {
 			err := errors.New("fields 'user' or 'schedule' are not allowed when setting 'schedules'")
+			return err
+		}
+
+	}
+	if rule["teams"] != nil && len(rule["teams"].([]any)) > 0 {
+		if (rule["user"] != nil && rule["user"].(string) != "") || (rule["schedule"] != nil && rule["schedule"].(string) != "") {
+			err := errors.New("fields 'user' or 'schedule' are not allowed when setting 'teams'")
 			return err
 		}
 
