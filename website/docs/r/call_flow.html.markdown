@@ -52,7 +52,7 @@ The following arguments are supported:
 #### Node Arguments
 
 - `name` - (Optional) The name of the node.
-- `node_type` - (Required) The node type. Allowed values: `ROOT`, `IVR_MENU`, `AUDIO_MESSAGE`, `PLAIN`, `SUPPORT_HOURS`, `ROUTE_CALL`, `VOICEMAIL`, `PIN_CODE`, `CREATE_ALERT`, `BLOCK_NUMBERS`, `AGENTIC`.
+- `node_type` - (Required) The node type. Allowed values: `ROOT`, `IVR_MENU`, `AUDIO_MESSAGE`, `PLAIN`, `SUPPORT_HOURS`, `ROUTE_CALL`, `VOICEMAIL`, `PIN_CODE`, `CREATE_ALERT`, `BLOCK_NUMBERS`, `AGENTIC`, `PARALLEL_ROUTE_CALL`.
 - `metadata` - (Optional) A single [metadata](#metadata-arguments) block.
 - `branches` - (Optional) A list of [branch](#branch-arguments) blocks.
 
