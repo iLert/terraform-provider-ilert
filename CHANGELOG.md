@@ -1,5 +1,9 @@
 # Changelog
 
+## 19.03.2026, Version 2.19.1
+
+- feature/status-page_groups-registry in [#130](https://github.com/iLert/terraform-provider-ilert/pull/130)
+
 ## 13.03.2026, Version 2.19.0
 
 - feature/teams-escalation-rule in [#129](https://github.com/iLert/terraform-provider-ilert/pull/129)
@@ -7,7 +11,7 @@
 
 ## 11.03.2026, Version 2.18.0
 
-- feature/event-flows in [#127](https://github.com/iLert/terraform-provider-ilert/pull/127) 
+- feature/event-flows in [#127](https://github.com/iLert/terraform-provider-ilert/pull/127)
 
 ## 06.03.2026, Version 2.17.0
 
