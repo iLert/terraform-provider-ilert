@@ -2,7 +2,8 @@
 
 ## 19.03.2026, Version 2.19.1
 
-- feature/status-page_groups-registry in [#130](https://github.com/iLert/terraform-provider-ilert/pull/130)
+- feature/status-page_groups-registry in [#131](https://github.com/iLert/terraform-provider-ilert/pull/131)
+- benjaminguttmann-avtq/website-add-call-flow-node-type-parallel-route-call in [#130](https://github.com/iLert/terraform-provider-ilert/pull/130)
 
 ## 13.03.2026, Version 2.19.0
 
