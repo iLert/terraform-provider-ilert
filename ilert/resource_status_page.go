@@ -557,7 +557,7 @@ func resourceStatusPageRead(ctx context.Context, d *schema.ResourceData, m any) 
 	log.Printf("[DEBUG] Reading status page: %s", d.Id())
 	result := &ilert.GetStatusPageOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		r, err := client.GetStatusPage(&ilert.GetStatusPageInput{StatusPageID: ilert.Int64(statusPageID)})
+		r, err := client.GetStatusPage(&ilert.GetStatusPageInput{StatusPageID: ilert.Int64(statusPageID), Include: []*string{ilert.String("groups")}})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing status page %s from state because it no longer exist", d.Id())
