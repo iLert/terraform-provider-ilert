@@ -116,6 +116,19 @@ var resourceRegistry = map[string]struct {
 			return transformUserResource(e.(*ilert.User), d)
 		},
 	},
+	"ilert_status_page": {
+		factory: func() any { return &ilert.StatusPage{} },
+		transformer: func(e any, d *schema.ResourceData) error {
+			return transformStatusPageResource(e.(*ilert.StatusPage), d)
+		},
+	},
+	"ilert_status_page_group": {
+		factory: func() any { return &StatusPageGroupWithContext{} },
+		transformer: func(e any, d *schema.ResourceData) error {
+			ctx := e.(*StatusPageGroupWithContext)
+			return transformStatusPageGroupResource(ctx.StatusPageGroup, ctx.StatusPageID, d)
+		},
+	},
 }
 
 func getResourceType(resourceType string) string {
@@ -152,6 +165,10 @@ func getResourceType(resourceType string) string {
 		return "ilert_team"
 	case "USER":
 		return "ilert_user"
+	case "STATUS_PAGE":
+		return "ilert_status_page"
+	case "STATUS_PAGE_GROUP":
+		return "ilert_status_page_group"
 	}
 	return resourceType
 }
@@ -176,4 +193,12 @@ func GetResourceInfo(resourceType string) (*ResourceInfo, error) {
 		Transformer:  reg.transformer,
 		NewEntity:    reg.factory,
 	}, nil
+}
+
+type StatusPage = ilert.StatusPage
+type StatusPageGroup = ilert.StatusPageGroup
+
+type StatusPageGroupWithContext struct {
+	*ilert.StatusPageGroup
+	StatusPageID int64 `json:"statusPageId"`
 }

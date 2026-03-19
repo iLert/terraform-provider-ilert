@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -43,7 +44,7 @@ func resourceStatusPageGroup() *schema.Resource {
 		DeleteContext: resourceStatusPageGroupDelete,
 		Exists:        resourceStatusPageGroupExists,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: resourceStatusPageGroupImport,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -285,6 +286,26 @@ func resourceStatusPageGroupExists(d *schema.ResourceData, m any) (bool, error) 
 		return false, err
 	}
 	return result, nil
+}
+
+func resourceStatusPageGroupImport(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
+	parts := strings.Split(d.Id(), "/")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid import ID format, expected: status_page_id/group_id, got: %s", d.Id())
+	}
+
+	statusPageID, err := strconv.ParseInt(parts[0], 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid status_page_id: %s", err)
+	}
+
+	groupID := parts[1]
+	d.SetId(groupID)
+
+	sp := []any{map[string]any{"id": int(statusPageID)}}
+	d.Set("status_page", sp)
+
+	return []*schema.ResourceData{d}, nil
 }
 
 func transformStatusPageGroupResource(statusPageGroup *ilert.StatusPageGroup, statusPageID int64, d *schema.ResourceData) error {
