@@ -749,7 +749,7 @@ func transformStatusPageResource(statusPage *ilert.StatusPage, d *schema.Resourc
 		return fmt.Errorf("error setting structure: %s", err)
 	}
 
-	if _, ok := d.GetOk("theme_mode"); ok || d.Id() == "" {
+	if _, ok := d.GetOk("theme_mode"); ok {
 		d.Set("theme_mode", statusPage.Appearance)
 	}
 

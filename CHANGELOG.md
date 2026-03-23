@@ -1,5 +1,9 @@
 # Changelog
 
+## 23.03.2026, Version 2.19.2
+
+- fix on deprecated theme mode field in status page resource
+
 ## 19.03.2026, Version 2.19.1
 
 - feature/status-page_groups-registry in [#131](https://github.com/iLert/terraform-provider-ilert/pull/131)
