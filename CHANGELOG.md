@@ -1,5 +1,9 @@
 # Changelog
 
+## 22.04.2026, Version 2.20.0
+
+- feature/alert-action-reroute in [#133](https://github.com/iLert/terraform-provider-ilert/pull/133)
+
 ## 23.03.2026, Version 2.19.2
 
 - fix on deprecated theme mode field in status page resource
