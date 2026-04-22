@@ -4,11 +4,11 @@ go 1.23
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.25.0
-	github.com/iLert/ilert-go/v3 v3.18.1
+	github.com/iLert/ilert-go/v3 v3.19.0
 )
 
 require (
-	github.com/agext/levenshtein v1.2.3 // indirect
+	github.com/agext/levenshtein v1.2.3 // indirec0
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
