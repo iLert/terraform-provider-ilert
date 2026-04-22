@@ -89,6 +89,7 @@ The following arguments are supported:
 - `microsoft_teams_bot` - (Optional) A [microsoft_teams_bot](#microsoft-teams-bot-arguments) block.
 - `microsoft_teams_webhook` - (Optional) A [microsoft_teams_webhook](#microsoft-teams-webhook-arguments) block.
 - `slack_webhook` - (Optional) A [slack_webhook](#slack-webhook-arguments) block.
+- `reroute` - (Optional) A [reroute](#reroute-arguments) block.
 - `alert_filter` - (Optional) An [alert_filter](#alert-filter-arguments) block.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 - `conditions` - (Optional) Defines event filter condition in ICL language. This is a code based implementation, more info on syntax: https://docs.ilert.com/rest-api/icl-ilert-condition-language. For block based configuration please use the web UI.
@@ -235,6 +236,10 @@ The following arguments are supported:
 #### Slack webhook Arguments
 
 - `url` - (Required) The workflow URL for the channel.
+
+#### Reroute Arguments
+
+- `escalation_policy` - (Required) An escalation policy block, containing the policy id.
 
 #### Alert Filter Arguments
 
