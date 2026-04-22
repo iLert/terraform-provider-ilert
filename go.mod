@@ -8,7 +8,7 @@ require (
 )
 
 require (
-	github.com/agext/levenshtein v1.2.3 // indirec0
+	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
