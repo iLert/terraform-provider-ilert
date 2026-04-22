@@ -500,6 +500,31 @@ func resourceAlertAction() *schema.Resource {
 					},
 				},
 			},
+			"reroute": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				MinItems: 1,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"escalation_policy": {
+							Type:     schema.TypeList,
+							Required: true,
+							MaxItems: 1,
+							MinItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:     schema.TypeInt,
+										Required: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"created_at": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -898,6 +923,20 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsSlackWebhook{
 				URL: v["url"].(string),
+			}
+		}
+	}
+
+	if val, ok := d.GetOk("reroute"); ok {
+		vL := val.([]any)
+		if len(vL) > 0 {
+			v := vL[0].(map[string]any)
+			epL := v["escalation_policy"].([]any)
+			if len(epL) > 0 {
+				ep := epL[0].(map[string]any)
+				alertAction.Params = &ilert.AlertActionParamsReroute{
+					EscalationPolicyID: int64(ep["id"].(int)),
+				}
 			}
 		}
 	}
@@ -1319,6 +1358,16 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 		d.Set("slack_webhook", []any{
 			map[string]any{
 				"url": alertAction.Params.URL,
+			},
+		})
+	case ilert.ConnectorTypes.Reroute:
+		d.Set("reroute", []any{
+			map[string]any{
+				"escalation_policy": []any{
+					map[string]any{
+						"id": int(alertAction.Params.EscalationPolicyID),
+					},
+				},
 			},
 		})
 	}
