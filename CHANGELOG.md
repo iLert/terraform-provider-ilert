@@ -1,5 +1,9 @@
 # Changelog
 
+## 26.05.2026, Version 2.21.0
+
+- feature/alert-action-alert-source-relation: new `ilert_alert_action_alert_source_relation` resource for non-destructive alert-source attachment to shared alert actions
+
 ## 22.04.2026, Version 2.20.0
 
 - feature/alert-action-reroute in [#133](https://github.com/iLert/terraform-provider-ilert/pull/133)
