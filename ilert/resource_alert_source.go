@@ -1171,8 +1171,16 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 	d.Set("auto_resolution_timeout", alertSource.AutoResolutionTimeout)
 	d.Set("email_filtered", alertSource.EmailFiltered)
 	d.Set("email_resolve_filtered", alertSource.EmailResolveFiltered)
-	d.Set("filter_operator", alertSource.FilterOperator)
-	d.Set("resolve_filter_operator", alertSource.ResolveFilterOperator)
+	// Only set when the API returns a value. These deprecated fields apply to
+	// EMAIL sources only; for other integration types the API returns an empty
+	// value which would clobber the schema default ("AND") and cause a
+	// perpetual "+ filter_operator = AND" diff on every plan.
+	if alertSource.FilterOperator != "" {
+		d.Set("filter_operator", alertSource.FilterOperator)
+	}
+	if alertSource.ResolveFilterOperator != "" {
+		d.Set("resolve_filter_operator", alertSource.ResolveFilterOperator)
+	}
 	d.Set("status", alertSource.Status)
 	d.Set("integration_key", alertSource.IntegrationKey)
 	d.Set("integration_url", alertSource.IntegrationURL)
