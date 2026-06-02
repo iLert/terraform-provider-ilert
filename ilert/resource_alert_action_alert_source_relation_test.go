@@ -1,9 +1,11 @@
 package ilert
 
 import (
+	"context"
 	"errors"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	ilertapi "github.com/iLert/ilert-go/v3"
 )
 
@@ -92,6 +94,35 @@ func TestAlertActionContainsSource(t *testing.T) {
 				t.Errorf("alertActionContainsSource() = %v, want %v", got, tc.want)
 			}
 		})
+	}
+}
+
+func TestResourceAlertActionAlertSourceRelationImport(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertActionAlertSourceRelation().Schema, map[string]any{})
+	d.SetId("a5cc66dc-9851-4b25-8853-d65ea773924e/2344528")
+
+	states, err := resourceAlertActionAlertSourceRelationImport(context.Background(), d, nil)
+	if err != nil {
+		t.Fatalf("unexpected error importing relation: %v", err)
+	}
+	if len(states) != 1 {
+		t.Fatalf("expected 1 state, got %d", len(states))
+	}
+
+	if got := states[0].Get("alert_action_id").(string); got != "a5cc66dc-9851-4b25-8853-d65ea773924e" {
+		t.Errorf("alert_action_id = %q, want %q", got, "a5cc66dc-9851-4b25-8853-d65ea773924e")
+	}
+	if got := states[0].Get("alert_source_id").(string); got != "2344528" {
+		t.Errorf("alert_source_id = %q, want %q", got, "2344528")
+	}
+}
+
+func TestResourceAlertActionAlertSourceRelationImport_InvalidID(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertActionAlertSourceRelation().Schema, map[string]any{})
+	d.SetId("missing-source-id")
+
+	if _, err := resourceAlertActionAlertSourceRelationImport(context.Background(), d, nil); err == nil {
+		t.Fatal("expected error for malformed import ID, got nil")
 	}
 }
 
