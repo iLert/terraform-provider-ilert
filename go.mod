@@ -4,7 +4,7 @@ go 1.23
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.25.0
-	github.com/iLert/ilert-go/v3 v3.19.0
+	github.com/iLert/ilert-go/v3 v3.20.0
 )
 
 require (
@@ -55,7 +55,3 @@ require (
 	google.golang.org/grpc v1.51.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
-
-// Local development override — DO NOT COMMIT. Strip before opening provider PR;
-// bump the require version to the released ilert-go tag instead.
-replace github.com/iLert/ilert-go/v3 => /Users/noureldin/Repositories/ilert-go
