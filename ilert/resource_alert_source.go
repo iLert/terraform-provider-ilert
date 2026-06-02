@@ -1068,6 +1068,11 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
+	// Sources created via Terraform are fully configured, so mark the setup as
+	// finished. Otherwise the API defaults setupStatus to CREATED and the UI
+	// shows a "Finish setup" prompt for an already complete alert source.
+	alertSource.SetupStatus = ilert.AlertSourceSetupStatuses.Finished
+
 	log.Printf("[DEBUG] Creating ilert alert source %s\n", alertSource.Name)
 	result := &ilert.CreateAlertSourceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
