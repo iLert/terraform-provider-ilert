@@ -40,3 +40,37 @@ func TestTransformAlertSourceResource_DoesNotPanicWhenAPIReturnsMoreTeamsThanSta
 		t.Fatalf("expected 2 teams in state, got %d", len(teams))
 	}
 }
+
+func TestTransformAlertSourceResource_DoesNotClobberFilterOperatorDefaultWhenAPIReturnsEmpty(t *testing.T) {
+	// filter_operator/resolve_filter_operator are deprecated fields with a schema
+	// default of "AND". The API returns them empty for non-email sources, so the
+	// read must not overwrite the "AND" already in state with "". Doing so causes
+	// a perpetual "+ filter_operator = AND" diff on every plan.
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+		"name":                    "test-alert-source",
+		"integration_type":        "CLOUDWATCH",
+		"escalation_policy":       "1",
+		"filter_operator":         "AND",
+		"resolve_filter_operator": "AND",
+	})
+
+	alertSource := &ilertapi.AlertSource{
+		Name: "test-alert-source",
+		EscalationPolicy: &ilertapi.EscalationPolicy{
+			ID: 1,
+		},
+		FilterOperator:        "",
+		ResolveFilterOperator: "",
+	}
+
+	if err := transformAlertSourceResource(alertSource, d); err != nil {
+		t.Fatalf("unexpected error transforming alert source: %v", err)
+	}
+
+	if got := d.Get("filter_operator").(string); got != "AND" {
+		t.Fatalf("expected filter_operator to remain \"AND\", got %q", got)
+	}
+	if got := d.Get("resolve_filter_operator").(string); got != "AND" {
+		t.Fatalf("expected resolve_filter_operator to remain \"AND\", got %q", got)
+	}
+}
