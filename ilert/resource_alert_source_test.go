@@ -74,3 +74,51 @@ func TestTransformAlertSourceResource_DoesNotClobberFilterOperatorDefaultWhenAPI
 		t.Fatalf("expected resolve_filter_operator to remain \"AND\", got %q", got)
 	}
 }
+
+func TestFlattenSeverityTemplate(t *testing.T) {
+	// nil severity template flattens to an empty result
+	empty, err := flattenSeverityTemplate(nil)
+	if err != nil {
+		t.Fatalf("unexpected error flattening nil severity template: %v", err)
+	}
+	if len(empty) != 0 {
+		t.Fatalf("expected empty result for nil severity template, got %d", len(empty))
+	}
+
+	// populated severity template round-trips into the schema shape
+	severityTemplate := &ilertapi.SeverityTemplate{
+		ValueTemplate: &ilertapi.Template{TextTemplate: "{{ event.customDetails.sev }}"},
+		Mappings: []ilertapi.SeverityMapping{
+			{Value: "critical", Severity: 1},
+			{Value: "warning", Severity: 3},
+		},
+	}
+
+	result, err := flattenSeverityTemplate(severityTemplate)
+	if err != nil {
+		t.Fatalf("unexpected error flattening severity template: %v", err)
+	}
+	if len(result) != 1 {
+		t.Fatalf("expected 1 flattened block, got %d", len(result))
+	}
+	block := result[0].(map[string]any)
+
+	valueTemplate := block["value_template"].([]any)
+	if len(valueTemplate) != 1 {
+		t.Fatalf("expected 1 value_template, got %d", len(valueTemplate))
+	}
+	if got := valueTemplate[0].(map[string]any)["text_template"]; got != "{{ event.customDetails.sev }}" {
+		t.Fatalf("unexpected text_template: %v", got)
+	}
+
+	mappings := block["mapping"].([]any)
+	if len(mappings) != 2 {
+		t.Fatalf("expected 2 mappings, got %d", len(mappings))
+	}
+	if first := mappings[0].(map[string]any); first["value"] != "critical" || first["severity"] != 1 {
+		t.Fatalf("unexpected first mapping: %v", first)
+	}
+	if second := mappings[1].(map[string]any); second["value"] != "warning" || second["severity"] != 3 {
+		t.Fatalf("unexpected second mapping: %v", second)
+	}
+}
