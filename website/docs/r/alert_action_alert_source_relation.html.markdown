@@ -23,6 +23,8 @@ The resource calls the iLert `PUT /alert-actions/{id}/add-source` and `PUT /aler
 
 Create and destroy are idempotent against out-of-band drift: re-attach of an already-attached source and re-detach of an already-detached source are both treated as success.
 
+~> **Concurrency.** The iLert add-source / remove-source endpoints are read-modify-write on the alert action, so the provider serializes attach/detach operations per `alert_action_id` to keep parallel `terraform apply` (default `-parallelism=10`) from losing attachments. This guard is per Terraform process; running two separate applies against the same alert action at the same time can still race — avoid that.
+
 ## Example Usage
 
 ```hcl

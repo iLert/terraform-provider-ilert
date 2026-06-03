@@ -3,6 +3,7 @@ package ilert
 import (
 	"context"
 	"errors"
+	"sync"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -123,6 +124,62 @@ func TestResourceAlertActionAlertSourceRelationImport_InvalidID(t *testing.T) {
 
 	if _, err := resourceAlertActionAlertSourceRelationImport(context.Background(), d, nil); err == nil {
 		t.Fatal("expected error for malformed import ID, got nil")
+	}
+}
+
+func TestAlertSourceIDValidation(t *testing.T) {
+	validate := resourceAlertActionAlertSourceRelation().Schema["alert_source_id"].ValidateFunc
+	if validate == nil {
+		t.Fatal("expected a ValidateFunc on alert_source_id")
+	}
+
+	cases := []struct {
+		in      string
+		wantErr bool
+	}{
+		{"2344528", false},
+		{"1", false},
+		{"", true},
+		{"abc", true},
+		{"123abc", true},
+		{"12.3", true},
+		{"a5cc66dc-9851-4b25-8853-d65ea773924e", true},
+	}
+	for _, tc := range cases {
+		_, errs := validate(tc.in, "alert_source_id")
+		if tc.wantErr && len(errs) == 0 {
+			t.Errorf("alert_source_id=%q: expected validation error, got none", tc.in)
+		}
+		if !tc.wantErr && len(errs) > 0 {
+			t.Errorf("alert_source_id=%q: unexpected validation error: %v", tc.in, errs)
+		}
+	}
+}
+
+// TestKeyedMutex_SerializesSameKey asserts the keyed mutex provides mutual
+// exclusion per key, so concurrent attach/detach on one alert_action_id cannot
+// interleave (the bug guarded against). Run with -race to catch interleaving.
+func TestKeyedMutex_SerializesSameKey(t *testing.T) {
+	km := newKeyedMutex()
+	const goroutines, increments = 20, 1000
+	counter := 0
+
+	var wg sync.WaitGroup
+	for i := 0; i < goroutines; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for j := 0; j < increments; j++ {
+				km.Lock("same-action")
+				counter++ // unguarded read-modify-write, serialized only by the keyed mutex
+				km.Unlock("same-action")
+			}
+		}()
+	}
+	wg.Wait()
+
+	if want := goroutines * increments; counter != want {
+		t.Errorf("counter = %d, want %d (lost updates => mutex not serializing)", counter, want)
 	}
 }
 

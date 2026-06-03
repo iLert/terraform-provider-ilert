@@ -4,15 +4,62 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/iLert/ilert-go/v3"
+)
+
+// The iLert add-source / remove-source endpoints mutate the alert action's
+// source list as a read-modify-write, so concurrent calls against the same
+// alert action race and lose attachments. Terraform applies relations under a
+// shared alert_action_id in parallel (default -parallelism=10), so we serialize
+// add/remove per alert_action_id with this in-process keyed mutex.
+var alertActionSourceLock = newKeyedMutex()
+
+type keyedMutex struct {
+	mu    sync.Mutex
+	locks map[string]*sync.Mutex
+}
+
+func newKeyedMutex() *keyedMutex {
+	return &keyedMutex{locks: make(map[string]*sync.Mutex)}
+}
+
+func (k *keyedMutex) Lock(key string) {
+	k.mu.Lock()
+	m, ok := k.locks[key]
+	if !ok {
+		m = &sync.Mutex{}
+		k.locks[key] = m
+	}
+	k.mu.Unlock()
+	m.Lock()
+}
+
+func (k *keyedMutex) Unlock(key string) {
+	k.mu.Lock()
+	m := k.locks[key]
+	k.mu.Unlock()
+	if m != nil {
+		m.Unlock()
+	}
+}
+
+// These mirror the iLert API 400 response wording for attach/detach of an
+// already-attached / already-detached source. Used for idempotency detection;
+// keep in sync with the backend if its messages change.
+const (
+	errMsgAlreadyAttached = "already attached to this alert source"
+	errMsgAlreadyDetached = "not attached to this alert source"
 )
 
 func resourceAlertActionAlertSourceRelation() *schema.Resource {
@@ -27,6 +74,10 @@ func resourceAlertActionAlertSourceRelation() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+				ValidateFunc: validation.StringMatch(
+					regexp.MustCompile(`^[0-9]+$`),
+					"must be a numeric alert source id",
+				),
 			},
 		},
 		CreateContext: resourceAlertActionAlertSourceRelationCreate,
@@ -55,6 +106,11 @@ func resourceAlertActionAlertSourceRelationCreate(ctx context.Context, d *schema
 	}
 
 	log.Printf("[INFO] Attaching alert source %d to alert action %s", alertSourceID, alertActionID)
+
+	// Serialize concurrent attaches to the same alert action; the backend
+	// add-source endpoint is read-modify-write and races otherwise.
+	alertActionSourceLock.Lock(alertActionID)
+	defer alertActionSourceLock.Unlock(alertActionID)
 
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		_, err := client.AddAlertSourceToAlertAction(&ilert.AddAlertSourceToAlertActionInput{
@@ -148,6 +204,11 @@ func resourceAlertActionAlertSourceRelationDelete(ctx context.Context, d *schema
 	}
 
 	log.Printf("[DEBUG] Detaching alert source %d from alert action %s", alertSourceID, alertActionID)
+
+	// Serialize concurrent detaches to the same alert action; the backend
+	// remove-source endpoint is read-modify-write and races otherwise.
+	alertActionSourceLock.Lock(alertActionID)
+	defer alertActionSourceLock.Unlock(alertActionID)
 
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		_, err := client.RemoveAlertSourceFromAlertAction(&ilert.RemoveAlertSourceFromAlertActionInput{
@@ -243,7 +304,7 @@ func isAlreadyAttachedError(err error) bool {
 	if !ok {
 		return false
 	}
-	return strings.Contains(bre.Message, "already attached to this alert source")
+	return strings.Contains(bre.Message, errMsgAlreadyAttached)
 }
 
 func isAlreadyDetachedError(err error) bool {
@@ -251,7 +312,7 @@ func isAlreadyDetachedError(err error) bool {
 	if !ok {
 		return false
 	}
-	return strings.Contains(bre.Message, "not attached to this alert source")
+	return strings.Contains(bre.Message, errMsgAlreadyDetached)
 }
 
 func alertActionContainsSource(alertAction *ilert.AlertActionOutput, alertSourceID int64) bool {
