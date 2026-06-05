@@ -110,11 +110,11 @@ func TestResourceAlertActionSourceAttachmentImport(t *testing.T) {
 		t.Fatalf("expected 1 state, got %d", len(states))
 	}
 
-	if got := states[0].Get("alert_action_id").(string); got != "a5cc66dc-9851-4b25-8853-d65ea773924e" {
-		t.Errorf("alert_action_id = %q, want %q", got, "a5cc66dc-9851-4b25-8853-d65ea773924e")
+	if got := states[0].Get("alert_action.0.id").(string); got != "a5cc66dc-9851-4b25-8853-d65ea773924e" {
+		t.Errorf("alert_action.0.id = %q, want %q", got, "a5cc66dc-9851-4b25-8853-d65ea773924e")
 	}
-	if got := states[0].Get("alert_source_id").(string); got != "2344528" {
-		t.Errorf("alert_source_id = %q, want %q", got, "2344528")
+	if got := states[0].Get("alert_source.0.id").(string); got != "2344528" {
+		t.Errorf("alert_source.0.id = %q, want %q", got, "2344528")
 	}
 }
 
@@ -128,9 +128,9 @@ func TestResourceAlertActionSourceAttachmentImport_InvalidID(t *testing.T) {
 }
 
 func TestAlertSourceIDValidation(t *testing.T) {
-	validate := resourceAlertActionSourceAttachment().Schema["alert_source_id"].ValidateFunc
+	validate := resourceAlertActionSourceAttachment().Schema["alert_source"].Elem.(*schema.Resource).Schema["id"].ValidateFunc
 	if validate == nil {
-		t.Fatal("expected a ValidateFunc on alert_source_id")
+		t.Fatal("expected a ValidateFunc on alert_source.id")
 	}
 
 	cases := []struct {
@@ -146,12 +146,12 @@ func TestAlertSourceIDValidation(t *testing.T) {
 		{"a5cc66dc-9851-4b25-8853-d65ea773924e", true},
 	}
 	for _, tc := range cases {
-		_, errs := validate(tc.in, "alert_source_id")
+		_, errs := validate(tc.in, "alert_source.0.id")
 		if tc.wantErr && len(errs) == 0 {
-			t.Errorf("alert_source_id=%q: expected validation error, got none", tc.in)
+			t.Errorf("alert_source.0.id=%q: expected validation error, got none", tc.in)
 		}
 		if !tc.wantErr && len(errs) > 0 {
-			t.Errorf("alert_source_id=%q: unexpected validation error: %v", tc.in, errs)
+			t.Errorf("alert_source.0.id=%q: unexpected validation error: %v", tc.in, errs)
 		}
 	}
 }

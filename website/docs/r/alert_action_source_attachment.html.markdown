@@ -70,13 +70,21 @@ resource "ilert_alert_action" "shared" {
 }
 
 resource "ilert_alert_action_source_attachment" "team_a_to_shared" {
-  alert_action_id = ilert_alert_action.shared.id
-  alert_source_id = ilert_alert_source.team_a.id
+  alert_action {
+    id = ilert_alert_action.shared.id
+  }
+  alert_source {
+    id = ilert_alert_source.team_a.id
+  }
 }
 
 resource "ilert_alert_action_source_attachment" "team_b_to_shared" {
-  alert_action_id = ilert_alert_action.shared.id
-  alert_source_id = ilert_alert_source.team_b.id
+  alert_action {
+    id = ilert_alert_action.shared.id
+  }
+  alert_source {
+    id = ilert_alert_source.team_b.id
+  }
 }
 ```
 
@@ -84,10 +92,18 @@ resource "ilert_alert_action_source_attachment" "team_b_to_shared" {
 
 The following arguments are supported:
 
-- `alert_action_id` - (Required, ForceNew) The ID of the alert action the source is being attached to.
-- `alert_source_id` - (Required, ForceNew) The ID of the alert source being attached.
+- `alert_action` - (Required, ForceNew) The alert action the source is attached to. Structure [documented below](#alert_action).
+- `alert_source` - (Required, ForceNew) The alert source being attached. Structure [documented below](#alert_source).
 
-Changing either argument forces a new resource.
+Changing either block forces a new resource.
+
+### alert_action
+
+- `id` - (Required, ForceNew) The ID of the alert action.
+
+### alert_source
+
+- `id` - (Required, ForceNew) The ID of the alert source (numeric).
 
 ## Attributes Reference
 

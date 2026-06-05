@@ -62,11 +62,19 @@ resource "ilert_alert_action" "shared" {
 }
 
 resource "ilert_alert_action_source_attachment" "team_a_to_shared" {
-  alert_action_id = ilert_alert_action.shared.id
-  alert_source_id = ilert_alert_source.team_a.id
+  alert_action {
+    id = ilert_alert_action.shared.id
+  }
+  alert_source {
+    id = ilert_alert_source.team_a.id
+  }
 }
 
 resource "ilert_alert_action_source_attachment" "team_b_to_shared" {
-  alert_action_id = ilert_alert_action.shared.id
-  alert_source_id = ilert_alert_source.team_b.id
+  alert_action {
+    id = ilert_alert_action.shared.id
+  }
+  alert_source {
+    id = ilert_alert_source.team_b.id
+  }
 }

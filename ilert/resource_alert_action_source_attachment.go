@@ -65,19 +65,41 @@ const (
 func resourceAlertActionSourceAttachment() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"alert_action_id": {
-				Type:     schema.TypeString,
+			"alert_action": {
+				Type:     schema.TypeList,
 				Required: true,
 				ForceNew: true,
+				MaxItems: 1,
+				MinItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+						},
+					},
+				},
 			},
-			"alert_source_id": {
-				Type:     schema.TypeString,
+			"alert_source": {
+				Type:     schema.TypeList,
 				Required: true,
 				ForceNew: true,
-				ValidateFunc: validation.StringMatch(
-					regexp.MustCompile(`^[0-9]+$`),
-					"must be a numeric alert source id",
-				),
+				MaxItems: 1,
+				MinItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+							ValidateFunc: validation.StringMatch(
+								regexp.MustCompile(`^[0-9]+$`),
+								"must be a numeric alert source id",
+							),
+						},
+					},
+				},
 			},
 		},
 		CreateContext: resourceAlertActionSourceAttachmentCreate,
@@ -98,11 +120,11 @@ func resourceAlertActionSourceAttachment() *schema.Resource {
 func resourceAlertActionSourceAttachmentCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
-	alertActionID := d.Get("alert_action_id").(string)
-	alertSourceIDStr := d.Get("alert_source_id").(string)
+	alertActionID := blockID(d, "alert_action")
+	alertSourceIDStr := blockID(d, "alert_source")
 	alertSourceID, err := strconv.ParseInt(alertSourceIDStr, 10, 64)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("invalid alert_source_id %q: %s", alertSourceIDStr, err.Error()))
+		return diag.FromErr(fmt.Errorf("invalid alert_source id %q: %s", alertSourceIDStr, err.Error()))
 	}
 
 	log.Printf("[INFO] Attaching alert source %d to alert action %s", alertSourceID, alertActionID)
@@ -189,8 +211,8 @@ func resourceAlertActionSourceAttachmentRead(ctx context.Context, d *schema.Reso
 		return nil
 	}
 
-	d.Set("alert_action_id", alertActionID)
-	d.Set("alert_source_id", strconv.FormatInt(alertSourceID, 10))
+	setBlockID(d, "alert_action", alertActionID)
+	setBlockID(d, "alert_source", strconv.FormatInt(alertSourceID, 10))
 
 	return nil
 }
@@ -282,9 +304,28 @@ func resourceAlertActionSourceAttachmentImport(ctx context.Context, d *schema.Re
 	if err != nil {
 		return nil, err
 	}
-	d.Set("alert_action_id", alertActionID)
-	d.Set("alert_source_id", strconv.FormatInt(alertSourceID, 10))
+	setBlockID(d, "alert_action", alertActionID)
+	setBlockID(d, "alert_source", strconv.FormatInt(alertSourceID, 10))
 	return []*schema.ResourceData{d}, nil
+}
+
+// blockID returns the "id" of a single-item TypeList block (e.g. alert_action { id }).
+func blockID(d *schema.ResourceData, block string) string {
+	if v, ok := d.GetOk(block); ok {
+		if list, ok := v.([]interface{}); ok && len(list) > 0 && list[0] != nil {
+			if m, ok := list[0].(map[string]interface{}); ok {
+				if id, ok := m["id"].(string); ok {
+					return id
+				}
+			}
+		}
+	}
+	return ""
+}
+
+// setBlockID writes a single-item TypeList block holding only an "id" field.
+func setBlockID(d *schema.ResourceData, block, id string) {
+	d.Set(block, []interface{}{map[string]interface{}{"id": id}})
 }
 
 func parseAlertActionSourceAttachmentID(id string) (alertActionID string, alertSourceID int64, err error) {
