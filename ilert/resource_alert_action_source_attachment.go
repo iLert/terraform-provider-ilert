@@ -20,7 +20,7 @@ import (
 
 // The iLert add-source / remove-source endpoints mutate the alert action's
 // source list as a read-modify-write, so concurrent calls against the same
-// alert action race and lose attachments. Terraform applies relations under a
+// alert action race and lose attachments. Terraform applies attachments under a
 // shared alert_action_id in parallel (default -parallelism=10), so we serialize
 // add/remove per alert_action_id with this in-process keyed mutex.
 var alertActionSourceLock = newKeyedMutex()
@@ -149,14 +149,14 @@ func resourceAlertActionSourceAttachmentRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
 
-	log.Printf("[DEBUG] Reading alert action / alert source relation: %s", d.Id())
+	log.Printf("[DEBUG] Reading alert action / alert source attachment: %s", d.Id())
 
 	result := &ilert.GetAlertActionOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		r, err := client.GetAlertAction(&ilert.GetAlertActionInput{AlertActionID: ilert.String(alertActionID), Version: ilert.Int(2)})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
-				log.Printf("[WARN] Removing alert action / alert source relation %s from state because alert action no longer exists", d.Id())
+				log.Printf("[WARN] Removing alert action / alert source attachment %s from state because alert action no longer exists", d.Id())
 				d.SetId("")
 				return nil
 			}
@@ -171,7 +171,7 @@ func resourceAlertActionSourceAttachmentRead(ctx context.Context, d *schema.Reso
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Reading alert action / alert source relation error: %s", err.Error())
+		log.Printf("[ERROR] Reading alert action / alert source attachment error: %s", err.Error())
 		return diag.FromErr(err)
 	}
 
@@ -184,7 +184,7 @@ func resourceAlertActionSourceAttachmentRead(ctx context.Context, d *schema.Reso
 	}
 
 	if !alertActionContainsSource(result.AlertAction, alertSourceID) {
-		log.Printf("[WARN] Removing alert action / alert source relation %s from state because alert source is no longer attached", d.Id())
+		log.Printf("[WARN] Removing alert action / alert source attachment %s from state because alert source is no longer attached", d.Id())
 		d.SetId("")
 		return nil
 	}
@@ -249,7 +249,7 @@ func resourceAlertActionSourceAttachmentExists(d *schema.ResourceData, m any) (b
 		return false, unconvertibleIDErr(d.Id(), err)
 	}
 
-	log.Printf("[DEBUG] Checking alert action / alert source relation exists: %s", d.Id())
+	log.Printf("[DEBUG] Checking alert action / alert source attachment exists: %s", d.Id())
 	ctx := context.Background()
 	result := false
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
@@ -271,7 +271,7 @@ func resourceAlertActionSourceAttachmentExists(d *schema.ResourceData, m any) (b
 	})
 
 	if err != nil {
-		log.Printf("[ERROR] Reading alert action / alert source relation error: %s", err.Error())
+		log.Printf("[ERROR] Reading alert action / alert source attachment error: %s", err.Error())
 		return false, err
 	}
 	return result, nil
