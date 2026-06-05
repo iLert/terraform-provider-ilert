@@ -72,7 +72,7 @@ func Provider() *schema.Provider {
 			"ilert_automation_rule":                resourceAutomationRule(),
 			"ilert_call_flow":                      resourceCallFlow(),
 			"ilert_event_flow":                     resourceEventFlow(),
-			"ilert_event_flow_integration":         dataSourceEventFlowIntegration(),
+			"ilert_event_flow_integration":         resourceEventFlowIntegration(),
 			"ilert_connection":                     resourceConnection(),
 			"ilert_connector":                      resourceConnector(),
 			"ilert_deployment_pipeline":            resourceDeploymentPipeline(),
