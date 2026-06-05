@@ -33,8 +33,9 @@ func resourceEventFlowIntegration() *schema.Resource {
 				Required: true,
 			},
 			"integration_url": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 		},
 		CreateContext: resourceEventFlowIntegrationCreate,

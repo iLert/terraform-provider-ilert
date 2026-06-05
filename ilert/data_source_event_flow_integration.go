@@ -34,8 +34,9 @@ func dataSourceEventFlowIntegration() *schema.Resource {
 				Sensitive: true,
 			},
 			"integration_url": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 		},
 	}
