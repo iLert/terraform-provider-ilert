@@ -10,7 +10,7 @@ import (
 	ilertapi "github.com/iLert/ilert-go/v3"
 )
 
-func TestParseAlertActionAlertSourceRelationID(t *testing.T) {
+func TestParseAlertActionSourceAttachmentID(t *testing.T) {
 	cases := []struct {
 		in           string
 		wantActionID string
@@ -30,19 +30,19 @@ func TestParseAlertActionAlertSourceRelationID(t *testing.T) {
 		{"a5cc66dc-9851-4b25-8853-d65ea773924e/not-a-number", "", 0, true},
 	}
 	for _, tc := range cases {
-		gotAction, gotSource, err := parseAlertActionAlertSourceRelationID(tc.in)
+		gotAction, gotSource, err := parseAlertActionSourceAttachmentID(tc.in)
 		if tc.wantErr {
 			if err == nil {
-				t.Errorf("parseAlertActionAlertSourceRelationID(%q) expected error, got nil", tc.in)
+				t.Errorf("parseAlertActionSourceAttachmentID(%q) expected error, got nil", tc.in)
 			}
 			continue
 		}
 		if err != nil {
-			t.Errorf("parseAlertActionAlertSourceRelationID(%q) unexpected error: %v", tc.in, err)
+			t.Errorf("parseAlertActionSourceAttachmentID(%q) unexpected error: %v", tc.in, err)
 			continue
 		}
 		if gotAction != tc.wantActionID || gotSource != tc.wantSourceID {
-			t.Errorf("parseAlertActionAlertSourceRelationID(%q) = (%q, %d), want (%q, %d)",
+			t.Errorf("parseAlertActionSourceAttachmentID(%q) = (%q, %d), want (%q, %d)",
 				tc.in, gotAction, gotSource, tc.wantActionID, tc.wantSourceID)
 		}
 	}
@@ -98,11 +98,11 @@ func TestAlertActionContainsSource(t *testing.T) {
 	}
 }
 
-func TestResourceAlertActionAlertSourceRelationImport(t *testing.T) {
-	d := schema.TestResourceDataRaw(t, resourceAlertActionAlertSourceRelation().Schema, map[string]any{})
+func TestResourceAlertActionSourceAttachmentImport(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertActionSourceAttachment().Schema, map[string]any{})
 	d.SetId("a5cc66dc-9851-4b25-8853-d65ea773924e/2344528")
 
-	states, err := resourceAlertActionAlertSourceRelationImport(context.Background(), d, nil)
+	states, err := resourceAlertActionSourceAttachmentImport(context.Background(), d, nil)
 	if err != nil {
 		t.Fatalf("unexpected error importing relation: %v", err)
 	}
@@ -118,17 +118,17 @@ func TestResourceAlertActionAlertSourceRelationImport(t *testing.T) {
 	}
 }
 
-func TestResourceAlertActionAlertSourceRelationImport_InvalidID(t *testing.T) {
-	d := schema.TestResourceDataRaw(t, resourceAlertActionAlertSourceRelation().Schema, map[string]any{})
+func TestResourceAlertActionSourceAttachmentImport_InvalidID(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertActionSourceAttachment().Schema, map[string]any{})
 	d.SetId("missing-source-id")
 
-	if _, err := resourceAlertActionAlertSourceRelationImport(context.Background(), d, nil); err == nil {
+	if _, err := resourceAlertActionSourceAttachmentImport(context.Background(), d, nil); err == nil {
 		t.Fatal("expected error for malformed import ID, got nil")
 	}
 }
 
 func TestAlertSourceIDValidation(t *testing.T) {
-	validate := resourceAlertActionAlertSourceRelation().Schema["alert_source_id"].ValidateFunc
+	validate := resourceAlertActionSourceAttachment().Schema["alert_source_id"].ValidateFunc
 	if validate == nil {
 		t.Fatal("expected a ValidateFunc on alert_source_id")
 	}

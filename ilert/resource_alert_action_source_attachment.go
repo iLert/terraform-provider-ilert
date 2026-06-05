@@ -62,7 +62,7 @@ const (
 	errMsgAlreadyDetached = "not attached to this alert source"
 )
 
-func resourceAlertActionAlertSourceRelation() *schema.Resource {
+func resourceAlertActionSourceAttachment() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"alert_action_id": {
@@ -80,12 +80,12 @@ func resourceAlertActionAlertSourceRelation() *schema.Resource {
 				),
 			},
 		},
-		CreateContext: resourceAlertActionAlertSourceRelationCreate,
-		ReadContext:   resourceAlertActionAlertSourceRelationRead,
-		DeleteContext: resourceAlertActionAlertSourceRelationDelete,
-		Exists:        resourceAlertActionAlertSourceRelationExists,
+		CreateContext: resourceAlertActionSourceAttachmentCreate,
+		ReadContext:   resourceAlertActionSourceAttachmentRead,
+		DeleteContext: resourceAlertActionSourceAttachmentDelete,
+		Exists:        resourceAlertActionSourceAttachmentExists,
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceAlertActionAlertSourceRelationImport,
+			StateContext: resourceAlertActionSourceAttachmentImport,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -95,7 +95,7 @@ func resourceAlertActionAlertSourceRelation() *schema.Resource {
 	}
 }
 
-func resourceAlertActionAlertSourceRelationCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+func resourceAlertActionSourceAttachmentCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
 	alertActionID := d.Get("alert_action_id").(string)
@@ -138,13 +138,13 @@ func resourceAlertActionAlertSourceRelationCreate(ctx context.Context, d *schema
 
 	d.SetId(fmt.Sprintf("%s/%d", alertActionID, alertSourceID))
 
-	return resourceAlertActionAlertSourceRelationRead(ctx, d, m)
+	return resourceAlertActionSourceAttachmentRead(ctx, d, m)
 }
 
-func resourceAlertActionAlertSourceRelationRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+func resourceAlertActionSourceAttachmentRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
-	alertActionID, alertSourceID, err := parseAlertActionAlertSourceRelationID(d.Id())
+	alertActionID, alertSourceID, err := parseAlertActionSourceAttachmentID(d.Id())
 	if err != nil {
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
@@ -195,10 +195,10 @@ func resourceAlertActionAlertSourceRelationRead(ctx context.Context, d *schema.R
 	return nil
 }
 
-func resourceAlertActionAlertSourceRelationDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+func resourceAlertActionSourceAttachmentDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
-	alertActionID, alertSourceID, err := parseAlertActionAlertSourceRelationID(d.Id())
+	alertActionID, alertSourceID, err := parseAlertActionSourceAttachmentID(d.Id())
 	if err != nil {
 		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
 	}
@@ -241,10 +241,10 @@ func resourceAlertActionAlertSourceRelationDelete(ctx context.Context, d *schema
 	return nil
 }
 
-func resourceAlertActionAlertSourceRelationExists(d *schema.ResourceData, m any) (bool, error) {
+func resourceAlertActionSourceAttachmentExists(d *schema.ResourceData, m any) (bool, error) {
 	client := m.(*ilert.Client)
 
-	alertActionID, alertSourceID, err := parseAlertActionAlertSourceRelationID(d.Id())
+	alertActionID, alertSourceID, err := parseAlertActionSourceAttachmentID(d.Id())
 	if err != nil {
 		return false, unconvertibleIDErr(d.Id(), err)
 	}
@@ -277,8 +277,8 @@ func resourceAlertActionAlertSourceRelationExists(d *schema.ResourceData, m any)
 	return result, nil
 }
 
-func resourceAlertActionAlertSourceRelationImport(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
-	alertActionID, alertSourceID, err := parseAlertActionAlertSourceRelationID(d.Id())
+func resourceAlertActionSourceAttachmentImport(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
+	alertActionID, alertSourceID, err := parseAlertActionSourceAttachmentID(d.Id())
 	if err != nil {
 		return nil, err
 	}
@@ -287,7 +287,7 @@ func resourceAlertActionAlertSourceRelationImport(ctx context.Context, d *schema
 	return []*schema.ResourceData{d}, nil
 }
 
-func parseAlertActionAlertSourceRelationID(id string) (alertActionID string, alertSourceID int64, err error) {
+func parseAlertActionSourceAttachmentID(id string) (alertActionID string, alertSourceID int64, err error) {
 	parts := strings.SplitN(id, "/", 2)
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		return "", 0, fmt.Errorf("expected ID in the form '<alert_action_id>/<alert_source_id>', got %q", id)

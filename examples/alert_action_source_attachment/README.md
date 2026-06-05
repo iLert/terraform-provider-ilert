@@ -1,6 +1,6 @@
 # Alert action <-> alert source relation example
 
-This demos the `ilert_alert_action_alert_source_relation` virtual resource. Each instance attaches **one** alert source to a shared alert action without overwriting the other attached sources.
+This demos the `ilert_alert_action_source_attachment` virtual resource. Each instance attaches **one** alert source to a shared alert action without overwriting the other attached sources.
 
 Use this pattern when multiple teams or modules need to attach their own alert sources to a shared alert action without fighting over the full source list.
 

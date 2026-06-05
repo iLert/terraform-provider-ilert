@@ -1,12 +1,12 @@
 ---
 layout: "ilert"
-page_title: "ilert: ilert_alert_action_alert_source_relation"
-sidebar_current: "docs-ilert-resource-alert-action-alert-source-relation"
+page_title: "ilert: ilert_alert_action_source_attachment"
+sidebar_current: "docs-ilert-resource-alert-action-source-attachment"
 description: |-
   Manages a single alert-source attachment on a shared alert action without overwriting other attachments.
 ---
 
-# ilert_alert_action_alert_source_relation
+# ilert_alert_action_source_attachment
 
 Manages **one** attachment between an alert action and an alert source. Each Terraform resource owns exactly one tuple `(alert_action_id, alert_source_id)`.
 
@@ -17,7 +17,7 @@ Use this resource instead of the [`alert_source` block on `ilert_alert_action`](
 
 The resource calls the iLert `PUT /alert-actions/{id}/add-source` and `PUT /alert-actions/{id}/remove-source` endpoints, which mutate only the source you specify and leave every other attached source untouched.
 
-~> **Do not mix** this resource with the `alert_source` block on the same `ilert_alert_action`. The `alert_source` block is authoritative — it rewrites the full source list on every apply and will fight with `ilert_alert_action_alert_source_relation`, producing perpetual diffs. The recommended pattern is to bootstrap the alert action with a single source via `alert_source` and then `lifecycle { ignore_changes = [alert_source] }` so subsequent attachments are managed exclusively through `ilert_alert_action_alert_source_relation`.
+~> **Do not mix** this resource with the `alert_source` block on the same `ilert_alert_action`. The `alert_source` block is authoritative — it rewrites the full source list on every apply and will fight with `ilert_alert_action_source_attachment`, producing perpetual diffs. The recommended pattern is to bootstrap the alert action with a single source via `alert_source` and then `lifecycle { ignore_changes = [alert_source] }` so subsequent attachments are managed exclusively through `ilert_alert_action_source_attachment`.
 
 ~> **Bootstrap source required.** The iLert API rejects alert action creation with no sources (`Either field 'alertSourceIds [long]' or 'alertSources [{id}]' is required`). Provide at least one initial `alert_source` block on `ilert_alert_action`, then attach additional sources via this resource.
 
@@ -69,12 +69,12 @@ resource "ilert_alert_action" "shared" {
   }
 }
 
-resource "ilert_alert_action_alert_source_relation" "team_a_to_shared" {
+resource "ilert_alert_action_source_attachment" "team_a_to_shared" {
   alert_action_id = ilert_alert_action.shared.id
   alert_source_id = ilert_alert_source.team_a.id
 }
 
-resource "ilert_alert_action_alert_source_relation" "team_b_to_shared" {
+resource "ilert_alert_action_source_attachment" "team_b_to_shared" {
   alert_action_id = ilert_alert_action.shared.id
   alert_source_id = ilert_alert_source.team_b.id
 }
@@ -100,5 +100,5 @@ The following attributes are exported:
 Use the composite ID `<alert_action_id>/<alert_source_id>`:
 
 ```sh
-$ terraform import ilert_alert_action_alert_source_relation.main 123456789/987654321
+$ terraform import ilert_alert_action_source_attachment.main 123456789/987654321
 ```
