@@ -3,6 +3,7 @@ package ilert
 import (
 	"context"
 	"fmt"
+	"log"
 	"runtime"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -38,6 +39,12 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ILERT_PASSWORD", ""),
+			},
+			"debug": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ILERT_DEBUG", false),
+				Description: "Enable full request/response tracing (method, URL, headers, body) to diagnose API issues such as WAF/proxy blocks. Can also be enabled via the ILERT_DEBUG environment variable. WARNING: the resulting debug logs contain request and response bodies and other potentially sensitive data (the Authorization header is masked) - do not share them or commit them to CI logs.",
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
@@ -114,12 +121,21 @@ func providerConfigure(_ context.Context, d *schema.ResourceData, terraformVersi
 	organization := d.Get("organization").(string)
 	username := d.Get("username").(string)
 	password := d.Get("password").(string)
+	debug := d.Get("debug").(bool)
 	client := ilert.NewClient()
 	if endpoint != "" {
 		ilert.WithAPIEndpoint(endpoint)(client)
 	}
 	if terraformVersion != "" {
 		ilert.WithUserAgent(fmt.Sprintf("terraform/%s-%s-%s", terraformVersion, runtime.GOOS, runtime.GOARCH))(client)
+	}
+	if debug {
+		// NewClient already reads ILERT_DEBUG from the environment, so when that
+		// variable is set this enables debug a second time. The call is
+		// idempotent, so the harmless duplication is kept for the explicit
+		// provider-level "debug" argument.
+		log.Printf("[DEBUG] ilert: debug tracing enabled - full request/response details will be logged")
+		ilert.WithDebug(true)(client)
 	}
 	if apiToken != "" {
 		ilert.WithAPIToken(apiToken)(client)
