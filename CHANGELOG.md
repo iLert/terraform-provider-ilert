@@ -6,6 +6,7 @@
 - add `severity_template` (dynamic severity mapping) and `severity` (default severity) to the alert source resource in [#140](https://github.com/iLert/terraform-provider-ilert/pull/140)
 - mark Terraform-created alert sources as setup finished in [#141](https://github.com/iLert/terraform-provider-ilert/pull/141)
 - add `services` (default services), `services_template` (dynamic services mapping) and `auto_create_services` to alert source resource [#142](https://github.com/iLert/terraform-provider-ilert/pull/142)
+- feature/call-flow-accept-alert-on-answer in [#TBD](https://github.com/iLert/terraform-provider-ilert/pull/143)
 
 ## 05.06.2026, Version 2.21.0
 

@@ -11,6 +11,7 @@ resource "ilert_call_flow" "example" {
         node_type = "CREATE_ALERT"
         metadata {
           alert_source_id = -1 // your alert source id
+          accept_alert_on_answer = true
         }
       }
     }

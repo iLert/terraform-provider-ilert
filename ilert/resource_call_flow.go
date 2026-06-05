@@ -258,6 +258,10 @@ func resourceCallFlowNodeMetadata() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
+			"accept_alert_on_answer": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"retries": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -551,6 +555,9 @@ func buildCallFlowNodeFromMap(rn map[string]any) (*ilert.CallFlowNode, error) {
 		}
 		if v, ok := mv["alert_source_id"].(int); ok && v > 0 {
 			md.AlertSourceId = int64(v)
+		}
+		if v, ok := mv["accept_alert_on_answer"].(bool); ok && v {
+			md.AcceptAlertOnAnswer = true
 		}
 		if v, ok := mv["retries"].(int); ok && v != 0 {
 			md.Retries = int64(v)
@@ -1026,6 +1033,9 @@ func flattenCallFlowNode(node **ilert.CallFlowNode) ([]any, error) {
 			if v, ok := mdMap["alertSourceId"].(float64); ok && v > 0 {
 				md.AlertSourceId = int64(v)
 			}
+			if v, ok := mdMap["acceptAlertOnAnswer"].(bool); ok && v {
+				md.AcceptAlertOnAnswer = true
+			}
 			if v, ok := mdMap["retries"].(float64); ok && v != 0 {
 				md.Retries = int64(v)
 			}
@@ -1290,6 +1300,9 @@ func flattenCallFlowNodeMetadata(md *ilert.CallFlowNodeMetadata) ([]any, error) 
 	}
 	if md.AlertSourceId != 0 {
 		result["alert_source_id"] = int(md.AlertSourceId)
+	}
+	if md.AcceptAlertOnAnswer {
+		result["accept_alert_on_answer"] = true
 	}
 	if md.Retries != 0 {
 		result["retries"] = int(md.Retries)
