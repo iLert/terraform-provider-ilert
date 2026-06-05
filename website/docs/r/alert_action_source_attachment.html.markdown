@@ -15,15 +15,15 @@ Use this resource instead of the [`alert_source` block on `ilert_alert_action`](
 - multiple teams or modules need to attach **their own** alert sources to a **shared** alert action, and
 - no single owner should manage the full list of attached sources.
 
-The resource calls the iLert `PUT /alert-actions/{id}/add-source` and `PUT /alert-actions/{id}/remove-source` endpoints, which mutate only the source you specify and leave every other attached source untouched.
+The resource calls the ilert `PUT /alert-actions/{id}/add-source` and `PUT /alert-actions/{id}/remove-source` endpoints, which mutate only the source you specify and leave every other attached source untouched.
 
 ~> **Do not mix** this resource with the `alert_source` block on the same `ilert_alert_action`. The `alert_source` block is authoritative — it rewrites the full source list on every apply and will fight with `ilert_alert_action_source_attachment`, producing perpetual diffs. The recommended pattern is to bootstrap the alert action with a single source via `alert_source` and then `lifecycle { ignore_changes = [alert_source] }` so subsequent attachments are managed exclusively through `ilert_alert_action_source_attachment`.
 
-~> **Bootstrap source required.** The iLert API rejects alert action creation with no sources (`Either field 'alertSourceIds [long]' or 'alertSources [{id}]' is required`). Provide at least one initial `alert_source` block on `ilert_alert_action`, then attach additional sources via this resource.
+~> **Bootstrap source required.** The ilert API rejects alert action creation with no sources (`Either field 'alertSourceIds [long]' or 'alertSources [{id}]' is required`). Provide at least one initial `alert_source` block on `ilert_alert_action`, then attach additional sources via this resource.
 
 Create and destroy are idempotent against out-of-band drift: re-attach of an already-attached source and re-detach of an already-detached source are both treated as success.
 
-~> **Concurrency.** The iLert add-source / remove-source endpoints are read-modify-write on the alert action, so the provider serializes attach/detach operations per `alert_action_id` to keep parallel `terraform apply` (default `-parallelism=10`) from losing attachments. This guard is per Terraform process; running two separate applies against the same alert action at the same time can still race — avoid that.
+~> **Concurrency.** The ilert add-source / remove-source endpoints are read-modify-write on the alert action, so the provider serializes attach/detach operations per `alert_action_id` to keep parallel `terraform apply` (default `-parallelism=10`) from losing attachments. This guard is per Terraform process; running two separate applies against the same alert action at the same time can still race — avoid that.
 
 ## Example Usage
 

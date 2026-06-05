@@ -13,4 +13,4 @@ terraform apply \
   -var "api_token=${ILERT_API_TOKEN}"
 ```
 
-To verify the non-destructive behavior: remove `team_b_to_shared` from `main.tf`, re-apply, then confirm via `curl` or the iLert UI that `team_a` is still attached to the shared alert action.
+To verify the non-destructive behavior: remove `team_b_to_shared` from `main.tf`, re-apply, then confirm via `curl` or the ilert UI that `team_a` is still attached to the shared alert action.
