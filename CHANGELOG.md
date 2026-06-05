@@ -3,6 +3,7 @@
 ## 02.06.2026, Version 2.21.0
 
 - feature/alert-action-alert-source-relation in [#136](https://github.com/iLert/terraform-provider-ilert/pull/136)
+- feature/event-flow-integration in [#139](https://github.com/iLert/terraform-provider-ilert/pull/139)
 
 ## 22.04.2026, Version 2.20.0
 
