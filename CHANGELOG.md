@@ -2,8 +2,8 @@
 
 ## 05.06.2026, Version 2.21.0
 
-- bump `ilert-go` with improved API error transparency: non-JSON error responses now report status, server, request-id and a body snippet, transport failures are classified (timeout / DNS / TLS / connection), and transient intermediary (WAF/proxy) blocks are retried while genuine client errors fail fast
-- add `debug` provider argument (and `ILERT_DEBUG` environment variable) to enable full request/response tracing
+- bump `ilert-go` with improved API error transparency: non-JSON error responses now report status, server, request-id and a body snippet, transport failures are classified (timeout / DNS / TLS / connection), and transient intermediary (WAF/proxy) blocks are retried while genuine client errors fail fast [#138](https://github.com/iLert/terraform-provider-ilert/pull/138)
+- add `debug` provider argument (and `ILERT_DEBUG` environment variable) to enable full request/response tracing [#138](https://github.com/iLert/terraform-provider-ilert/pull/138)
 - feature/alert-action-alert-source-relation in [#136](https://github.com/iLert/terraform-provider-ilert/pull/136)
 - feature/event-flow-integration in [#139](https://github.com/iLert/terraform-provider-ilert/pull/139)
 
