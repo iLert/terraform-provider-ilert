@@ -62,6 +62,12 @@ var resourceRegistry = map[string]struct {
 			return transformEventFlowResource(e.(*ilert.EventFlowOutput), d)
 		},
 	},
+	"ilert_event_flow_integration": {
+		factory: func() any { return &ilert.EventFlowIntegration{} },
+		transformer: func(e any, d *schema.ResourceData) error {
+			return transformEventFlowIntegrationResource(e.(*ilert.EventFlowIntegration), d)
+		},
+	},
 	"ilert_heartbeat_monitor": {
 		factory: func() any { return &ilert.HeartbeatMonitor{} },
 		transformer: func(e any, d *schema.ResourceData) error {
@@ -147,6 +153,8 @@ func getResourceType(resourceType string) string {
 		return "ilert_escalation_policy"
 	case "EVENT_FLOW":
 		return "ilert_event_flow"
+	case "EVENT_FLOW_INTEGRATION":
+		return "ilert_event_flow_integration"
 	case "HEARTBEAT_MONITOR":
 		return "ilert_heartbeat_monitor"
 	case "INCIDENT_TEMPLATE":
