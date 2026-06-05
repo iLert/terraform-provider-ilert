@@ -106,6 +106,8 @@ github.com/huandu/xstrings v1.3.1/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq
 github.com/huandu/xstrings v1.3.2/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/iLert/ilert-go/v3 v3.20.1-0.20260605144113-67a05187398a h1:OQhepdAlPp6YgsYpQH+MXXnmmykaUtDYVXUB/+qtuWA=
 github.com/iLert/ilert-go/v3 v3.20.1-0.20260605144113-67a05187398a/go.mod h1:xHJ8qdmthK4HExcQOd3V5JARed/EBKTdX86MqrJ1yJ0=
+github.com/iLert/ilert-go/v3 v3.20.1-0.20260605170443-a30451568600 h1:9m9VvSLGT/WszA2OkgzZg8rRcWHVi54wMAzzNtK+EQQ=
+github.com/iLert/ilert-go/v3 v3.20.1-0.20260605170443-a30451568600/go.mod h1:xHJ8qdmthK4HExcQOd3V5JARed/EBKTdX86MqrJ1yJ0=
 github.com/imdario/mergo v0.3.11/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=
 github.com/imdario/mergo v0.3.12 h1:b6R2BslTbIEToALKP7LxUvijTsNI9TAe80pLWN2g/HU=
 github.com/imdario/mergo v0.3.12/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=
