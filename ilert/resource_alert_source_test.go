@@ -249,3 +249,46 @@ func TestTransformAlertSourceResource_FlattensServicesAndServicesTemplate(t *tes
 		t.Fatalf("expected auto_create_services to be true in state")
 	}
 }
+
+func TestBuildAlertSource_ServicesAndServicesTemplate(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+		"name":              "test-alert-source",
+		"integration_type":  "API",
+		"escalation_policy": "1",
+		"services": []any{
+			map[string]any{"id": 1},
+			map[string]any{"id": 2, "name": "Service 2"},
+		},
+		"services_template": []any{
+			map[string]any{"text_template": "{{ event.service }}"},
+		},
+		"auto_create_services": true,
+	})
+
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert source: %v", err)
+	}
+
+	if len(alertSource.Services) != 2 {
+		t.Fatalf("expected 2 services, got %d", len(alertSource.Services))
+	}
+	if alertSource.Services[0].ID != 1 {
+		t.Fatalf("expected first service id 1, got %d", alertSource.Services[0].ID)
+	}
+	// name only sent when configured: first has none, second does
+	if alertSource.Services[0].Name != "" {
+		t.Fatalf("expected first service name empty, got %q", alertSource.Services[0].Name)
+	}
+	if alertSource.Services[1].Name != "Service 2" {
+		t.Fatalf("expected second service name 'Service 2', got %q", alertSource.Services[1].Name)
+	}
+
+	if len(alertSource.ServicesTemplate) != 1 || alertSource.ServicesTemplate[0].TextTemplate != "{{ event.service }}" {
+		t.Fatalf("unexpected services template: %+v", alertSource.ServicesTemplate)
+	}
+
+	if !alertSource.AutoCreateServices {
+		t.Fatalf("expected auto_create_services to be true")
+	}
+}
