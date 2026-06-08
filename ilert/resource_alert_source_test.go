@@ -168,3 +168,23 @@ func TestBuildAlertSourceSeverity(t *testing.T) {
 		t.Fatalf("unexpected second mapping: %#v", st.Mappings[1])
 	}
 }
+
+func TestBuildCreateAlertSource_SetsSetupStatusFinished(t *testing.T) {
+	// Sources created via Terraform must be sent with setupStatus FINISHED so the
+	// API does not default them to CREATED (which surfaces a "Finish setup" prompt
+	// in the UI for an already complete alert source).
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+		"name":              "test-alert-source",
+		"integration_type":  "CLOUDWATCH",
+		"escalation_policy": "1",
+	})
+
+	alertSource, err := buildCreateAlertSource(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert source: %v", err)
+	}
+
+	if alertSource.SetupStatus != ilertapi.AlertSourceSetupStatuses.Finished {
+		t.Fatalf("expected setup status %q, got %q", ilertapi.AlertSourceSetupStatuses.Finished, alertSource.SetupStatus)
+	}
+}
