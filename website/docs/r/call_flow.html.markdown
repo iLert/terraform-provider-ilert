@@ -40,7 +40,7 @@ resource "ilert_call_flow" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the call flow.
-- `language` - (Required) The language used by the call flow. Allowed values: `German`, `English`.
+- `language` - (Required) The language used by the call flow. Allowed values: `de`, `en`.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 - `root_node` - (Required) A single [node](#node-arguments) block defining the root of the call flow.
 
