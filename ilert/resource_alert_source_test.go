@@ -188,3 +188,107 @@ func TestBuildCreateAlertSource_SetsSetupStatusFinished(t *testing.T) {
 		t.Fatalf("expected setup status %q, got %q", ilertapi.AlertSourceSetupStatuses.Finished, alertSource.SetupStatus)
 	}
 }
+
+func TestTransformAlertSourceResource_FlattensServicesAndServicesTemplate(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+		"name":              "test-alert-source",
+		"integration_type":  "API",
+		"escalation_policy": "1",
+		"services": []any{
+			map[string]any{
+				"id": 1,
+			},
+		},
+		"services_template": []any{
+			map[string]any{
+				"text_template": "{{ event.service }}",
+			},
+		},
+		"auto_create_services": true,
+	})
+
+	alertSource := &ilertapi.AlertSource{
+		Name: "test-alert-source",
+		EscalationPolicy: &ilertapi.EscalationPolicy{
+			ID: 1,
+		},
+		// API returns more services than were declared in state; the resource keeps all of them,
+		// matching the behavior asserted for teams above.
+		Services: []ilertapi.AlertSourceService{
+			{ID: 1, Name: "Service 1"},
+			{ID: 2, Name: "Service 2"},
+		},
+		ServicesTemplate: []ilertapi.Template{
+			{TextTemplate: "{{ event.service }}"},
+		},
+		AutoCreateServices: true,
+	}
+
+	if err := transformAlertSourceResource(alertSource, d); err != nil {
+		t.Fatalf("unexpected error transforming alert source: %v", err)
+	}
+
+	services := d.Get("services").([]any)
+	if len(services) != 2 {
+		t.Fatalf("expected 2 services in state, got %d", len(services))
+	}
+	// name must not be written when the user did not configure one, to avoid a perpetual diff
+	if name, ok := services[0].(map[string]any)["name"].(string); ok && name != "" {
+		t.Fatalf("expected no service name in state for id-only config, got %q", name)
+	}
+
+	servicesTemplate := d.Get("services_template").([]any)
+	if len(servicesTemplate) != 1 {
+		t.Fatalf("expected 1 services_template in state, got %d", len(servicesTemplate))
+	}
+	if tt := servicesTemplate[0].(map[string]any)["text_template"].(string); tt != "{{ event.service }}" {
+		t.Fatalf("unexpected services_template text_template: %q", tt)
+	}
+
+	if !d.Get("auto_create_services").(bool) {
+		t.Fatalf("expected auto_create_services to be true in state")
+	}
+}
+
+func TestBuildAlertSource_ServicesAndServicesTemplate(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+		"name":              "test-alert-source",
+		"integration_type":  "API",
+		"escalation_policy": "1",
+		"services": []any{
+			map[string]any{"id": 1},
+			map[string]any{"id": 2, "name": "Service 2"},
+		},
+		"services_template": []any{
+			map[string]any{"text_template": "{{ event.service }}"},
+		},
+		"auto_create_services": true,
+	})
+
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert source: %v", err)
+	}
+
+	if len(alertSource.Services) != 2 {
+		t.Fatalf("expected 2 services, got %d", len(alertSource.Services))
+	}
+	if alertSource.Services[0].ID != 1 {
+		t.Fatalf("expected first service id 1, got %d", alertSource.Services[0].ID)
+	}
+	// name only sent when configured: first has none, second does
+	if alertSource.Services[0].Name != "" {
+		t.Fatalf("expected first service name empty, got %q", alertSource.Services[0].Name)
+	}
+	if alertSource.Services[1].Name != "Service 2" {
+		t.Fatalf("expected second service name 'Service 2', got %q", alertSource.Services[1].Name)
+	}
+
+	if len(alertSource.ServicesTemplate) != 1 || alertSource.ServicesTemplate[0].TextTemplate != "{{ event.service }}" {
+		t.Fatalf("unexpected services template: %+v", alertSource.ServicesTemplate)
+	}
+
+	if !alertSource.AutoCreateServices {
+		t.Fatalf("expected auto_create_services to be true")
+	}
+}

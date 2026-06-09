@@ -57,6 +57,9 @@ The following arguments are supported:
 - `priority_template` - (Optional) A [priority template](#priority-template-arguments) block.
 - `severity_template` - (Optional) A [severity template](#severity-template-arguments) block. Used for dynamic severity mapping, extracting a severity from an alert field.
 - `severity` - (Optional) The default severity applied to alerts of this alert source. Given as an integer `1`-`5`, mapping to `SEV1`-`SEV5`.
+- `services` - (Optional) One or more [services](#services-arguments) blocks (up to 15). The default services that get attached to every alert created by this alert source.
+- `services_template` - (Optional) One or more [template](#template-arguments) blocks (up to 10). Dynamic services mapping. Each template extracts service identifiers from the inbound event payload. Each rendered value is comma-split and each token is resolved against your tenant's services by alias or name (case-insensitive). Unmatched tokens are silently dropped.
+- `auto_create_services` - (Optional) Automatically create services for unmatched service identifiers extracted by `services_template`. Has no effect unless `services_template` is configured. Defaults to `false`.
 - `alert_grouping_window` - (Optional) The alert grouping time frame. Any alerts triggered within this time frame will be grouped together. This field has to be defined when `alert_creation` is set to `ONE_ALERT_GROUPED_PER_WINDOW` or `INTELLIGENT_GROUPING`.
 - `score_threshold` - (Optional) Sets the score threshold. Indicates how similar alerts are to be grouped together. This field has to be defined when `alert_creation` is set to `INTELLIGENT_GROUPING`. Should be a floating point number between `0` and `1` (inclusive).
 - `event_filter` - (Optional) Defines event filter condition in ICL language. This is a code based implementation, more info on syntax: https://docs.ilert.com/rest-api/icl-ilert-condition-language. For block based configuration please use the web UI.
@@ -90,6 +93,11 @@ The following arguments are supported:
 
 - `id` - (Required) The ID of the team.
 - `name` - (Optional) The name of the team.
+
+#### Services Arguments
+
+- `id` - (Required) The ID of the service.
+- `name` - (Optional) The name of the service.
 
 #### Template Arguments
 

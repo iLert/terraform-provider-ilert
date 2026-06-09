@@ -625,6 +625,45 @@ func resourceAlertSource() *schema.Resource {
 				ValidateFunc: validation.IntBetween(1, 5),
 				Description:  "Default severity (SEV1-SEV5) mapped as integer 1-5.",
 			},
+			"services": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    15,
+				Description: "Default services that get attached to every alert created by this alert source.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"name": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringLenBetween(1, 255),
+						},
+					},
+				},
+			},
+			"services_template": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    10,
+				Description: "Dynamic services mapping. Each template extracts service identifiers from the inbound event payload. Each rendered value is comma-split and each token is resolved against the tenant's services by alias or name (case-insensitive). Unmatched tokens are silently dropped.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"text_template": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotEmpty,
+						},
+					},
+				},
+			},
+			"auto_create_services": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Automatically create services for unmatched service identifiers extracted by the services template.",
+			},
 			"alert_grouping_window": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -1028,6 +1067,38 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 	if val, ok := d.GetOk("severity"); ok {
 		alertSource.Severity = val.(int)
 	}
+	if val, ok := d.GetOk("services"); ok {
+		vL := val.([]any)
+		services := make([]ilert.AlertSourceService, 0)
+		for _, m := range vL {
+			v := m.(map[string]any)
+			service := ilert.AlertSourceService{
+				ID: int64(v["id"].(int)),
+			}
+			if v["name"] != nil && v["name"].(string) != "" {
+				service.Name = v["name"].(string)
+			}
+			services = append(services, service)
+		}
+		alertSource.Services = services
+	}
+
+	if val, ok := d.GetOk("services_template"); ok {
+		vL := val.([]any)
+		servicesTemplate := make([]ilert.Template, 0)
+		for _, m := range vL {
+			v := m.(map[string]any)
+			servicesTemplate = append(servicesTemplate, ilert.Template{
+				TextTemplate: v["text_template"].(string),
+			})
+		}
+		alertSource.ServicesTemplate = servicesTemplate
+	}
+
+	if val, ok := d.GetOk("auto_create_services"); ok {
+		alertSource.AutoCreateServices = val.(bool)
+	}
+
 	if val, ok := d.GetOk("alert_grouping_window"); ok {
 		if alert_creation, ok := d.GetOk("alert_creation"); !ok || (alert_creation.(string) != ilert.AlertSourceAlertCreations.OneAlertGroupedPerWindow && alert_creation.(string) != ilert.AlertSourceAlertCreations.IntelligentGrouping) {
 			return nil, fmt.Errorf("[ERROR] Can't set alert grouping window when alert creation is not set or not of type 'ONE_ALERT_GROUPED_PER_WINDOW' or 'INTELLIGENT_GROUPING'")
@@ -1087,7 +1158,7 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m an
 	result := &ilert.CreateAlertSourceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("severityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("severityTemplate"), ilert.String("servicesTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
 		r, err := client.CreateAlertSource(&ilert.CreateAlertSourceInput{AlertSource: alertSource, Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
@@ -1123,7 +1194,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m any)
 	result := &ilert.GetAlertSourceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("severityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("severityTemplate"), ilert.String("servicesTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
 		r, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
@@ -1175,7 +1246,7 @@ func resourceAlertSourceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	log.Printf("[DEBUG] Updating alert source: %s", d.Id())
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("severityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("severityTemplate"), ilert.String("servicesTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
 		_, err = client.UpdateAlertSource(&ilert.UpdateAlertSourceInput{AlertSource: alertSource, AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
@@ -1233,7 +1304,7 @@ func resourceAlertSourceExists(d *schema.ResourceData, m any) (bool, error) {
 	result := false
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("severityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("severityTemplate"), ilert.String("servicesTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
 		_, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
@@ -1394,6 +1465,26 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 	}
 
 	d.Set("severity", alertSource.Severity)
+
+	d.Set("auto_create_services", alertSource.AutoCreateServices)
+
+	if _, ok := d.GetOk("services"); ok || d.Id() == "" {
+		services, err := flattenAlertSourceServicesList(alertSource.Services, d)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error flattening services: %s", err.Error())
+		}
+		if err := d.Set("services", services); err != nil {
+			return fmt.Errorf("[ERROR] Error setting services: %s", err.Error())
+		}
+	}
+
+	servicesTemplate, err := flattenServicesTemplateList(alertSource.ServicesTemplate)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening services template: %s", err.Error())
+	}
+	if err := d.Set("services_template", servicesTemplate); err != nil {
+		return fmt.Errorf("[ERROR] Error setting services template: %s", err.Error())
+	}
 
 	if val, ok := d.GetOk("team"); ok {
 		if val != nil {
@@ -1629,6 +1720,52 @@ func flattenLinkTemplatesList(linkTemplatesList []ilert.LinkTemplate) ([]any, er
 		hrefTemplates = append(hrefTemplates, hrefTemplate)
 		result["href_template"] = hrefTemplates
 
+		results = append(results, result)
+	}
+
+	return results, nil
+}
+
+func flattenAlertSourceServicesList(list []ilert.AlertSourceService, d *schema.ResourceData) ([]any, error) {
+	if list == nil {
+		return make([]any, 0), nil
+	}
+	results := make([]any, 0)
+	if val, ok := d.GetOk("services"); ok && val != nil {
+		vL := val.([]any)
+		for i, item := range list {
+			result := make(map[string]any)
+			result["id"] = item.ID
+			if i < len(vL) && vL[i] != nil {
+				v := vL[i].(map[string]any)
+				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
+					result["name"] = item.Name
+				}
+			}
+			results = append(results, result)
+		}
+	} else if d.Id() == "" {
+		for _, item := range list {
+			result := map[string]any{
+				"id": item.ID,
+			}
+			if item.Name != "" {
+				result["name"] = item.Name
+			}
+			results = append(results, result)
+		}
+	}
+	return results, nil
+}
+
+func flattenServicesTemplateList(servicesTemplate []ilert.Template) ([]any, error) {
+	if servicesTemplate == nil {
+		return make([]any, 0), nil
+	}
+	results := make([]any, 0)
+	for _, template := range servicesTemplate {
+		result := make(map[string]any)
+		result["text_template"] = template.TextTemplate
 		results = append(results, result)
 	}
 
