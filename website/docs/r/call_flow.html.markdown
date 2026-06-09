@@ -40,7 +40,7 @@ resource "ilert_call_flow" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the call flow.
-- `language` - (Required) The language used by the call flow. Allowed values: `German`, `English`.
+- `language` - (Required) The language used by the call flow. Allowed values: `de`, `en`.
 - `team` - (Optional) One or more [team](#team-arguments) blocks.
 - `root_node` - (Required) A single [node](#node-arguments) block defining the root of the call flow.
 
@@ -71,6 +71,7 @@ The following arguments are supported:
 - `targets` - (Optional) Used by node type: `ROUTE_CALL`. A list of targets with attributes `target` and `type`. `type` allowed values: `USER`, `ON_CALL_SCHEDULE`, `NUMBER`.
 - `call_style` - (Optional) Required with node type: `ROUTE_CALL`. Allowed values: `ORDERED`, `RANDOM`, `PARALLEL`.
 - `alert_source_id` - (Optional) Used by node type: `CREATE_ALERT`.
+- `accept_alert_on_answer` - (Optional) Used by node type: `CREATE_ALERT`. When enabled, the created alert is accepted automatically once the call is answered.
 - `retries` - (Optional) Used by node types: `IVR_MENU`, `PIN_CODE`, `ROUTE_CALL`.
 - `call_timeout_sec` - (Optional) Used by node type: `ROUTE_CALL`.
 - `blacklist` - (Optional) Used by node type: `BLOCK_NUMBERS`.
