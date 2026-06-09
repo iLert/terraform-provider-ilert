@@ -1059,10 +1059,25 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 	return alertSource, nil
 }
 
+// buildCreateAlertSource builds the alert source payload for a create request.
+// Sources created via Terraform are fully configured, so the setup status is
+// marked as finished. Otherwise the API defaults setupStatus to CREATED and the
+// UI shows a "Finish setup" prompt for an already complete alert source. This is
+// applied on create only (not update), so a source's setup status is not altered
+// by subsequent applies.
+func buildCreateAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		return nil, err
+	}
+	alertSource.SetupStatus = ilert.AlertSourceSetupStatuses.Finished
+	return alertSource, nil
+}
+
 func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*ilert.Client)
 
-	alertSource, err := buildAlertSource(d)
+	alertSource, err := buildCreateAlertSource(d)
 	if err != nil {
 		log.Printf("[ERROR] Building alert source error %s", err.Error())
 		return diag.FromErr(err)
