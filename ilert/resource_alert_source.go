@@ -578,6 +578,53 @@ func resourceAlertSource() *schema.Resource {
 					},
 				},
 			},
+			"severity_template": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"value_template": {
+							Type:     schema.TypeList,
+							Required: true,
+							MinItems: 1,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"text_template": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+						"mapping": {
+							Type:     schema.TypeList,
+							Required: true,
+							MinItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"value": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"severity": {
+										Type:         schema.TypeInt,
+										Required:     true,
+										ValidateFunc: validation.IntBetween(1, 5),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"severity": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(1, 5),
+				Description:  "Default severity (SEV1-SEV5) mapped as integer 1-5.",
+			},
 			"alert_grouping_window": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -944,6 +991,43 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 			alertSource.PriorityTemplate = &ptmp
 		}
 	}
+	if val, ok := d.GetOk("severity_template"); ok {
+		vL := val.([]any)
+		if len(vL) > 0 {
+			v := vL[0].(map[string]any)
+			stmp := ilert.SeverityTemplate{}
+
+			vtmp := ilert.Template{}
+			if v["value_template"] != nil && len(v["value_template"].([]any)) > 0 {
+				htL := v["value_template"].([]any)
+				h := htL[0].(map[string]any)
+				vtmp.TextTemplate = h["text_template"].(string)
+			}
+			stmp.ValueTemplate = &vtmp
+
+			if v["mapping"] != nil {
+				mL := v["mapping"].([]any)
+				mpgs := make([]ilert.SeverityMapping, 0)
+
+				for _, m := range mL {
+					mpg := ilert.SeverityMapping{}
+					mp := m.(map[string]any)
+					if mp["value"] != nil && mp["value"].(string) != "" {
+						mpg.Value = mp["value"].(string)
+					}
+					if mp["severity"] != nil {
+						mpg.Severity = mp["severity"].(int)
+					}
+					mpgs = append(mpgs, mpg)
+				}
+				stmp.Mappings = mpgs
+			}
+			alertSource.SeverityTemplate = &stmp
+		}
+	}
+	if val, ok := d.GetOk("severity"); ok {
+		alertSource.Severity = val.(int)
+	}
 	if val, ok := d.GetOk("alert_grouping_window"); ok {
 		if alert_creation, ok := d.GetOk("alert_creation"); !ok || (alert_creation.(string) != ilert.AlertSourceAlertCreations.OneAlertGroupedPerWindow && alert_creation.(string) != ilert.AlertSourceAlertCreations.IntelligentGrouping) {
 			return nil, fmt.Errorf("[ERROR] Can't set alert grouping window when alert creation is not set or not of type 'ONE_ALERT_GROUPED_PER_WINDOW' or 'INTELLIGENT_GROUPING'")
@@ -988,7 +1072,7 @@ func resourceAlertSourceCreate(ctx context.Context, d *schema.ResourceData, m an
 	result := &ilert.CreateAlertSourceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("severityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
 		r, err := client.CreateAlertSource(&ilert.CreateAlertSourceInput{AlertSource: alertSource, Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
@@ -1024,7 +1108,7 @@ func resourceAlertSourceRead(ctx context.Context, d *schema.ResourceData, m any)
 	result := &ilert.GetAlertSourceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("severityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
 		r, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
@@ -1076,7 +1160,7 @@ func resourceAlertSourceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	log.Printf("[DEBUG] Updating alert source: %s", d.Id())
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("severityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
 		_, err = client.UpdateAlertSource(&ilert.UpdateAlertSourceInput{AlertSource: alertSource, AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
@@ -1134,7 +1218,7 @@ func resourceAlertSourceExists(d *schema.ResourceData, m any) (bool, error) {
 	result := false
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		includes := make([]*string, 0)
-		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
+		includes = append(includes, ilert.String("summaryTemplate"), ilert.String("detailsTemplate"), ilert.String("routingTemplate"), ilert.String("textTemplate"), ilert.String("linkTemplates"), ilert.String("priorityTemplate"), ilert.String("severityTemplate"), ilert.String("eventFilter"), ilert.String("alertKeyTemplate"), ilert.String("eventTypeFilterCreate"), ilert.String("eventTypeFilterAccept"), ilert.String("eventTypeFilterResolve"))
 		_, err := client.GetAlertSource(&ilert.GetAlertSourceInput{AlertSourceID: ilert.Int64(alertSourceID), Include: includes})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
@@ -1285,6 +1369,16 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 	if err := d.Set("priority_template", priorityTemplate); err != nil {
 		return fmt.Errorf("[ERROR] Error setting priority template: %s", err.Error())
 	}
+
+	severityTemplate, err := flattenSeverityTemplate(alertSource.SeverityTemplate)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error flattening severity template: %s", err.Error())
+	}
+	if err := d.Set("severity_template", severityTemplate); err != nil {
+		return fmt.Errorf("[ERROR] Error setting severity template: %s", err.Error())
+	}
+
+	d.Set("severity", alertSource.Severity)
 
 	if val, ok := d.GetOk("team"); ok {
 		if val != nil {
@@ -1547,6 +1641,38 @@ func flattenPriorityTemplate(priorityTemplate *ilert.PriorityTemplate) ([]any, e
 
 		mapping["value"] = priorityMapping.Value
 		mapping["priority"] = priorityMapping.Priority
+
+		mappings = append(mappings, mapping)
+	}
+
+	result["mapping"] = mappings
+
+	results = append(results, result)
+
+	return results, nil
+}
+
+func flattenSeverityTemplate(severityTemplate *ilert.SeverityTemplate) ([]any, error) {
+	if severityTemplate == nil {
+		return make([]any, 0), nil
+	}
+	results := make([]any, 0)
+
+	result := make(map[string]any)
+
+	valueTemplates := make([]any, 0)
+	valueTemplate := make(map[string]any)
+	valueTemplate["text_template"] = severityTemplate.ValueTemplate.TextTemplate
+
+	valueTemplates = append(valueTemplates, valueTemplate)
+	result["value_template"] = valueTemplates
+
+	mappings := make([]any, 0)
+	for _, severityMapping := range severityTemplate.Mappings {
+		mapping := make(map[string]any)
+
+		mapping["value"] = severityMapping.Value
+		mapping["severity"] = severityMapping.Severity
 
 		mappings = append(mappings, mapping)
 	}

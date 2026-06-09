@@ -3,6 +3,7 @@
 ## 09.06.2026, Version 2.22.0
 
 - fix spurious filter_operator/resolve_filter_operator diff on non-email alert sources [#135](https://github.com/iLert/terraform-provider-ilert/pull/135)
+- add `severity_template` (dynamic severity mapping) and `severity` (default severity) to the alert source resource in [#140](https://github.com/iLert/terraform-provider-ilert/pull/140)
 
 ## 05.06.2026, Version 2.21.0
 

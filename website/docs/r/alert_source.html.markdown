@@ -55,6 +55,8 @@ The following arguments are supported:
 - `alert_key_template` - (Optional) An alert key [template](#template-arguments) block.
 - `link_template` - (Optional) One or more [link template](#link-template-arguments) block.
 - `priority_template` - (Optional) A [priority template](#priority-template-arguments) block.
+- `severity_template` - (Optional) A [severity template](#severity-template-arguments) block. Used for dynamic severity mapping, extracting a severity from an alert field.
+- `severity` - (Optional) The default severity applied to alerts of this alert source. Given as an integer `1`-`5`, mapping to `SEV1`-`SEV5`.
 - `alert_grouping_window` - (Optional) The alert grouping time frame. Any alerts triggered within this time frame will be grouped together. This field has to be defined when `alert_creation` is set to `ONE_ALERT_GROUPED_PER_WINDOW` or `INTELLIGENT_GROUPING`.
 - `score_threshold` - (Optional) Sets the score threshold. Indicates how similar alerts are to be grouped together. This field has to be defined when `alert_creation` is set to `INTELLIGENT_GROUPING`. Should be a floating point number between `0` and `1` (inclusive).
 - `event_filter` - (Optional) Defines event filter condition in ICL language. This is a code based implementation, more info on syntax: https://docs.ilert.com/rest-api/icl-ilert-condition-language. For block based configuration please use the web UI.
@@ -107,6 +109,16 @@ The following arguments are supported:
 
 - `value` - (Required) The value that should be extracted from the alerts payload.
 - `priority` - (Required) The priority the alert should be mapped to. Allowed values are `HIGH` and `LOW`.
+
+#### Severity template Arguments
+
+- `value_template` - (Required) A [template](#template-arguments) block.
+- `mapping` - (Required) One or more [severity mapping](#severity-mapping-arguments) blocks.
+
+#### Severity mapping Arguments
+
+- `value` - (Required) The value that should be extracted from the alerts payload.
+- `severity` - (Required) The severity the alert should be mapped to. Given as an integer `1`-`5`, mapping to `SEV1`-`SEV5`.
 
 ### Support Hours Example
 
