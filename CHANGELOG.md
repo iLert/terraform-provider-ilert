@@ -1,5 +1,9 @@
 # Changelog
 
+## 09.06.2026, Version 2.22.0
+
+- fix spurious filter_operator/resolve_filter_operator diff on non-email alert sources [#135](https://github.com/iLert/terraform-provider-ilert/pull/135)
+
 ## 05.06.2026, Version 2.21.0
 
 - bump `ilert-go` with improved API error transparency: non-JSON error responses now report status, server, request-id and a body snippet, transport failures are classified (timeout / DNS / TLS / connection), and transient intermediary (WAF/proxy) blocks are retried while genuine client errors fail fast [#138](https://github.com/iLert/terraform-provider-ilert/pull/138)
