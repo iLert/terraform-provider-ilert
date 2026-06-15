@@ -1,5 +1,9 @@
 # Changelog
 
+## 16.06.2026, Version 2.22.1
+
+- raise `not_resolved_delay_sec` upper bound on the alert action resource from 7200 to 172800 (2 days) to match the iLert API/UI [#145](https://github.com/iLert/terraform-provider-ilert/pull/145)
+
 ## 09.06.2026, Version 2.22.0
 
 - fix spurious filter_operator/resolve_filter_operator diff on non-email alert sources [#135](https://github.com/iLert/terraform-provider-ilert/pull/135)
