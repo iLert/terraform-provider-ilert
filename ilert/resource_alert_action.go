@@ -998,8 +998,8 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 
 	if val, ok := d.GetOk("not_resolved_delay_sec"); ok {
 		notResolvedDelaySec := val.(int)
-		if notResolvedDelaySec != 0 && (notResolvedDelaySec < 60 || notResolvedDelaySec > 7200) {
-			return nil, fmt.Errorf("[ERROR] Can't set 'not_resolved_delay_sec', value must be either 0 or between 60 and 7200")
+		if notResolvedDelaySec != 0 && (notResolvedDelaySec < 60 || notResolvedDelaySec > 172800) {
+			return nil, fmt.Errorf("[ERROR] Can't set 'not_resolved_delay_sec', value must be either 0 or between 60 and 172800")
 		}
 		alertAction.NotResolvedDelaySec = val.(int)
 	}
