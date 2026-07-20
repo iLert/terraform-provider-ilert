@@ -25,6 +25,7 @@ func resourceService() *schema.Resource {
 			"alias": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"status": {
 				Type:         schema.TypeString,
