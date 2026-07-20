@@ -1225,11 +1225,12 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m any) 
 			},
 		})
 	case ilert.ConnectorTypes.Autotask:
+		queueID, _ := strconv.Atoi(result.Connection.Params.QueueID)
 		d.Set("autotask", []any{
 			map[string]any{
 				"company_id":      result.Connection.Params.CompanyID,
 				"issue_type":      result.Connection.Params.IssueType,
-				"queue_id":        result.Connection.Params.QueueID,
+				"queue_id":        queueID,
 				"ticket_category": result.Connection.Params.TicketCategory,
 				"ticket_type":     result.Connection.Params.TicketType,
 			},
