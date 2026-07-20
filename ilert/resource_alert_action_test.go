@@ -199,13 +199,13 @@ func TestTransformAlertActionResource_AutotaskParams(t *testing.T) {
 		ConnectorType:  ilertapi.ConnectorTypes.Autotask,
 		AlertSourceIDs: []int64{},
 		Params: &ilertapi.AlertActionOutputParams{
-			CompanyID: 12345,
+			CompanyID: "12345",
 			QueueID:   8,
 			NoteType:  "1",
 		},
 	}
 
-	// company_id (int64) is surfaced as a string, queue_id (int64) as an int.
+	// company_id (string) passes through, queue_id (int64) surfaces as an int.
 	if err := transformAlertActionResource(alertAction, d); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -220,9 +220,18 @@ func TestTransformAlertActionResource_AutotaskParams(t *testing.T) {
 		t.Errorf("note_type = %v, want \"1\"", at["note_type"])
 	}
 
-	// An unset company_id (0) must surface as an empty string, not "0", so it
-	// does not produce a spurious diff.
-	alertAction.Params.CompanyID = 0
+	// A non-numeric company_id must round-trip untouched, and an unset one
+	// must stay an empty string.
+	alertAction.Params.CompanyID = "ACME-42"
+	if err := transformAlertActionResource(alertAction, d); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	at = d.Get("autotask").([]any)[0].(map[string]any)
+	if at["company_id"] != "ACME-42" {
+		t.Errorf("company_id = %v, want \"ACME-42\"", at["company_id"])
+	}
+
+	alertAction.Params.CompanyID = ""
 	if err := transformAlertActionResource(alertAction, d); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
