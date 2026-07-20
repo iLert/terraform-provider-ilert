@@ -1340,12 +1340,15 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 			},
 		})
 	case ilert.ConnectorTypes.Autotask:
-		queueID, _ := strconv.Atoi(alertAction.Params.QueueID)
+		companyID := ""
+		if alertAction.Params.CompanyID != 0 {
+			companyID = strconv.FormatInt(alertAction.Params.CompanyID, 10)
+		}
 		d.Set("autotask", []any{
 			map[string]any{
-				"company_id":      alertAction.Params.CompanyID,
+				"company_id":      companyID,
 				"issue_type":      alertAction.Params.IssueType,
-				"queue_id":        queueID,
+				"queue_id":        int(alertAction.Params.QueueID),
 				"ticket_category": alertAction.Params.TicketCategory,
 				"ticket_type":     alertAction.Params.TicketType,
 				"note_type":       alertAction.Params.NoteType,
