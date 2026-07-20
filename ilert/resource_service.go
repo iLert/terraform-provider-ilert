@@ -22,6 +22,10 @@ func resourceService() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 255),
 			},
+			"alias": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"status": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -83,6 +87,10 @@ func buildService(d *schema.ResourceData) (*ilert.Service, error) {
 
 	service := &ilert.Service{
 		Name: name,
+	}
+
+	if val, ok := d.GetOk("alias"); ok {
+		service.Alias = val.(string)
 	}
 
 	if val, ok := d.GetOk("status"); ok {
@@ -308,6 +316,7 @@ func resourceServiceExists(d *schema.ResourceData, m any) (bool, error) {
 
 func transformServiceResource(service *ilert.Service, d *schema.ResourceData) error {
 	d.Set("name", service.Name)
+	d.Set("alias", service.Alias)
 	d.Set("status", service.Status)
 	d.Set("description", service.Description)
 	d.Set("one_open_incident_only", service.OneOpenIncidentOnly)

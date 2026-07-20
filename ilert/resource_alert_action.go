@@ -118,6 +118,30 @@ func resourceAlertAction() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
+						"close_code": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"assignment_group": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"owner_group": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"service": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"service_offering": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"contact_type": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
 					},
 				},
 			},
@@ -302,6 +326,18 @@ func resourceAlertAction() *schema.Resource {
 							Optional: true,
 						},
 						"ticket_type": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"note_type": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"note_publish": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"status": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -690,10 +726,16 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 		if len(vL) > 0 {
 			v := vL[0].(map[string]any)
 			alertAction.Params = &ilert.AlertActionParamsServiceNow{
-				CallerID:     v["caller_id"].(string),
-				Impact:       v["impact"].(string),
-				Urgency:      v["urgency"].(string),
-				BodyTemplate: v["body_template"].(string),
+				CallerID:        v["caller_id"].(string),
+				Impact:          v["impact"].(string),
+				Urgency:         v["urgency"].(string),
+				BodyTemplate:    v["body_template"].(string),
+				CloseCode:       v["close_code"].(string),
+				AssignmentGroup: v["assignment_group"].(string),
+				OwnerGroup:      v["owner_group"].(string),
+				Service:         v["service"].(string),
+				ServiceOffering: v["service_offering"].(string),
+				ContactType:     v["contact_type"].(string),
 			}
 		}
 	}
@@ -808,6 +850,9 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 				QueueID:        int64(v["queue_id"].(int)),
 				TicketCategory: v["ticket_category"].(string),
 				TicketType:     v["ticket_type"].(string),
+				NoteType:       v["note_type"].(string),
+				NotePublish:    v["note_publish"].(string),
+				Status:         v["status"].(string),
 			}
 		}
 	}
@@ -1237,10 +1282,16 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 	case ilert.ConnectorTypes.ServiceNow:
 		d.Set("servicenow", []any{
 			map[string]any{
-				"caller_id":     alertAction.Params.CallerID,
-				"impact":        alertAction.Params.Impact,
-				"urgency":       alertAction.Params.Urgency,
-				"body_template": alertAction.Params.BodyTemplate,
+				"caller_id":        alertAction.Params.CallerID,
+				"impact":           alertAction.Params.Impact,
+				"urgency":          alertAction.Params.Urgency,
+				"body_template":    alertAction.Params.BodyTemplate,
+				"close_code":       alertAction.Params.CloseCode,
+				"assignment_group": alertAction.Params.AssignmentGroup,
+				"owner_group":      alertAction.Params.OwnerGroup,
+				"service":          alertAction.Params.Service,
+				"service_offering": alertAction.Params.ServiceOffering,
+				"contact_type":     alertAction.Params.ContactType,
 			},
 		})
 	case ilert.ConnectorTypes.Slack:
@@ -1296,6 +1347,9 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 				"queue_id":        alertAction.Params.QueueID,
 				"ticket_category": alertAction.Params.TicketCategory,
 				"ticket_type":     alertAction.Params.TicketType,
+				"note_type":       alertAction.Params.NoteType,
+				"note_publish":    alertAction.Params.NotePublish,
+				"status":          alertAction.Params.Status,
 			},
 		})
 	case ilert.ConnectorTypes.Zammad:

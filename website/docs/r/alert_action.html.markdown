@@ -120,6 +120,12 @@ The following arguments are supported:
 - `impact` - (Optional) The ServiceNow impact.
 - `urgency` - (Optional) The ServiceNow urgency.
 - `body_template` - (Optional) The custom template body.
+- `close_code` - (Optional) The ServiceNow close code.
+- `assignment_group` - (Optional) The ServiceNow assignment group.
+- `owner_group` - (Optional) The ServiceNow owner group.
+- `service` - (Optional) The ServiceNow service.
+- `service_offering` - (Optional) The ServiceNow service offering.
+- `contact_type` - (Optional) The ServiceNow contact type.
 
 #### Slack Arguments
 
@@ -180,6 +186,9 @@ The following arguments are supported:
 - `issue_type` - (Optional) The Autotask Issue Type.
 - `ticket_category` - (Optional) The Autotask Ticket Category.
 - `ticket_type` - (Optional) The Autotask Ticket Type.
+- `note_type` - (Optional) The Autotask note type.
+- `note_publish` - (Optional) The Autotask note publish.
+- `status` - (Optional) The Autotask ticket status.
 
 #### Zammad Arguments
 

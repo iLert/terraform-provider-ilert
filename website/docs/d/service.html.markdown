@@ -28,6 +28,7 @@ The following arguments are supported:
 
 - `id` - The ID of the found service.
 - `name` - The name of the found service.
+- `alias` - The alias of the found service.
 - `status` - The status of the found service.
 
 [1]: https://api.ilert.com/api-docs/#tag/Services

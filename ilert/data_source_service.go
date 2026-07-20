@@ -22,6 +22,10 @@ func dataSourceService() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"alias": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"status": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -57,6 +61,7 @@ func dataSourceServiceRead(ctx context.Context, d *schema.ResourceData, meta any
 
 		d.SetId(strconv.FormatInt(found.ID, 10))
 		d.Set("name", found.Name)
+		d.Set("alias", found.Alias)
 		d.Set("status", found.Status)
 
 		return nil
