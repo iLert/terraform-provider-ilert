@@ -41,7 +41,7 @@ The following arguments are supported:
 #### Member Arguments
 
 - `user` - (Required) The user id of the team member.
-- `role` - (Optional) The role of the team member. Allowed values are `ADMIN`, `USER`, `RESPONDER` and `STAKEHOLDER`. Default: `RESPONDER`.
+- `role` - (Optional) The role of the team member. Allowed values are `ADMIN`, `USER`, `RESPONDER`, `STAKEHOLDER` and `VIEWER`. Default: `RESPONDER`.
 
 ## Attributes Reference
 

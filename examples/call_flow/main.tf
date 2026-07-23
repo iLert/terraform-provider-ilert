@@ -54,6 +54,7 @@ resource "ilert_call_flow" "always_on_support" {
                   text_message = "We're sorry, but all responders are currently unavailable. Please leave your name, contact information, and a brief message, and we'll get back to you as soon as possible."
                   ai_voice_model = "emma"
                   language = "en"
+                  disable_transcription = true
                 }
                 branches {
                   branch_type = "BRANCH"

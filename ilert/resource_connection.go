@@ -1229,7 +1229,7 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m any) 
 			map[string]any{
 				"company_id":      result.Connection.Params.CompanyID,
 				"issue_type":      result.Connection.Params.IssueType,
-				"queue_id":        result.Connection.Params.QueueID,
+				"queue_id":        int(result.Connection.Params.QueueID),
 				"ticket_category": result.Connection.Params.TicketCategory,
 				"ticket_type":     result.Connection.Params.TicketType,
 			},

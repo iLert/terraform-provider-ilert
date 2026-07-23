@@ -72,6 +72,7 @@ The following arguments are supported:
 - `call_style` - (Optional) Required with node type: `ROUTE_CALL`. Allowed values: `ORDERED`, `RANDOM`, `PARALLEL`.
 - `alert_source_id` - (Optional) Used by node type: `CREATE_ALERT`.
 - `accept_alert_on_answer` - (Optional) Used by node type: `CREATE_ALERT`. When enabled, the created alert is accepted automatically once the call is answered.
+- `disable_transcription` - (Optional) Used by node type: `VOICEMAIL`. When enabled, the voicemail recording is not transcribed.
 - `retries` - (Optional) Used by node types: `IVR_MENU`, `PIN_CODE`, `ROUTE_CALL`.
 - `call_timeout_sec` - (Optional) Used by node type: `ROUTE_CALL`.
 - `blacklist` - (Optional) Used by node type: `BLOCK_NUMBERS`.

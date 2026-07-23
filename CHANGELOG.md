@@ -1,5 +1,11 @@
 # Changelog
 
+## 23.07.2026, Version 2.23.0
+
+- add documented `servicenow` (`close_code`, `assignment_group`, `owner_group`, `service`, `service_offering`, `contact_type`) and `autotask` (`note_type`, `note_publish`, `status`) alert action params, service `alias` and call flow `VOICEMAIL` `disable_transcription` [#146](https://github.com/iLert/terraform-provider-ilert/pull/146)
+- add `VIEWER` to the user resource role and the team member role [#146](https://github.com/iLert/terraform-provider-ilert/pull/146)
+- fix reading autotask alert actions and connections whose `queue_id`/`company_id` the API returns as strings [#146](https://github.com/iLert/terraform-provider-ilert/pull/146)
+
 ## 16.06.2026, Version 2.22.1
 
 - raise `not_resolved_delay_sec` upper bound on the alert action resource from 7200 to 172800 (2 days) to match the iLert API/UI [#145](https://github.com/iLert/terraform-provider-ilert/pull/145)

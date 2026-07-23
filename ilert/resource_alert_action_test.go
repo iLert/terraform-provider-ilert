@@ -175,3 +175,68 @@ func alertSourceIDOrder(alertSources []any) []string {
 	}
 	return ids
 }
+
+func TestTransformAlertActionResource_AutotaskParams(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertAction().Schema, map[string]any{
+		"name": "test-alert-action",
+		"connector": []any{
+			map[string]any{
+				"id":   "1",
+				"type": "autotask",
+			},
+		},
+		"trigger_mode": "ALL",
+		"alert_source": []any{
+			map[string]any{
+				"id": "123",
+			},
+		},
+	})
+	d.SetId("1")
+
+	alertAction := &ilertapi.AlertActionOutput{
+		Name:           "test-alert-action",
+		ConnectorType:  ilertapi.ConnectorTypes.Autotask,
+		AlertSourceIDs: []int64{},
+		Params: &ilertapi.AlertActionOutputParams{
+			CompanyID: "12345",
+			QueueID:   8,
+			NoteType:  "1",
+		},
+	}
+
+	// company_id (string) passes through, queue_id (int64) surfaces as an int.
+	if err := transformAlertActionResource(alertAction, d); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	at := d.Get("autotask").([]any)[0].(map[string]any)
+	if at["company_id"] != "12345" {
+		t.Errorf("company_id = %v, want \"12345\"", at["company_id"])
+	}
+	if at["queue_id"] != 8 {
+		t.Errorf("queue_id = %v, want 8", at["queue_id"])
+	}
+	if at["note_type"] != "1" {
+		t.Errorf("note_type = %v, want \"1\"", at["note_type"])
+	}
+
+	// A non-numeric company_id must round-trip untouched, and an unset one
+	// must stay an empty string.
+	alertAction.Params.CompanyID = "ACME-42"
+	if err := transformAlertActionResource(alertAction, d); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	at = d.Get("autotask").([]any)[0].(map[string]any)
+	if at["company_id"] != "ACME-42" {
+		t.Errorf("company_id = %v, want \"ACME-42\"", at["company_id"])
+	}
+
+	alertAction.Params.CompanyID = ""
+	if err := transformAlertActionResource(alertAction, d); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	at = d.Get("autotask").([]any)[0].(map[string]any)
+	if at["company_id"] != "" {
+		t.Errorf("company_id = %v, want empty string when unset", at["company_id"])
+	}
+}

@@ -114,3 +114,23 @@ func TestFlattenCallFlowNodeMetadata_AcceptAlertOnAnswer(t *testing.T) {
 		t.Error("expected accept_alert_on_answer to be absent from state when false")
 	}
 }
+
+func TestFlattenCallFlowNodeMetadata_DisableTranscription(t *testing.T) {
+	// true is surfaced into state.
+	result, err := flattenCallFlowNodeMetadata(&ilert.CallFlowNodeMetadata{DisableTranscription: true})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if v := result[0].(map[string]any)["disable_transcription"]; v != true {
+		t.Errorf("expected disable_transcription = true in state, got %v", v)
+	}
+
+	// false is omitted (the backend default), so the key must be absent.
+	result, err = flattenCallFlowNodeMetadata(&ilert.CallFlowNodeMetadata{DisableTranscription: false})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, ok := result[0].(map[string]any)["disable_transcription"]; ok {
+		t.Error("expected disable_transcription to be absent from state when false")
+	}
+}

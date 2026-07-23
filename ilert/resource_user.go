@@ -69,6 +69,7 @@ func resourceUser() *schema.Resource {
 					"RESPONDER",
 					"STAKEHOLDER",
 					"GUEST",
+					"VIEWER",
 				}, false),
 			},
 			"shift_color": {
