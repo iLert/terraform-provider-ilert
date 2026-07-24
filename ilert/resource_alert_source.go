@@ -742,7 +742,11 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 		}
 		alertSource.AlertCreation = alertCreation
 	}
-	if val, ok := d.GetOk("integration_key"); ok {
+	// EMAIL/EMAIL2 sources carry their address in integration_key, which is set
+	// from the "email" field above. integration_key is computed, so on update it
+	// still holds the previous value from state; letting it run here would
+	// overwrite the new email and silently no-op the update.
+	if val, ok := d.GetOk("integration_key"); ok && integrationType != "EMAIL" && integrationType != "EMAIL2" {
 		integrationKey := val.(string)
 		alertSource.IntegrationKey = integrationKey
 	}

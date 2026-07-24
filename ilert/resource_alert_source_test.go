@@ -292,3 +292,50 @@ func TestBuildAlertSource_ServicesAndServicesTemplate(t *testing.T) {
 		t.Fatalf("expected auto_create_services to be true")
 	}
 }
+
+// Regression for #147: on update the computed integration_key still holds the
+// previous address from state. It must not overwrite the new value coming from
+// the "email" field, otherwise the email update silently no-ops.
+func TestBuildAlertSource_EmailUpdateNotClobberedByStaleIntegrationKey(t *testing.T) {
+	for _, integrationType := range []string{"EMAIL", "EMAIL2"} {
+		t.Run(integrationType, func(t *testing.T) {
+			d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+				"name":              "test-alert-source",
+				"integration_type":  integrationType,
+				"escalation_policy": "1",
+				"email":             "new-address",
+				// simulates the computed value carried over from prior state
+				"integration_key": "old-address@example.ilertnotify.dev",
+			})
+
+			alertSource, err := buildAlertSource(d)
+			if err != nil {
+				t.Fatalf("unexpected error building alert source: %v", err)
+			}
+
+			if alertSource.IntegrationKey != "new-address" {
+				t.Fatalf("expected integration key %q, got %q", "new-address", alertSource.IntegrationKey)
+			}
+		})
+	}
+}
+
+// Non-email sources must still honor integration_key (its address is server-computed
+// and sent back on update); the #147 guard only skips EMAIL/EMAIL2.
+func TestBuildAlertSource_NonEmailKeepsIntegrationKey(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+		"name":              "test-alert-source",
+		"integration_type":  "API",
+		"escalation_policy": "1",
+		"integration_key":   "server-generated-key",
+	})
+
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert source: %v", err)
+	}
+
+	if alertSource.IntegrationKey != "server-generated-key" {
+		t.Fatalf("expected integration key %q, got %q", "server-generated-key", alertSource.IntegrationKey)
+	}
+}
