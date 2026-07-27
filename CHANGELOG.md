@@ -1,6 +1,6 @@
 # Changelog
 
-## 24.07.2026, Version 2.23.1
+## 27.07.2026, Version 2.23.1
 
 - fix email address not updating on `EMAIL`/`EMAIL2` alert sources; the computed `integration_key` (holding the previous value from state) was overwriting the new value from the `email` field on update [#148](https://github.com/iLert/terraform-provider-ilert/pull/148)
 
