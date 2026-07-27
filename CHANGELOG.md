@@ -1,5 +1,9 @@
 # Changelog
 
+## 27.07.2026, Version 2.23.1
+
+- fix email address not updating on `EMAIL`/`EMAIL2` alert sources; the computed `integration_key` (holding the previous value from state) was overwriting the new value from the `email` field on update [#148](https://github.com/iLert/terraform-provider-ilert/pull/148)
+
 ## 23.07.2026, Version 2.23.0
 
 - add documented `servicenow` (`close_code`, `assignment_group`, `owner_group`, `service`, `service_offering`, `contact_type`) and `autotask` (`note_type`, `note_publish`, `status`) alert action params, service `alias` and call flow `VOICEMAIL` `disable_transcription` [#146](https://github.com/iLert/terraform-provider-ilert/pull/146)
