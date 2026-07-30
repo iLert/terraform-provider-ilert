@@ -79,12 +79,14 @@ func resourceHeartbeatMonitor() *schema.Resource {
 				Computed: true,
 			},
 			"integration_key": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 			"integration_url": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 		},
 		CreateContext: resourceHeartbeatMonitorCreate,
