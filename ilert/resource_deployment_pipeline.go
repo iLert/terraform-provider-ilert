@@ -29,8 +29,9 @@ func resourceDeploymentPipeline() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(ilert.DeploymentPipelineIntegrationTypeAll, false),
 			},
 			"integration_key": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 			"team": {
 				Type:     schema.TypeList,
@@ -59,8 +60,9 @@ func resourceDeploymentPipeline() *schema.Resource {
 				Computed: true,
 			},
 			"integration_url": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 			"github": {
 				Type:     schema.TypeList,
