@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"sort"
 	"strconv"
 	"time"
 
@@ -30,7 +29,7 @@ func resourceTeam() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(ilert.TeamVisibilityAll, false),
 			},
 			"member": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -76,7 +75,7 @@ func buildTeam(d *schema.ResourceData) (*ilert.Team, error) {
 
 	members := make([]ilert.TeamMember, 0)
 	if val, ok := d.GetOk("member"); ok {
-		vL := val.([]any)
+		vL := val.(*schema.Set).List()
 		for _, m := range vL {
 			v := m.(map[string]any)
 			ep := ilert.TeamMember{
@@ -290,10 +289,7 @@ func transformTeamResource(team *ilert.Team, d *schema.ResourceData) error {
 	d.Set("name", team.Name)
 	d.Set("visibility", team.Visibility)
 
-	members, err := flattenMembersListSorted(team.Members, d)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error flattening members: %s", err.Error())
-	}
+	members := flattenMembersList(team.Members)
 	if err := d.Set("member", members); err != nil {
 		return fmt.Errorf("[ERROR] Error setting members: %s", err.Error())
 	}
@@ -301,56 +297,13 @@ func transformTeamResource(team *ilert.Team, d *schema.ResourceData) error {
 	return nil
 }
 
-func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) ([]any, error) {
+func flattenMembersList(list []ilert.TeamMember) []any {
 	if list == nil {
-		return make([]any, 0), nil
+		return make([]any, 0)
 	}
 
-	configMembers := d.Get("member")
-	if configMembers == nil {
-		if d.Id() != "" {
-			return make([]any, 0), nil
-		}
-		configMembers = make([]any, 0)
-	}
-
-	configMembersList, ok := configMembers.([]any)
-	if !ok {
-		return make([]any, 0), nil
-	}
-
-	serverMembersMap := make(map[string]ilert.TeamMember)
-	for _, member := range list {
-		if member.User.ID > 0 {
-			userID := strconv.FormatInt(member.User.ID, 10)
-			serverMembersMap[userID] = member
-		}
-	}
-
-	results := make([]any, 0)
-	for _, configMember := range configMembersList {
-		if configMemberMap, ok := configMember.(map[string]any); ok {
-			if userID, ok := configMemberMap["user"].(string); ok {
-				if serverMember, exists := serverMembersMap[userID]; exists {
-					result := make(map[string]any)
-					result["role"] = serverMember.Role
-					result["user"] = userID
-					results = append(results, result)
-					delete(serverMembersMap, userID)
-				}
-			}
-		}
-	}
-
-	unmatchedServerMembers := make([]ilert.TeamMember, 0, len(serverMembersMap))
-	for _, serverMember := range serverMembersMap {
-		unmatchedServerMembers = append(unmatchedServerMembers, serverMember)
-	}
-	sort.Slice(unmatchedServerMembers, func(i, j int) bool {
-		return unmatchedServerMembers[i].User.ID < unmatchedServerMembers[j].User.ID
-	})
-
-	for _, serverMember := range unmatchedServerMembers {
+	results := make([]any, 0, len(list))
+	for _, serverMember := range list {
 		result := make(map[string]any)
 		result["role"] = serverMember.Role
 		if serverMember.User.ID > 0 {
@@ -359,5 +312,5 @@ func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) (
 		results = append(results, result)
 	}
 
-	return results, nil
+	return results
 }
