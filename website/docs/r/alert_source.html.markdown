@@ -105,7 +105,7 @@ The following arguments are supported:
 
 #### Link template Arguments
 
-- `text` - (Required) The display name for the link.
+- `text` - (Optional) The display name for the link.
 - `href_template` - (Required) A [template](#template-arguments) block.
 
 #### Priority template Arguments

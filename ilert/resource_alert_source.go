@@ -518,7 +518,7 @@ func resourceAlertSource() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"text": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
 						},
 						"href_template": {
 							Type:     schema.TypeList,
