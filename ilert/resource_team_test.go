@@ -1,7 +1,6 @@
 package ilert
 
 import (
-	"reflect"
 	"slices"
 	"testing"
 
@@ -36,12 +35,12 @@ func TestFlattenMembersListSorted_UsesConfigOrder(t *testing.T) {
 
 	wantOrder := []string{"200", "100"}
 	gotOrder := teamMemberUserOrder(got)
-	if !reflect.DeepEqual(gotOrder, wantOrder) {
+	if !slices.Equal(gotOrder, wantOrder) {
 		t.Fatalf("expected user order %v, got %v", wantOrder, gotOrder)
 	}
 }
 
-func TestFlattenMembersListSorted_AppendsUnmatchedServerMember(t *testing.T) {
+func TestFlattenMembersListSorted_AppendsSortedUnmatchedServerMembers(t *testing.T) {
 	d := schema.TestResourceDataRaw(t, resourceTeam().Schema, map[string]any{
 		"name": "test-team",
 		"member": []any{
@@ -55,6 +54,7 @@ func TestFlattenMembersListSorted_AppendsUnmatchedServerMember(t *testing.T) {
 	serverMembers := []ilert.TeamMember{
 		newTeamMember(100, ilert.TeamMemberRoles.User),
 		newTeamMember(200, ilert.TeamMemberRoles.Responder),
+		newTeamMember(10, ilert.TeamMemberRoles.User),
 	}
 
 	got, err := flattenMembersListSorted(serverMembers, d)
@@ -63,14 +63,15 @@ func TestFlattenMembersListSorted_AppendsUnmatchedServerMember(t *testing.T) {
 	}
 
 	gotOrder := teamMemberUserOrder(got)
-	if len(gotOrder) != 2 {
-		t.Fatalf("expected 2 users, got %d (%v)", len(gotOrder), gotOrder)
+	if len(gotOrder) != 3 {
+		t.Fatalf("expected 3 users, got %d (%v)", len(gotOrder), gotOrder)
 	}
 	if gotOrder[0] != "200" {
 		t.Fatalf("expected configured user first, got %v", gotOrder)
 	}
-	if !slices.Contains(gotOrder, "100") {
-		t.Fatalf("expected unmatched server user 100 to be preserved, got %v", gotOrder)
+	wantOrder := []string{"200", "10", "100"}
+	if !slices.Equal(gotOrder, wantOrder) {
+		t.Fatalf("expected user order %v, got %v", wantOrder, gotOrder)
 	}
 }
 

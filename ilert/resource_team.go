@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
 	"time"
 
@@ -341,7 +342,15 @@ func flattenMembersListSorted(list []ilert.TeamMember, d *schema.ResourceData) (
 		}
 	}
 
+	unmatchedServerMembers := make([]ilert.TeamMember, 0, len(serverMembersMap))
 	for _, serverMember := range serverMembersMap {
+		unmatchedServerMembers = append(unmatchedServerMembers, serverMember)
+	}
+	sort.Slice(unmatchedServerMembers, func(i, j int) bool {
+		return unmatchedServerMembers[i].User.ID < unmatchedServerMembers[j].User.ID
+	})
+
+	for _, serverMember := range unmatchedServerMembers {
 		result := make(map[string]any)
 		result["role"] = serverMember.Role
 		if serverMember.User.ID > 0 {
