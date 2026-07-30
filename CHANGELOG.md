@@ -1,5 +1,10 @@
 # Changelog
 
+## 30.07.2026, Version 2.23.2
+
+- fix a permanent diff on alert source `team` blocks whose declared order differs from the order the API returns them in: the API sorts teams by id, so the ordered `TypeList` produced a plan that swapped ids back and forth on every run and never converged, even directly after a successful apply. `team` is now a `TypeSet`, and the read binds each configured team `name` to its own team id instead of zipping config and API order by position [#150](https://github.com/iLert/terraform-provider-ilert/issues/150)
+- fix removing every `team` block from an alert source silently doing nothing: the teams were dropped from the Terraform state while remaining assigned on the server. The empty list was omitted from the update payload entirely, and the API only clears teams on an explicit empty array. Removing a subset was unaffected [#151](https://github.com/iLert/terraform-provider-ilert/issues/151)
+
 ## 27.07.2026, Version 2.23.1
 
 - fix email address not updating on `EMAIL`/`EMAIL2` alert sources; the computed `integration_key` (holding the previous value from state) was overwriting the new value from the `email` field on update [#148](https://github.com/iLert/terraform-provider-ilert/pull/148)
