@@ -517,11 +517,26 @@ func resourceAlertSource() *schema.Resource {
 			"link_template": {
 				Type:     schema.TypeList,
 				Optional: true,
+				MaxItems: 10,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"text": {
-							Type:     schema.TypeString,
-							Required: true,
+						"text": { // @deprecated
+							Deprecated: "The field text is deprecated! Please use link_text_template instead.",
+							Type:       schema.TypeString,
+							Optional:   true,
+						},
+						"link_text_template": {
+							Type:     schema.TypeList,
+							Optional: true,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"text_template": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
 						},
 						"href_template": {
 							Type:     schema.TypeList,
@@ -698,6 +713,7 @@ func resourceAlertSource() *schema.Resource {
 		UpdateContext: resourceAlertSourceUpdate,
 		DeleteContext: resourceAlertSourceDelete,
 		Exists:        resourceAlertSourceExists,
+		CustomizeDiff: validateLinkTemplates,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -708,6 +724,51 @@ func resourceAlertSource() *schema.Resource {
 			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 	}
+}
+
+// validateLinkTemplates surfaces the API requirement that every link template
+// carries a display name at plan time instead of failing mid-apply. Values that
+// are not known until apply are skipped, they get checked again in
+// buildAlertSource.
+func validateLinkTemplates(ctx context.Context, diff *schema.ResourceDiff, m any) error {
+	if !diff.NewValueKnown("link_template") {
+		return nil
+	}
+	val, ok := diff.GetOk("link_template")
+	if !ok {
+		return nil
+	}
+	for i, m := range val.([]any) {
+		v, ok := m.(map[string]any)
+		if !ok {
+			continue
+		}
+		textKey := fmt.Sprintf("link_template.%d.text", i)
+		templateKey := fmt.Sprintf("link_template.%d.link_text_template", i)
+		if !diff.NewValueKnown(textKey) || !diff.NewValueKnown(templateKey) {
+			continue
+		}
+
+		text, _ := v["text"].(string)
+		if text != "" {
+			continue
+		}
+
+		templates, _ := v["link_text_template"].([]any)
+		if len(templates) > 0 {
+			template, _ := templates[0].(map[string]any)
+			textTemplateKey := fmt.Sprintf("%s.0.text_template", templateKey)
+			if !diff.NewValueKnown(textTemplateKey) {
+				continue
+			}
+			if textTemplate, _ := template["text_template"].(string); textTemplate != "" {
+				continue
+			}
+		}
+
+		return fmt.Errorf("[ERROR] Each link template requires a display name, please set link_text_template (or the deprecated text) on link_template %d", i)
+	}
+	return nil
 }
 
 func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
@@ -997,6 +1058,18 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 			ltmp := ilert.LinkTemplate{}
 			if v["text"] != nil && v["text"].(string) != "" {
 				ltmp.Text = v["text"].(string)
+			}
+			if v["link_text_template"] != nil && len(v["link_text_template"].([]any)) > 0 {
+				ltL := v["link_text_template"].([]any)
+				l := ltL[0].(map[string]any)
+				ltmp.LinkTextTemplate = &ilert.Template{
+					TextTemplate: l["text_template"].(string),
+				}
+			}
+			// the API requires a display name on every link template, either the
+			// templatable link_text_template or the legacy text as a fallback
+			if ltmp.Text == "" && (ltmp.LinkTextTemplate == nil || ltmp.LinkTextTemplate.TextTemplate == "") {
+				return nil, errors.New("[ERROR] Each link template requires a display name, please set link_text_template (or the deprecated text)")
 			}
 			htmp := ilert.Template{}
 			if v["href_template"] != nil && len(v["href_template"].([]any)) > 0 {
@@ -1729,6 +1802,14 @@ func flattenLinkTemplatesList(linkTemplatesList []ilert.LinkTemplate) ([]any, er
 	for _, linkTemplate := range linkTemplatesList {
 		result := make(map[string]any)
 		result["text"] = linkTemplate.Text
+
+		linkTextTemplates := make([]any, 0)
+		if linkTemplate.LinkTextTemplate != nil {
+			linkTextTemplate := make(map[string]any)
+			linkTextTemplate["text_template"] = linkTemplate.LinkTextTemplate.TextTemplate
+			linkTextTemplates = append(linkTextTemplates, linkTextTemplate)
+		}
+		result["link_text_template"] = linkTextTemplates
 
 		hrefTemplates := make([]any, 0)
 		hrefTemplate := make(map[string]any)
