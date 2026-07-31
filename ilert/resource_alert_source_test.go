@@ -1,11 +1,13 @@
 package ilert
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	ilertapi "github.com/iLert/ilert-go/v3"
 )
 
@@ -82,15 +84,50 @@ func TestTransformAlertSourceResource_BindsTeamNamesByIDNotPosition(t *testing.T
 	}
 }
 
+// testResourceDataForUpdate builds the ResourceData an update sees: the prior
+// state diffed against the new configuration. TestResourceDataRaw has no prior
+// state, so it cannot express an attribute that was removed from the config.
+func testResourceDataForUpdate(t *testing.T, resource *schema.Resource, priorRaw, raw map[string]any) *schema.ResourceData {
+	t.Helper()
+
+	prior := schema.TestResourceDataRaw(t, resource.Schema, priorRaw)
+	prior.SetId("1")
+
+	state := prior.State()
+	resourceSchema := schema.InternalMap(resource.Schema)
+
+	diff, err := resourceSchema.Diff(context.Background(), state, terraform.NewResourceConfigRaw(raw), nil, nil, true)
+	if err != nil {
+		t.Fatalf("unexpected error diffing: %v", err)
+	}
+
+	d, err := resourceSchema.Data(state, diff)
+	if err != nil {
+		t.Fatalf("unexpected error building resource data: %v", err)
+	}
+
+	return d
+}
+
 // Regression for #151: with every team block removed the API only clears teams on
 // an explicit empty array. An omitted or null "teams" field leaves them untouched,
 // so the built payload must carry a non-nil empty slice.
 func TestBuildAlertSource_RemovingAllTeamsSendsEmptyArray(t *testing.T) {
-	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
-		"name":              "test-alert-source",
-		"integration_type":  "API",
-		"escalation_policy": "1",
-	})
+	d := testResourceDataForUpdate(t, resourceAlertSource(),
+		map[string]any{
+			"name":              "test-alert-source",
+			"integration_type":  "API",
+			"escalation_policy": "1",
+			"team": []any{
+				map[string]any{"id": 1, "name": "Team 1"},
+				map[string]any{"id": 2, "name": "Team 2"},
+			},
+		},
+		map[string]any{
+			"name":              "test-alert-source",
+			"integration_type":  "API",
+			"escalation_policy": "1",
+		})
 
 	alertSource, err := buildAlertSource(d)
 	if err != nil {
@@ -110,6 +147,41 @@ func TestBuildAlertSource_RemovingAllTeamsSendsEmptyArray(t *testing.T) {
 	}
 	if !strings.Contains(string(payload), `"teams":[]`) {
 		t.Fatalf("expected payload to contain \"teams\":[], got %s", payload)
+	}
+}
+
+// The empty array must stay scoped to alert sources whose team blocks were
+// actually removed. A config that never declared one is not a statement that the
+// alert source has no teams, so an unrelated update must leave whatever is
+// assigned to it elsewhere alone: the field has to be omitted, not sent empty.
+func TestBuildAlertSource_KeepsTeamsWhenNeverDeclared(t *testing.T) {
+	d := testResourceDataForUpdate(t, resourceAlertSource(),
+		map[string]any{
+			"name":              "test-alert-source",
+			"integration_type":  "API",
+			"escalation_policy": "1",
+		},
+		map[string]any{
+			"name":              "test-alert-source-renamed",
+			"integration_type":  "API",
+			"escalation_policy": "1",
+		})
+
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert source: %v", err)
+	}
+
+	if alertSource.Teams != nil {
+		t.Fatalf("expected teams to be omitted, got %v", alertSource.Teams)
+	}
+
+	payload, err := json.Marshal(alertSource)
+	if err != nil {
+		t.Fatalf("unexpected error marshalling alert source: %v", err)
+	}
+	if !strings.Contains(string(payload), `"teams":null`) {
+		t.Fatalf("expected payload to contain \"teams\":null, got %s", payload)
 	}
 }
 

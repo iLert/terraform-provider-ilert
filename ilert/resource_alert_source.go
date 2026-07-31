@@ -811,9 +811,12 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 			tms = append(tms, tm)
 		}
 		alertSource.Teams = tms
-	} else if _, usesDeprecatedTeams := d.GetOk("teams"); !usesDeprecatedTeams {
+	} else if _, usesDeprecatedTeams := d.GetOk("teams"); !usesDeprecatedTeams && d.HasChange("team") {
 		// All team blocks removed. The API only clears teams on an explicit empty
-		// array; an omitted or null field leaves them untouched.
+		// array; an omitted or null field leaves them untouched. HasChange keeps
+		// this to alert sources whose teams were actually dropped from the config:
+		// without it every update on a config that never declared a team block
+		// would clear the teams assigned to it elsewhere.
 		alertSource.Teams = []ilert.TeamShort{}
 	}
 	if val, ok := d.GetOk("support_hours"); ok {
