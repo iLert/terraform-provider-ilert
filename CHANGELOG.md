@@ -1,5 +1,16 @@
 # Changelog
 
+## 03.08.2026, Version 2.24.0
+
+- **Upgrade note:** `integration_key` and `integration_url` are now marked sensitive on the heartbeat monitor and deployment pipeline, matching the alert source. An `output` referencing one of them fails with `Output refers to sensitive values` until it is annotated with `sensitive = true`. This redacts console and log output only, the values are still stored in plain text in the Terraform state.
+- **Upgrade note:** the alert source `team` block and the team `member` block are now sets, so positional access such as `ilert_team.example.member[0].role` fails with `Cannot index a set value`. Use a `for` expression, `one()` or `tolist()` instead. Existing state needs no migration and `dynamic` blocks are unaffected.
+- **Upgrade note:** an alert source's teams are managed by Terraform only once a `team` block is declared, and removing every block now clears them on the server. Alert sources left inconsistent by the bug fixed below, with the teams dropped from state but still assigned on the server, are not corrected automatically: declare the blocks again, apply, then delete them.
+- mark `integration_key` and `integration_url` on the deployment pipeline resource as sensitive, so they are redacted from plan, apply and `terraform show` output [#152](https://github.com/iLert/terraform-provider-ilert/pull/152)
+- mark `integration_key` and `integration_url` on the heartbeat monitor resource and data source as sensitive [#153](https://github.com/iLert/terraform-provider-ilert/pull/153)
+- fix unstable ordering of team `member` blocks on import and refresh; `member` is now a `TypeSet`, so the order the blocks are declared in no longer matters [#154](https://github.com/iLert/terraform-provider-ilert/pull/154)
+- fix a permanent diff on alert source `team` blocks whose declared order differs from the order the API returns them in: the API sorts teams by id, so the ordered `TypeList` produced a plan that swapped ids back and forth on every run and never converged, even directly after a successful apply. `team` is now a `TypeSet`, and the read binds each configured team `name` to its own team id instead of zipping config and API order by position [#150](https://github.com/iLert/terraform-provider-ilert/issues/150)
+- fix removing every `team` block from an alert source silently doing nothing: the teams were dropped from the Terraform state while remaining assigned on the server. The empty list was omitted from the update payload entirely, and the API only clears teams on an explicit empty array. Removing a subset was unaffected [#151](https://github.com/iLert/terraform-provider-ilert/issues/151)
+
 ## 27.07.2026, Version 2.23.1
 
 - fix email address not updating on `EMAIL`/`EMAIL2` alert sources; the computed `integration_key` (holding the previous value from state) was overwriting the new value from the `email` field on update [#148](https://github.com/iLert/terraform-provider-ilert/pull/148)

@@ -1,9 +1,13 @@
 package ilert
 
 import (
+	"context"
+	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	ilertapi "github.com/iLert/ilert-go/v3"
 )
 
@@ -35,9 +39,169 @@ func TestTransformAlertSourceResource_DoesNotPanicWhenAPIReturnsMoreTeamsThanSta
 		t.Fatalf("unexpected error transforming alert source: %v", err)
 	}
 
-	teams := d.Get("team").([]any)
+	teams := d.Get("team").(*schema.Set).List()
 	if len(teams) != 2 {
 		t.Fatalf("expected 2 teams in state, got %d", len(teams))
+	}
+}
+
+// Regression for #150: the API returns teams sorted by id, which need not match
+// the order they were declared in. The read must bind each configured name to its
+// own team id rather than zipping the two lists by position.
+func TestTransformAlertSourceResource_BindsTeamNamesByIDNotPosition(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+		"name":              "test-alert-source",
+		"integration_type":  "API",
+		"escalation_policy": "1",
+		// declared in the reverse of the order the API returns
+		"team": []any{
+			map[string]any{"id": 2, "name": "Team 2"},
+			map[string]any{"id": 1, "name": "Team 1"},
+		},
+	})
+
+	alertSource := &ilertapi.AlertSource{
+		Name:             "test-alert-source",
+		EscalationPolicy: &ilertapi.EscalationPolicy{ID: 1},
+		Teams: []ilertapi.TeamShort{
+			{ID: 1, Name: "Team 1"},
+			{ID: 2, Name: "Team 2"},
+		},
+	}
+
+	if err := transformAlertSourceResource(alertSource, d); err != nil {
+		t.Fatalf("unexpected error transforming alert source: %v", err)
+	}
+
+	got := make(map[int]string)
+	for _, item := range d.Get("team").(*schema.Set).List() {
+		v := item.(map[string]any)
+		got[v["id"].(int)] = v["name"].(string)
+	}
+
+	if got[1] != "Team 1" || got[2] != "Team 2" {
+		t.Fatalf("team names bound to the wrong ids: %v", got)
+	}
+}
+
+// testResourceDataForUpdate builds the ResourceData an update sees: the prior
+// state diffed against the new configuration. TestResourceDataRaw has no prior
+// state, so it cannot express an attribute that was removed from the config.
+func testResourceDataForUpdate(t *testing.T, resource *schema.Resource, priorRaw, raw map[string]any) *schema.ResourceData {
+	t.Helper()
+
+	prior := schema.TestResourceDataRaw(t, resource.Schema, priorRaw)
+	prior.SetId("1")
+
+	state := prior.State()
+	resourceSchema := schema.InternalMap(resource.Schema)
+
+	diff, err := resourceSchema.Diff(context.Background(), state, terraform.NewResourceConfigRaw(raw), nil, nil, true)
+	if err != nil {
+		t.Fatalf("unexpected error diffing: %v", err)
+	}
+
+	d, err := resourceSchema.Data(state, diff)
+	if err != nil {
+		t.Fatalf("unexpected error building resource data: %v", err)
+	}
+
+	return d
+}
+
+// Regression for #151: with every team block removed the API only clears teams on
+// an explicit empty array. An omitted or null "teams" field leaves them untouched,
+// so the built payload must carry a non-nil empty slice.
+func TestBuildAlertSource_RemovingAllTeamsSendsEmptyArray(t *testing.T) {
+	d := testResourceDataForUpdate(t, resourceAlertSource(),
+		map[string]any{
+			"name":              "test-alert-source",
+			"integration_type":  "API",
+			"escalation_policy": "1",
+			"team": []any{
+				map[string]any{"id": 1, "name": "Team 1"},
+				map[string]any{"id": 2, "name": "Team 2"},
+			},
+		},
+		map[string]any{
+			"name":              "test-alert-source",
+			"integration_type":  "API",
+			"escalation_policy": "1",
+		})
+
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert source: %v", err)
+	}
+
+	if alertSource.Teams == nil {
+		t.Fatal("expected non-nil empty teams slice, got nil (marshals to null, which the API ignores)")
+	}
+	if len(alertSource.Teams) != 0 {
+		t.Fatalf("expected 0 teams, got %d", len(alertSource.Teams))
+	}
+
+	payload, err := json.Marshal(alertSource)
+	if err != nil {
+		t.Fatalf("unexpected error marshalling alert source: %v", err)
+	}
+	if !strings.Contains(string(payload), `"teams":[]`) {
+		t.Fatalf("expected payload to contain \"teams\":[], got %s", payload)
+	}
+}
+
+// The empty array must stay scoped to alert sources whose team blocks were
+// actually removed. A config that never declared one is not a statement that the
+// alert source has no teams, so an unrelated update must leave whatever is
+// assigned to it elsewhere alone: the field has to be omitted, not sent empty.
+func TestBuildAlertSource_KeepsTeamsWhenNeverDeclared(t *testing.T) {
+	d := testResourceDataForUpdate(t, resourceAlertSource(),
+		map[string]any{
+			"name":              "test-alert-source",
+			"integration_type":  "API",
+			"escalation_policy": "1",
+		},
+		map[string]any{
+			"name":              "test-alert-source-renamed",
+			"integration_type":  "API",
+			"escalation_policy": "1",
+		})
+
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert source: %v", err)
+	}
+
+	if alertSource.Teams != nil {
+		t.Fatalf("expected teams to be omitted, got %v", alertSource.Teams)
+	}
+
+	payload, err := json.Marshal(alertSource)
+	if err != nil {
+		t.Fatalf("unexpected error marshalling alert source: %v", err)
+	}
+	if !strings.Contains(string(payload), `"teams":null`) {
+		t.Fatalf("expected payload to contain \"teams\":null, got %s", payload)
+	}
+}
+
+// The deprecated top-level "teams" field must keep working: the empty-array fallback
+// above must not clobber teams supplied through it.
+func TestBuildAlertSource_DeprecatedTeamsFieldNotClobbered(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+		"name":              "test-alert-source",
+		"integration_type":  "API",
+		"escalation_policy": "1",
+		"teams":             []any{1, 2},
+	})
+
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert source: %v", err)
+	}
+
+	if len(alertSource.Teams) != 2 {
+		t.Fatalf("expected 2 teams from the deprecated field, got %d", len(alertSource.Teams))
 	}
 }
 

@@ -48,7 +48,7 @@ The following arguments are supported:
 - `auto_resolution_timeout` - (Optional) The auto resolution timeout. Allowed values are `PT10M`, `PT20M`, `PT30M`, `PT40M`, `PT50M`, `PT60M`, `PT90M`, `PT2H`, `PT3H`, `PT4H`, `PT5H`, `PT6H`, `PT12H`, `PT24H` (`H` means hour and `M` means minute).
 - `email` - (Optional) The email address. This option is required if `integration_type` is `EMAIL2`.
 - `support_hours` - (Optional) A [support_hours](#support-hours-arguments) block. This option is allowed if `alert_priority_rule` is `HIGH_DURING_SUPPORT_HOURS` or `LOW_DURING_SUPPORT_HOURS`.
-- `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks. The order in which the blocks are declared is not significant.
 - `summary_template` - (Optional) A summary [template](#template-arguments) block.
 - `details_template` - (Optional) A details [template](#template-arguments) block.
 - `routing_template` - (Optional) A routing [template](#template-arguments) block.
