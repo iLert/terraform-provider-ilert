@@ -1,5 +1,12 @@
 # Changelog
 
+## 07.08.2026, Version 2.24.1
+
+- **Upgrade note:** the schedule `default_shift_duration` is now computed as well as optional. Removing it from a configuration no longer resets the schedule to the API default, it keeps whatever the API currently reports; set the duration explicitly to change it.
+
+- fix a permanent diff on the deprecated alert source `filter_operator` and `resolve_filter_operator` after an import: the API omits both for every integration type other than `EMAIL`, so the read left them null in state while the schema default filled the configuration with `AND`, and every plan reported `+ filter_operator = "AND"` again. The read now falls back to the default when the API stays silent and state holds no value yet, and a value returned by the API still wins [#158](https://github.com/iLert/terraform-provider-ilert/pull/158)
+- fix the schedule `default_shift_duration` being dropped from state on import, which reported the duration the API returned as a permanent diff on every plan. The attribute is now computed as well as optional, so a configuration that omits it adopts the API value instead of planning it away [#158](https://github.com/iLert/terraform-provider-ilert/pull/158)
+
 ## 03.08.2026, Version 2.24.0
 
 - **Upgrade note:** `integration_key` and `integration_url` are now marked sensitive on the heartbeat monitor and deployment pipeline, matching the alert source. An `output` referencing one of them fails with `Output refers to sensitive values` until it is annotated with `sensitive = true`. This redacts console and log output only, the values are still stored in plain text in the Terraform state.
