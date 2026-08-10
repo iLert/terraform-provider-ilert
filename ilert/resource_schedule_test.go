@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/iLert/ilert-go/v3"
 )
 
@@ -80,6 +81,54 @@ func TestFlattenRestrictionListSorted_SkipsInvalidRestrictionEntries(t *testing.
 	wantOrder := []string{"TUESDAY"}
 	if !reflect.DeepEqual(gotOrder, wantOrder) {
 		t.Fatalf("expected order %v, got %v", wantOrder, gotOrder)
+	}
+}
+
+func TestTransformScheduleResource_KeepsDefaultShiftDurationOnImport(t *testing.T) {
+	// On import there is no configuration to read the duration back from. Dropping it
+	// left the attribute null in state, so an exported configuration naming the duration
+	// the API reported read as a permanent diff on every plan after the import.
+	d := schema.TestResourceDataRaw(t, resourceSchedule().Schema, map[string]any{})
+
+	schedule := &ilert.Schedule{
+		Name:                 "test-schedule",
+		Type:                 ilert.ScheduleType.Static,
+		Timezone:             "Europe/Berlin",
+		DefaultShiftDuration: "PT8H",
+	}
+
+	if err := transformScheduleResource(schedule, d); err != nil {
+		t.Fatalf("unexpected error transforming schedule: %v", err)
+	}
+
+	if got := d.Get("default_shift_duration").(string); got != "PT8H" {
+		t.Fatalf("expected default_shift_duration to be \"PT8H\", got %q", got)
+	}
+}
+
+func TestTransformScheduleResource_DefaultShiftDurationFollowsTheAPI(t *testing.T) {
+	// A configured duration must not survive a change made outside of Terraform, otherwise
+	// the drift never shows up in the plan.
+	d := schema.TestResourceDataRaw(t, resourceSchedule().Schema, map[string]any{
+		"name":                   "test-schedule",
+		"type":                   ilert.ScheduleType.Static,
+		"timezone":               "Europe/Berlin",
+		"default_shift_duration": "PT8H",
+	})
+
+	schedule := &ilert.Schedule{
+		Name:                 "test-schedule",
+		Type:                 ilert.ScheduleType.Static,
+		Timezone:             "Europe/Berlin",
+		DefaultShiftDuration: "PT24H",
+	}
+
+	if err := transformScheduleResource(schedule, d); err != nil {
+		t.Fatalf("unexpected error transforming schedule: %v", err)
+	}
+
+	if got := d.Get("default_shift_duration").(string); got != "PT24H" {
+		t.Fatalf("expected default_shift_duration to follow the API and be \"PT24H\", got %q", got)
 	}
 }
 

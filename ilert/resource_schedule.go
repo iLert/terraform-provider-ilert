@@ -155,8 +155,12 @@ func resourceSchedule() *schema.Resource {
 				Optional: true,
 			},
 			"default_shift_duration": {
-				Type:     schema.TypeString,
+				Type: schema.TypeString,
+				// Computed as well as optional: the API always answers with a duration, and
+				// without this a configuration that leaves the field out would report the
+				// value the API returned as a diff on every plan.
 				Optional: true,
+				Computed: true,
 			},
 			"current_shift": {
 				Type:     schema.TypeList,
@@ -620,11 +624,7 @@ func transformScheduleResource(schedule *ilert.Schedule, d *schema.ResourceData)
 
 	d.Set("show_gaps", schedule.ShowGaps)
 
-	if _, ok := d.GetOk("default_shift_duration"); ok || d.Id() == "" {
-		d.Set("default_shift_duration", schedule.DefaultShiftDuration)
-	} else {
-		d.Set("default_shift_duration", nil)
-	}
+	d.Set("default_shift_duration", schedule.DefaultShiftDuration)
 
 	if schedule.CurrentShift != nil {
 		d.Set("current_shift", []any{
