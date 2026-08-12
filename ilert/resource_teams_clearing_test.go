@@ -271,6 +271,32 @@ func TestBuildEscalationPolicy_DeprecatedTeamsFieldNotClobbered(t *testing.T) {
 	}
 }
 
+// Reading an escalation policy that uses the deprecated top-level "teams" field
+// migrates the assigned teams into the "team" attribute in state (see
+// transformEscalationPolicyResource). Deleting the deprecated field from the
+// configuration therefore leaves state holding teams that the config no longer
+// declares, which has to clear them on the server like removing the blocks does.
+func TestBuildEscalationPolicy_RemovingDeprecatedTeamsFieldSendsEmptyArray(t *testing.T) {
+	d := testResourceDataForUpdate(t, resourceEscalationPolicy(),
+		map[string]any{"name": "test-escalation-policy", "team": []any{
+			map[string]any{"id": 1, "name": "Team 1"},
+			map[string]any{"id": 2, "name": "Team 2"},
+		}},
+		map[string]any{"name": "test-escalation-policy"})
+
+	escalationPolicy, err := buildEscalationPolicy(d)
+	if err != nil {
+		t.Fatalf("unexpected error building escalation policy: %v", err)
+	}
+
+	if escalationPolicy.Teams == nil {
+		t.Fatalf("expected teams to be set to an empty array, got no teams field")
+	}
+	if len(escalationPolicy.Teams) != 0 {
+		t.Fatalf("expected teams to be empty, got %v", escalationPolicy.Teams)
+	}
+}
+
 // Removing a subset of the team blocks must keep sending the remaining ones.
 func TestBuildResources_RemovingSomeTeamsSendsTheRest(t *testing.T) {
 	for _, tc := range teamsBuildCases() {
