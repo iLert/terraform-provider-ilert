@@ -303,7 +303,14 @@ func buildEventFlow(d *schema.ResourceData) (*ilert.EventFlow, error) {
 			}
 			tms = append(tms, tm)
 		}
-		eventFlow.Teams = tms
+		eventFlow.Teams = &tms
+	} else if d.HasChange("team") {
+		// All team blocks removed. The API only clears teams on an explicit empty
+		// array; an omitted field leaves them untouched. HasChange keeps this to
+		// event flows whose teams were actually dropped from the config: without
+		// it every update on a config that never declared a team block would
+		// clear the teams assigned to it elsewhere.
+		eventFlow.Teams = &[]ilert.TeamShort{}
 	}
 
 	if val, ok := d.GetOk("root_node"); ok {

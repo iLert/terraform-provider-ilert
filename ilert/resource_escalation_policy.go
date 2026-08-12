@@ -297,6 +297,13 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 			tms = append(tms, tm)
 		}
 		escalationPolicy.Teams = tms
+	} else if _, usesDeprecatedTeams := d.GetOk("teams"); !usesDeprecatedTeams && d.HasChange("team") {
+		// All team blocks removed. The API only clears teams on an explicit empty
+		// array; an omitted or null field leaves them untouched. HasChange keeps
+		// this to escalation policies whose teams were actually dropped from the
+		// config: without it every update on a config that never declared a team
+		// block would clear the teams assigned to it elsewhere.
+		escalationPolicy.Teams = []ilert.TeamShort{}
 	}
 
 	if val, ok := d.GetOk("repeating"); ok {

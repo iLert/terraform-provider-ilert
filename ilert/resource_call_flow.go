@@ -429,7 +429,14 @@ func buildCallFlow(d *schema.ResourceData) (*ilert.CallFlow, error) {
 			}
 			tms = append(tms, tm)
 		}
-		callFlow.Teams = tms
+		callFlow.Teams = &tms
+	} else if d.HasChange("team") {
+		// All team blocks removed. The API only clears teams on an explicit empty
+		// array; an omitted field leaves them untouched. HasChange keeps this to
+		// call flows whose teams were actually dropped from the config: without
+		// it every update on a config that never declared a team block would
+		// clear the teams assigned to it elsewhere.
+		callFlow.Teams = &[]ilert.TeamShort{}
 	}
 
 	if val, ok := d.GetOk("root_node"); ok {
