@@ -30,7 +30,7 @@ The following arguments are supported:
 - `description` - (Optional) The description of the service.
 - `one_open_incident_only` - (Optional) Indicates whether or not only one incident should be opened. Default: `false`
 - `show_uptime_history` - (Optional) Indicates whether or not the uptime history should be shown. Default: `true`
-- `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks. The order in which the blocks are declared is not significant.
 
 #### Team Arguments
 

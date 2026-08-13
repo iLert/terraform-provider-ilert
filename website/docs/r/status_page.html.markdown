@@ -61,7 +61,7 @@ The following arguments are supported:
 - `page_description` - (Optional) The description of the status page.
 - `page_layout` - (Optional) The layout of the status page. Allowed values are `SINGLE_COLUMN` and `RESPONSIVE`.
 - `logo_redirect_url` - (Optional) The redirect url for the status page logo.
-- `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks. The order in which the blocks are declared is not significant.
 - `ip_whitelist` - (Optional) One or more IP's to whitelist.
 - `account_wide_view` - (Optional) Indicates whether or not the status page should be shown account wide.
 - `structure` - (Optional) A [structure](#structure-arguments) block.

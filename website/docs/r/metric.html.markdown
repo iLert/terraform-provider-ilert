@@ -51,7 +51,7 @@ The following arguments are supported:
 - `lock_y_axis_min` - (Optional) The minimum value at which the graph is locked.
 - `mouse_over_decimal` - (Optional) Determines how many decimals are shown when hovering over the graph.
 - `show_values_on_mouse_over` - (Optional) Indicates whether or not values will be shown when hovering over the graph.
-- `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks. The order in which the blocks are declared is not significant.
 - `unit_label` - (Optional) The unit label of the metric.
 - `metadata` - (Optional, Required with `data_source`) A [metadata](#metadata-arguments) block.
 - `data_source` - (Optional, Required with `metadata`) A [data source](#data-source-arguments) block.

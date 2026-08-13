@@ -43,7 +43,7 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the metric data source.
 - `type` - (Optional) The provider type of the metric data source. Allowed values are `DATADOG`, `PROMETHEUS`.
-- `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks. The order in which the blocks are declared is not significant.
 - `metadata` - (Optional) A [metadata](#metadata-arguments) block.
 
 #### Team Arguments
