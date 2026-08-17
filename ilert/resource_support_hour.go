@@ -23,7 +23,10 @@ func resourceSupportHour() *schema.Resource {
 				ValidateFunc: validation.StringLenBetween(1, 255),
 			},
 			"team": {
-				Type:     schema.TypeList,
+				// TypeSet, not TypeList: the API returns teams sorted by id, so an
+				// ordered list produces a permanent diff whenever the config order
+				// differs from that.
+				Type:     schema.TypeSet,
 				Optional: true,
 				MinItems: 1,
 				Elem: &schema.Resource{
@@ -160,7 +163,7 @@ func buildSupportHour(d *schema.ResourceData) (*ilert.SupportHour, error) {
 	}
 
 	if val, ok := d.GetOk("team"); ok {
-		vL := val.([]any)
+		vL := val.(*schema.Set).List()
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
 			v := m.(map[string]any)

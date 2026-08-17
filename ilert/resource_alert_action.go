@@ -609,7 +609,10 @@ func resourceAlertAction() *schema.Resource {
 				},
 			},
 			"team": {
-				Type:     schema.TypeList,
+				// TypeSet, not TypeList: the API returns teams sorted by id, so an
+				// ordered list produces a permanent diff whenever the config order
+				// differs from that.
+				Type:     schema.TypeSet,
 				Optional: true,
 				MinItems: 1,
 				Elem: &schema.Resource{
@@ -1010,7 +1013,7 @@ func buildAlertAction(d *schema.ResourceData) (*ilert.AlertAction, error) {
 	}
 
 	if val, ok := d.GetOk("team"); ok {
-		vL := val.([]any)
+		vL := val.(*schema.Set).List()
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
 			v := m.(map[string]any)
@@ -1112,7 +1115,7 @@ func resourceAlertActionRead(ctx context.Context, d *schema.ResourceData, m any)
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		version := 2
 		if val, ok := d.GetOk("alert_source"); ok && len(val.([]any)) == 1 {
-			if val, ok := d.GetOk("team"); !ok || len(val.([]any)) == 0 {
+			if val, ok := d.GetOk("team"); !ok || val.(*schema.Set).Len() == 0 {
 				if val, ok := d.GetOk("conditions"); !ok || len(val.(string)) == 0 {
 					version = 1
 				}
@@ -1449,7 +1452,7 @@ func transformAlertActionResource(alertAction *ilert.AlertActionOutput, d *schem
 	d.Set("not_resolved_delay_sec", alertAction.NotResolvedDelaySec)
 
 	if val, ok := d.GetOk("alert_source"); ok && len(val.([]any)) == 1 && d.Id() != "" {
-		if v, ok := d.GetOk("team"); !ok || len(v.([]any)) == 0 {
+		if v, ok := d.GetOk("team"); !ok || v.(*schema.Set).Len() == 0 {
 			if len(alertAction.AlertSourceIDs) == 0 {
 				d.Set("alert_source", []any{})
 			} else {

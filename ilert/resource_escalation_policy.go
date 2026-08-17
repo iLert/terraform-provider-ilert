@@ -109,7 +109,10 @@ func resourceEscalationPolicy() *schema.Resource {
 				},
 			},
 			"team": {
-				Type:     schema.TypeList,
+				// TypeSet, not TypeList: the API returns teams sorted by id, so an
+				// ordered list produces a permanent diff whenever the config order
+				// differs from that.
+				Type:     schema.TypeSet,
 				Optional: true,
 				MinItems: 1,
 				Elem: &schema.Resource{
@@ -284,7 +287,7 @@ func buildEscalationPolicy(d *schema.ResourceData) (*ilert.EscalationPolicy, err
 	}
 
 	if val, ok := d.GetOk("team"); ok {
-		vL := val.([]any)
+		vL := val.(*schema.Set).List()
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
 			v := m.(map[string]any)
@@ -527,24 +530,27 @@ func transformEscalationPolicyResource(escalationPolicy *ilert.EscalationPolicy,
 
 	if val, ok := d.GetOk("team"); ok {
 		if val != nil {
-			vL := val.([]any)
+			// Match the config by team id, not by position: the API returns teams
+			// sorted by id, which need not match the order they were declared in.
+			requestedTeamNames := make(map[int64]bool)
+			for _, m := range val.(*schema.Set).List() {
+				v, ok := m.(map[string]any)
+				if !ok || v["name"] == nil {
+					continue
+				}
+				if vName, ok := v["name"].(string); ok && vName != "" {
+					requestedTeamNames[int64(v["id"].(int))] = true
+				}
+			}
+
 			teams := make([]any, 0)
-			for i, item := range escalationPolicy.Teams {
+			for _, item := range escalationPolicy.Teams {
 				team := make(map[string]any)
 				team["id"] = item.ID
 
-				var requestedTeamName string
-				if i < len(vL) && vL[i] != nil {
-					if v, ok := vL[i].(map[string]any); ok && v["name"] != nil {
-						if vName, ok := v["name"].(string); ok {
-							requestedTeamName = vName
-						}
-					}
-				}
-
 				// Means: if server response has a name set, and the user typed in a name too,
 				// only then team name is stored in the terraform state
-				if item.Name != "" && requestedTeamName != "" {
+				if item.Name != "" && requestedTeamNames[item.ID] {
 					team["name"] = item.Name
 				}
 				teams = append(teams, team)

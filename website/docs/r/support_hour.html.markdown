@@ -50,7 +50,7 @@ resource "ilert_support_hour" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the support hour.
-- `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks. The order in which the blocks are declared is not significant.
 - `timezone` - (Required) The timezone of the support hours (IANA tz database names) e.g. `America/Los_Angeles` or `Europe/Zurich`.
 - `support_days` - The [support days](#support-days-arguments) block of the support hours.
 - `exception` - (Optional) One or more [exception](#exception-arguments) blocks.

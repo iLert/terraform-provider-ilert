@@ -40,7 +40,7 @@ resource "ilert_event_flow" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the event flow.
-- `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks. The order in which the blocks are declared is not significant.
 - `root_node` - (Required) A single [node](#node-arguments) block defining the root of the event flow.
 
 #### Team Arguments

@@ -37,7 +37,7 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the escalation policy.
 - `escalation_rule` - (Required) One or more [escalation rule](#escalation-rule-arguments) blocks.
-- `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks. The order in which the blocks are declared is not significant.
 - `repeating` - (Optional) Indicates whether or not the escalation policy will repeat. Default: `true`.
 - `frequency` - (Optional) The number of times the escalation policy will repeat after reaching the end of its escalation. This option is allowed if `repeating` is `true`. Must be between `1..9`, Default: `1`.
 - `delay_min` - (Optional) Delay in minutes after which the alert gets assigned to somebody after creation. Must be between `0..15`, Default: `0`.

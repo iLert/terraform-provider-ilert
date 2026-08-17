@@ -30,7 +30,7 @@ The following arguments are supported:
 - `summary` - (Required) The summary of the incident.
 - `message` - (Optional) The message of the incident.
 - `send_notification` - (Optional) Indicates whether or not notifications should be sent.
-- `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks. The order in which the blocks are declared is not significant.
 
 #### Team Arguments
 

@@ -51,7 +51,7 @@ The following arguments are supported:
 - `interval_sec` - (Required) The interval in seconds of the heartbeat monitor. Minimum value: 25.
 - `alert_summary` - (Optional) The summary of the heartbeat monitor alert.
 - `alert_source` - (Optional) One [alert-source](#alert-source-arguments) block.
-- `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks. The order in which the blocks are declared is not significant.
 - `state` - (Computed) The state of the heartbeat monitor.
 - `created_at` - (Computed) The creation date of the heartbeat monitor.
 - `updated_at` - (Computed) The latest date the heartbeat monitor was updated at.

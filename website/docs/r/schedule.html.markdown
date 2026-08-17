@@ -71,7 +71,7 @@ The following arguments are supported:
 - `default_shift_duration` - (Optional, Computed) The default duration of a shift, as an ISO 8601 duration such as `PT8H`. Defaults to the duration reported by the API when it is not set.
 - `current_shift` - (Optional) A [shift](#shift-arguments) block.
 - `next_shift` - (Optional) A [shift](#shift-arguments) block.
-- `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks. The order in which the blocks are declared is not significant.
 
 #### Schedule Layer Arguments
 

@@ -30,7 +30,7 @@ The following arguments are supported:
 - `name` - (Required) The name of the deployment pipeline.
 - `integration_type` - (Required) The integration type of the deployment pipeline. Allowed values are `GITHUB`, `GITLAB` or `API`.
 - `integration_key` - (Computed) The integration key of the deployment pipeline.
-- `team` - (Optional) One or more [team](#team-arguments) blocks.
+- `team` - (Optional) One or more [team](#team-arguments) blocks. The order in which the blocks are declared is not significant.
 - `created_at` - (Computed) The creation date of the deployment pipeline.
 - `updated_at` - (Computed) The latest date the deployment pipeline was updated at.
 - `integration_url` - (Computed) The integration url of the deployment pipeline. Deployment events are sent to this URL.

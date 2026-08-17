@@ -36,7 +36,7 @@ func TestTransformEscalationPolicyResource_DoesNotPanicWhenAPIReturnsMoreTeamsTh
 		t.Fatalf("unexpected error transforming escalation policy: %v", err)
 	}
 
-	teams := d.Get("team").([]any)
+	teams := d.Get("team").(*schema.Set).List()
 	if len(teams) != 2 {
 		t.Fatalf("expected 2 teams in state, got %d", len(teams))
 	}

@@ -48,7 +48,10 @@ func resourceService() *schema.Resource {
 				Default:  true,
 			},
 			"team": {
-				Type:     schema.TypeList,
+				// TypeSet, not TypeList: the API returns teams sorted by id, so an
+				// ordered list produces a permanent diff whenever the config order
+				// differs from that.
+				Type:     schema.TypeSet,
 				Optional: true,
 				MinItems: 1,
 				Elem: &schema.Resource{
@@ -111,7 +114,7 @@ func buildService(d *schema.ResourceData) (*ilert.Service, error) {
 	}
 
 	if val, ok := d.GetOk("team"); ok {
-		vL := val.([]any)
+		vL := val.(*schema.Set).List()
 		tms := make([]ilert.TeamShort, 0)
 		for _, m := range vL {
 			v := m.(map[string]any)
@@ -347,17 +350,27 @@ func flattenTeamShortList(list []ilert.TeamShort, d *schema.ResourceData) ([]any
 	}
 	results := make([]any, 0)
 	if val, ok := d.GetOk("team"); ok && val != nil {
-		vL := val.([]any)
-		for i, item := range list {
-			if vL != nil && i < len(vL) && vL[i] != nil {
-				result := make(map[string]any)
-				v := vL[i].(map[string]any)
-				result["id"] = item.ID
-				if item.Name != "" && v["name"] != nil && v["name"].(string) != "" {
-					result["name"] = item.Name
-				}
-				results = append(results, result)
+		// Match the config by team id, not by position: the API returns teams
+		// sorted by id, which need not match the order they were declared in.
+		requestedTeamNames := make(map[int64]bool)
+		for _, m := range val.(*schema.Set).List() {
+			v, ok := m.(map[string]any)
+			if !ok || v["name"] == nil {
+				continue
 			}
+			if vName, ok := v["name"].(string); ok && vName != "" {
+				requestedTeamNames[int64(v["id"].(int))] = true
+			}
+		}
+		for _, item := range list {
+			result := make(map[string]any)
+			result["id"] = item.ID
+			// Means: if server response has a name set, and the user typed in a name too,
+			// only then team name is stored in the terraform state
+			if item.Name != "" && requestedTeamNames[item.ID] {
+				result["name"] = item.Name
+			}
+			results = append(results, result)
 		}
 	} else if d.Id() == "" {
 		for _, item := range list {
