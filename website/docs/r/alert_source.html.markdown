@@ -53,7 +53,7 @@ The following arguments are supported:
 - `details_template` - (Optional) A details [template](#template-arguments) block.
 - `routing_template` - (Optional) A routing [template](#template-arguments) block.
 - `alert_key_template` - (Optional) An alert key [template](#template-arguments) block.
-- `link_template` - (Optional) One or more [link template](#link-template-arguments) block.
+- `link_template` - (Optional) One or more [link template](#link-template-arguments) blocks (up to 10).
 - `priority_template` - (Optional) A [priority template](#priority-template-arguments) block.
 - `severity_template` - (Optional) A [severity template](#severity-template-arguments) block. Used for dynamic severity mapping, extracting a severity from an alert field.
 - `severity` - (Optional) The default severity applied to alerts of this alert source. Given as an integer `1`-`5`, mapping to `SEV1`-`SEV5`.
@@ -105,8 +105,11 @@ The following arguments are supported:
 
 #### Link template Arguments
 
-- `text` - (Required) The display name for the link.
+- `link_text_template` - (Optional) A [template](#template-arguments) block rendering the display name for the link.
+- `text` - (Optional, **Deprecated**) A static display name for the link. Superseded by `link_text_template`, kept as a fallback for existing configurations.
 - `href_template` - (Required) A [template](#template-arguments) block.
+
+At least one of `link_text_template` or `text` must be set, otherwise the API rejects the alert source. If both are set, `link_text_template` takes precedence when the link is rendered.
 
 #### Priority template Arguments
 

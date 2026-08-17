@@ -503,3 +503,129 @@ func TestBuildAlertSource_NonEmailKeepsIntegrationKey(t *testing.T) {
 		t.Fatalf("expected integration key %q, got %q", "server-generated-key", alertSource.IntegrationKey)
 	}
 }
+
+func TestBuildAlertSource_LinkTemplates(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+		"name":              "test-alert-source",
+		"integration_type":  "API",
+		"escalation_policy": "1",
+		"link_template": []any{
+			map[string]any{
+				"link_text_template": []any{
+					map[string]any{"text_template": "Open {{ alert.id }}"},
+				},
+				"href_template": []any{
+					map[string]any{"text_template": "https://example.com/a"},
+				},
+			},
+			map[string]any{
+				"text": "Static link",
+				"href_template": []any{
+					map[string]any{"text_template": "https://example.com/b"},
+				},
+			},
+		},
+	})
+
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert source: %v", err)
+	}
+
+	if len(alertSource.LinkTemplates) != 2 {
+		t.Fatalf("expected 2 link templates, got %d", len(alertSource.LinkTemplates))
+	}
+
+	// templatable display name is sent as linkTextTemplate, the deprecated text stays empty
+	first := alertSource.LinkTemplates[0]
+	if first.Text != "" {
+		t.Fatalf("expected first link template text empty, got %q", first.Text)
+	}
+	if first.LinkTextTemplate == nil || first.LinkTextTemplate.TextTemplate != "Open {{ alert.id }}" {
+		t.Fatalf("unexpected first link text template: %+v", first.LinkTextTemplate)
+	}
+	if first.HrefTemplate == nil || first.HrefTemplate.TextTemplate != "https://example.com/a" {
+		t.Fatalf("unexpected first href template: %+v", first.HrefTemplate)
+	}
+
+	// the deprecated text is still sent as the legacy fallback
+	second := alertSource.LinkTemplates[1]
+	if second.Text != "Static link" {
+		t.Fatalf("expected second link template text %q, got %q", "Static link", second.Text)
+	}
+	if second.LinkTextTemplate != nil {
+		t.Fatalf("expected second link text template to be nil, got %+v", second.LinkTextTemplate)
+	}
+}
+
+// The API rejects link templates without a display name. Building must fail with
+// a clear error instead of sending a request that comes back as a 400.
+func TestBuildAlertSource_LinkTemplateWithoutDisplayNameErrors(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+		"name":              "test-alert-source",
+		"integration_type":  "API",
+		"escalation_policy": "1",
+		"link_template": []any{
+			map[string]any{
+				"href_template": []any{
+					map[string]any{"text_template": "https://example.com/a"},
+				},
+			},
+		},
+	})
+
+	if _, err := buildAlertSource(d); err == nil {
+		t.Fatalf("expected an error for a link template without a display name")
+	}
+}
+
+func TestFlattenLinkTemplatesList(t *testing.T) {
+	// nil link templates flatten to an empty result
+	empty, err := flattenLinkTemplatesList(nil)
+	if err != nil {
+		t.Fatalf("unexpected error flattening nil link templates: %v", err)
+	}
+	if len(empty) != 0 {
+		t.Fatalf("expected empty result for nil link templates, got %d", len(empty))
+	}
+
+	linkTemplates := []ilertapi.LinkTemplate{
+		{
+			LinkTextTemplate: &ilertapi.Template{TextTemplate: "Open {{ alert.id }}"},
+			HrefTemplate:     &ilertapi.Template{TextTemplate: "https://example.com/a"},
+		},
+		{
+			Text:         "Static link",
+			HrefTemplate: &ilertapi.Template{TextTemplate: "https://example.com/b"},
+		},
+	}
+
+	result, err := flattenLinkTemplatesList(linkTemplates)
+	if err != nil {
+		t.Fatalf("unexpected error flattening link templates: %v", err)
+	}
+	if len(result) != 2 {
+		t.Fatalf("expected 2 flattened blocks, got %d", len(result))
+	}
+
+	first := result[0].(map[string]any)
+	if got := first["text"]; got != "" {
+		t.Fatalf("expected first text empty, got %v", got)
+	}
+	firstLinkText := first["link_text_template"].([]any)
+	if len(firstLinkText) != 1 {
+		t.Fatalf("expected 1 link_text_template, got %d", len(firstLinkText))
+	}
+	if got := firstLinkText[0].(map[string]any)["text_template"]; got != "Open {{ alert.id }}" {
+		t.Fatalf("unexpected link_text_template: %v", got)
+	}
+
+	// a link template using the deprecated text flattens without a link_text_template block
+	second := result[1].(map[string]any)
+	if got := second["text"]; got != "Static link" {
+		t.Fatalf("expected second text %q, got %v", "Static link", got)
+	}
+	if got := second["link_text_template"].([]any); len(got) != 0 {
+		t.Fatalf("expected no link_text_template for a legacy link template, got %v", got)
+	}
+}
