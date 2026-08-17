@@ -239,6 +239,62 @@ func TestTransformAlertSourceResource_DoesNotClobberFilterOperatorDefaultWhenAPI
 	}
 }
 
+func TestTransformAlertSourceResource_FillsFilterOperatorDefaultOnImport(t *testing.T) {
+	// On import there is no prior state to fall back on. Leaving the deprecated
+	// filter operators unset leaves them null in state while the schema default
+	// fills the configuration with "AND", which reads as a permanent
+	// "+ filter_operator = AND" diff on every plan after the import.
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{})
+
+	alertSource := &ilertapi.AlertSource{
+		Name: "test-alert-source",
+		EscalationPolicy: &ilertapi.EscalationPolicy{
+			ID: 1,
+		},
+		IntegrationType:       "EMAIL2",
+		FilterOperator:        "",
+		ResolveFilterOperator: "",
+	}
+
+	if err := transformAlertSourceResource(alertSource, d); err != nil {
+		t.Fatalf("unexpected error transforming alert source: %v", err)
+	}
+
+	if got := d.Get("filter_operator").(string); got != "AND" {
+		t.Fatalf("expected filter_operator to default to \"AND\", got %q", got)
+	}
+	if got := d.Get("resolve_filter_operator").(string); got != "AND" {
+		t.Fatalf("expected resolve_filter_operator to default to \"AND\", got %q", got)
+	}
+}
+
+func TestTransformAlertSourceResource_KeepsFilterOperatorReturnedByAPI(t *testing.T) {
+	// Email sources do carry the deprecated operators, and a value the API
+	// returns always wins over the schema default.
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{})
+
+	alertSource := &ilertapi.AlertSource{
+		Name: "test-alert-source",
+		EscalationPolicy: &ilertapi.EscalationPolicy{
+			ID: 1,
+		},
+		IntegrationType:       "EMAIL",
+		FilterOperator:        "OR",
+		ResolveFilterOperator: "OR",
+	}
+
+	if err := transformAlertSourceResource(alertSource, d); err != nil {
+		t.Fatalf("unexpected error transforming alert source: %v", err)
+	}
+
+	if got := d.Get("filter_operator").(string); got != "OR" {
+		t.Fatalf("expected filter_operator to stay \"OR\", got %q", got)
+	}
+	if got := d.Get("resolve_filter_operator").(string); got != "OR" {
+		t.Fatalf("expected resolve_filter_operator to stay \"OR\", got %q", got)
+	}
+}
+
 func TestFlattenSeverityTemplate(t *testing.T) {
 	// nil severity template flattens to an empty result
 	empty, err := flattenSeverityTemplate(nil)

@@ -1428,15 +1428,20 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 	d.Set("auto_resolution_timeout", alertSource.AutoResolutionTimeout)
 	d.Set("email_filtered", alertSource.EmailFiltered)
 	d.Set("email_resolve_filtered", alertSource.EmailResolveFiltered)
-	// Only set when the API returns a value. These deprecated fields apply to
-	// EMAIL sources only; for other integration types the API returns an empty
-	// value which would clobber the schema default ("AND") and cause a
-	// perpetual "+ filter_operator = AND" diff on every plan.
+	// These deprecated fields apply to EMAIL sources only; for other integration
+	// types the API returns an empty value. Writing that empty value clobbers the
+	// schema default ("AND") and causes a perpetual "+ filter_operator = AND"
+	// diff, and so does leaving state untouched on import, so fall back to the
+	// default whenever the API stays silent and state holds nothing yet.
 	if alertSource.FilterOperator != "" {
 		d.Set("filter_operator", alertSource.FilterOperator)
+	} else if _, ok := d.GetOk("filter_operator"); !ok {
+		d.Set("filter_operator", "AND")
 	}
 	if alertSource.ResolveFilterOperator != "" {
 		d.Set("resolve_filter_operator", alertSource.ResolveFilterOperator)
+	} else if _, ok := d.GetOk("resolve_filter_operator"); !ok {
+		d.Set("resolve_filter_operator", "AND")
 	}
 	d.Set("status", alertSource.Status)
 	d.Set("integration_key", alertSource.IntegrationKey)
