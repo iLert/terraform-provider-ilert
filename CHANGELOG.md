@@ -1,5 +1,10 @@
 # Changelog
 
+## 17.08.2026, Version 2.25.0
+
+- **Upgrade note:** the teams of a service, heartbeat monitor, escalation policy, support hour, incident template, schedule, status page, event flow and call flow are managed by Terraform only once a `team` block is declared, and removing every block now clears them on the server. The same applies to the escalation policy's deprecated `teams` attribute: deleting it from the configuration now clears the teams instead of silently leaving them assigned. This matches the alert source behaviour shipped in 2.24.0. Resources left inconsistent by the bug fixed below, with the teams dropped from state but still assigned on the server, are not corrected automatically: declare the blocks again, apply, then delete them.
+- fix removing every `team` block from a service, heartbeat monitor, escalation policy, support hour, incident template, schedule, status page, event flow or call flow silently doing nothing: the teams were dropped from the Terraform state while remaining assigned on the server, and the apply was reported as successful. The empty list was omitted from the update payload entirely, and the API only clears teams on an explicit empty array. Removing a subset was unaffected. Same bug as the alert source one fixed in 2.24.0 [#159](https://github.com/iLert/terraform-provider-ilert/pull/159)
+
 ## 03.08.2026, Version 2.24.0
 
 - **Upgrade note:** `integration_key` and `integration_url` are now marked sensitive on the heartbeat monitor and deployment pipeline, matching the alert source. An `output` referencing one of them fails with `Output refers to sensitive values` until it is annotated with `sensitive = true`. This redacts console and log output only, the values are still stored in plain text in the Terraform state.

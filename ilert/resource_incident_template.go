@@ -111,6 +111,13 @@ func buildIncidentTemplate(d *schema.ResourceData) (*ilert.IncidentTemplate, err
 			tms = append(tms, tm)
 		}
 		incidentTemplate.Teams = tms
+	} else if d.HasChange("team") {
+		// All team blocks removed. The API only clears teams on an explicit empty
+		// array; an omitted or null field leaves them untouched. HasChange keeps
+		// this to incident templates whose teams were actually dropped from the
+		// config: without it every update on a config that never declared a team
+		// block would clear the teams assigned to it elsewhere.
+		incidentTemplate.Teams = []ilert.TeamShort{}
 	}
 
 	return incidentTemplate, nil

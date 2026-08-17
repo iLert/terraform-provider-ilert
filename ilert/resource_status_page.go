@@ -350,6 +350,13 @@ func buildStatusPage(d *schema.ResourceData) (*ilert.StatusPage, error) {
 			tms = append(tms, tm)
 		}
 		statusPage.Teams = tms
+	} else if d.HasChange("team") {
+		// All team blocks removed. The API only clears teams on an explicit empty
+		// array; an omitted or null field leaves them untouched. HasChange keeps
+		// this to status pages whose teams were actually dropped from the config:
+		// without it every update on a config that never declared a team block
+		// would clear the teams assigned to it elsewhere.
+		statusPage.Teams = []ilert.TeamShort{}
 	}
 
 	if val, ok := d.GetOk("service"); ok {

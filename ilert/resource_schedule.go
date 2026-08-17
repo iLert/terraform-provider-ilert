@@ -399,6 +399,13 @@ func buildSchedule(d *schema.ResourceData) (*ilert.Schedule, error) {
 			tms = append(tms, tm)
 		}
 		schedule.Teams = tms
+	} else if d.HasChange("team") {
+		// All team blocks removed. The API only clears teams on an explicit empty
+		// array; an omitted or null field leaves them untouched. HasChange keeps
+		// this to schedules whose teams were actually dropped from the config:
+		// without it every update on a config that never declared a team block
+		// would clear the teams assigned to it elsewhere.
+		schedule.Teams = []ilert.TeamShort{}
 	}
 
 	return schedule, nil

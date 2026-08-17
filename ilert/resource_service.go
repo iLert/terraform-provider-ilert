@@ -124,6 +124,13 @@ func buildService(d *schema.ResourceData) (*ilert.Service, error) {
 			tms = append(tms, tm)
 		}
 		service.Teams = tms
+	} else if d.HasChange("team") {
+		// All team blocks removed. The API only clears teams on an explicit empty
+		// array; an omitted or null field leaves them untouched. HasChange keeps
+		// this to services whose teams were actually dropped from the config:
+		// without it every update on a config that never declared a team block
+		// would clear the teams assigned to it elsewhere.
+		service.Teams = []ilert.TeamShort{}
 	}
 
 	return service, nil
