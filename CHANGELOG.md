@@ -1,5 +1,9 @@
 # Changelog
 
+## 01.09.2026, Version 2.26.0
+
+- add `purchase_seat` to the `ilert_user` resource. Creating a user on an account whose licenses are all in use fails with `QUOTA_EXCEEDED`; with `purchase_seat = true` the API buys a license instead of checking the quota, which charges the account, prorated for the rest of the billing period. The purchase is unconditional, so a user created with the argument set while the account still has free licenses buys one anyway. The argument defaults to `false` and is only read when the user is created, so no existing configuration ever spends money and the opt-in has to be written per user resource, which is the explicit consent for the charge. The account needs an active paid subscription and seat purchase by admins enabled in its billing settings [#161](https://github.com/iLert/terraform-provider-ilert/pull/161)
+
 ## 17.08.2026, Version 2.25.0
 
 - **Upgrade note:** the teams of a service, heartbeat monitor, escalation policy, support hour, incident template, schedule, status page, event flow and call flow are managed by Terraform only once a `team` block is declared, and removing every block now clears them on the server. The same applies to the escalation policy's deprecated `teams` attribute when the resource's state mirrors those teams into `team`, which is the case for state written by earlier provider versions: deleting the attribute now clears them instead of silently leaving them assigned. A resource created with this version through `teams` does not mirror them into `team`, so deleting the attribute leaves the teams assigned; declare `team` blocks to manage them. This matches the alert source behaviour shipped in 2.24.0. Resources left inconsistent by the bug fixed below, with the teams dropped from state but still assigned on the server, are not corrected automatically: declare the blocks again, apply, then delete them.
