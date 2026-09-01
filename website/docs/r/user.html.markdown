@@ -35,6 +35,7 @@ The following arguments are supported:
 - `role` - (Optional) The user's role. Allowed values are `ADMIN`, `USER`, `RESPONDER`, `STAKEHOLDER`, `GUEST` or `VIEWER`. Default: `USER`
 - `shift_color` - (Optional) The hex code for the user's shift color.
 - `send_no_invitation` - (Optional) Boolean whether an invitation email notification is sent to the user. Defaults to `false`.
+- `purchase_seat` - (Optional) Boolean whether a license is bought for this user instead of checking the account's license quota. Defaults to `false`, so no configuration ever spends money unless this argument is written explicitly; creating a user beyond the licensed quota then fails with `QUOTA_EXCEEDED` and the apply stops. **Setting this to `true` buys a license and charges the account** at the price of the account's current plan, prorated for the rest of the billing period, and the license is not released when the user is deleted again. The purchase is unconditional: the API does not check whether a free seat is available first, so a user created with `purchase_seat = true` while the account still has free licenses buys one anyway. Only set it on a user that the account has no license for. The account also needs an active paid subscription and seat purchase by admins enabled in its billing settings, otherwise the apply fails. Only read when the user is created: changing it on an existing user has no effect, and removing the argument later refunds nothing.
 
 ## Attributes Reference
 
