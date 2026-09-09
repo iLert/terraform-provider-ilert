@@ -30,5 +30,10 @@ The following arguments are supported:
 - `name` - The name of the found service.
 - `alias` - The alias of the found service.
 - `status` - The status of the found service.
+- `public_status` - The status shown for the found service on status pages.
+- `description` - The description of the found service.
+- `icon_url` - The URL of the icon shown for the found service.
+- `labels` - The labels assigned to the found service.
+- `link` - The links displayed on the found service, each with an `href` and a `text`.
 
 [1]: https://api.ilert.com/api-docs/#tag/Services

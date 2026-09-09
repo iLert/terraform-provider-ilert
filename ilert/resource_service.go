@@ -47,6 +47,39 @@ func resourceService() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"labels": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"icon_url": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"link": {
+				// TypeList, not TypeSet: the API preserves the order the links were
+				// sent in and displays them in it, so the order is meaningful here.
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"text": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
+			"public_status": {
+				// the status shown on status pages, derived by the API from the service
+				// status
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"team": {
 				// TypeSet, not TypeList: the API returns teams sorted by id, so an
 				// ordered list produces a permanent diff whenever the config order
@@ -112,6 +145,45 @@ func buildService(d *schema.ResourceData) (*ilert.Service, error) {
 	if val, ok := d.GetOk("show_uptime_history"); ok {
 		service.ShowUptimeHistory = val.(bool)
 	}
+
+	if val, ok := d.GetOk("icon_url"); ok {
+		service.IconUrl = val.(string)
+	}
+
+	if val, ok := d.GetOk("labels"); ok {
+		labels := make(map[string]string)
+		for k, v := range val.(map[string]any) {
+			labels[k] = v.(string)
+		}
+		service.Labels = &labels
+	} else if d.HasChange("labels") {
+		// Every label removed. A nil map disappears from the payload and leaves the
+		// labels untouched, so clearing them takes an explicit empty object. HasChange
+		// keeps this to services whose labels were actually dropped from the config, so
+		// an update on a configuration that never declared labels does not clear labels
+		// assigned elsewhere.
+		labels := make(map[string]string)
+		service.Labels = &labels
+	}
+
+	// Links are always sent, unlike the labels and teams above. The API clears them when
+	// the field is absent from the payload, verified against the API on 09.09.2026, so
+	// omitting them protects nothing: it is the clear. Terraform therefore owns them
+	// outright, and a link added in the web app is removed on the next apply.
+	links := make([]ilert.ServiceLink, 0)
+	if val, ok := d.GetOk("link"); ok {
+		for _, m := range val.([]any) {
+			v := m.(map[string]any)
+			link := ilert.ServiceLink{
+				Href: v["href"].(string),
+			}
+			if v["text"] != nil && v["text"].(string) != "" {
+				link.Text = v["text"].(string)
+			}
+			links = append(links, link)
+		}
+	}
+	service.Links = &links
 
 	if val, ok := d.GetOk("team"); ok {
 		vL := val.(*schema.Set).List()
@@ -189,7 +261,7 @@ func resourceServiceRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	log.Printf("[DEBUG] Reading service: %s", d.Id())
 	result := &ilert.GetServiceOutput{}
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		r, err := client.GetService(&ilert.GetServiceInput{ServiceID: ilert.Int64(serviceID)})
+		r, err := client.GetService(&ilert.GetServiceInput{ServiceID: ilert.Int64(serviceID), Include: serviceInclude()})
 		if err != nil {
 			if _, ok := err.(*ilert.NotFoundAPIError); ok {
 				log.Printf("[WARN] Removing service %s from state because it no longer exist", d.Id())
@@ -332,6 +404,16 @@ func transformServiceResource(service *ilert.Service, d *schema.ResourceData) er
 	d.Set("description", service.Description)
 	d.Set("one_open_incident_only", service.OneOpenIncidentOnly)
 	d.Set("show_uptime_history", service.ShowUptimeHistory)
+	d.Set("icon_url", service.IconUrl)
+	d.Set("public_status", service.PublicStatus)
+
+	if err := d.Set("labels", flattenLabels(service.Labels, d, "labels")); err != nil {
+		return fmt.Errorf("[ERROR] Error setting labels: %s", err.Error())
+	}
+
+	if err := d.Set("link", flattenServiceLinkList(service.Links)); err != nil {
+		return fmt.Errorf("[ERROR] Error setting links: %s", err.Error())
+	}
 
 	teams, err := flattenTeamShortList(service.Teams, d)
 	if err != nil {
@@ -384,4 +466,26 @@ func flattenTeamShortList(list []ilert.TeamShort, d *schema.ResourceData) ([]any
 		}
 	}
 	return results, nil
+}
+
+// links and the public status are only part of a service response when they are
+// requested, the same way the heartbeat monitor handles its integration url. Every read
+// asks for both, so a link added in the web app reaches the state and shows up in the
+// plan of a configuration that declares link blocks.
+func serviceInclude() []*string {
+	return []*string{&ilert.ServiceInclude.Links, &ilert.ServiceInclude.PublicStatus}
+}
+
+func flattenServiceLinkList(list *[]ilert.ServiceLink) []any {
+	results := make([]any, 0)
+	if list == nil {
+		return results
+	}
+	for _, item := range *list {
+		result := make(map[string]any)
+		result["href"] = item.Href
+		result["text"] = item.Text
+		results = append(results, result)
+	}
+	return results
 }

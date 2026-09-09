@@ -30,6 +30,39 @@ func dataSourceService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"public_status": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"icon_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"labels": {
+				Type:     schema.TypeMap,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"link": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"text": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -42,7 +75,7 @@ func dataSourceServiceRead(ctx context.Context, d *schema.ResourceData, meta any
 	searchName := d.Get("name").(string)
 
 	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.SearchService(&ilert.SearchServiceInput{ServiceName: &searchName})
+		resp, err := client.SearchService(&ilert.SearchServiceInput{ServiceName: &searchName, Include: serviceInclude()})
 		if err != nil {
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
@@ -63,6 +96,15 @@ func dataSourceServiceRead(ctx context.Context, d *schema.ResourceData, meta any
 		d.Set("name", found.Name)
 		d.Set("alias", found.Alias)
 		d.Set("status", found.Status)
+		d.Set("public_status", found.PublicStatus)
+		d.Set("description", found.Description)
+		d.Set("icon_url", found.IconUrl)
+		if err := d.Set("labels", flattenLabelsAll(found.Labels)); err != nil {
+			return resource.NonRetryableError(fmt.Errorf("could not set labels of service with name: %s, error: %s", searchName, err.Error()))
+		}
+		if err := d.Set("link", flattenServiceLinkList(found.Links)); err != nil {
+			return resource.NonRetryableError(fmt.Errorf("could not set links of service with name: %s, error: %s", searchName, err.Error()))
+		}
 
 		return nil
 	})
