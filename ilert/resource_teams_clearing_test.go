@@ -145,6 +145,25 @@ func teamsBuildCases() []teamsBuildCase {
 			},
 		},
 		{
+			name:     "telemetry source",
+			resource: resourceTelemetrySource(),
+			config: map[string]any{
+				"name": "test-telemetry-source",
+				"type": "OTEL",
+			},
+			unsetOmitsField: true,
+			build: func(d *schema.ResourceData) (any, []ilertapi.TeamShort, bool, error) {
+				v, err := buildTelemetrySource(d)
+				if v == nil {
+					return nil, nil, false, err
+				}
+				if v.Teams == nil {
+					return v, nil, false, err
+				}
+				return v, *v.Teams, true, err
+			},
+		},
+		{
 			name:     "call flow",
 			resource: resourceCallFlow(),
 			config: map[string]any{
