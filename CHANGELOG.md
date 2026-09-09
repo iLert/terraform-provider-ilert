@@ -1,6 +1,6 @@
 # Changelog
 
-## 01.09.2026, Version 2.26.0
+## 09.09.2026, Version 2.26.0
 
 - add `purchase_seat` to the `ilert_user` resource. Creating a user on an account whose licenses are all in use fails with `QUOTA_EXCEEDED`; with `purchase_seat = true` the API buys a license instead of checking the quota, which charges the account, prorated for the rest of the billing period. The purchase is unconditional, so a user created with the argument set while the account still has free licenses buys one anyway. The argument defaults to `false` and is only read when the user is created, so no existing configuration ever spends money and the opt-in has to be written per user resource, which is the explicit consent for the charge. The account needs an active paid subscription and seat purchase by admins enabled in its billing settings [#161](https://github.com/iLert/terraform-provider-ilert/pull/161)
 
