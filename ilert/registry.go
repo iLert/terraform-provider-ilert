@@ -122,6 +122,12 @@ var resourceRegistry = map[string]struct {
 			return transformUserResource(e.(*ilert.User), d)
 		},
 	},
+	"ilert_telemetry_source": {
+		factory: func() any { return &ilert.TelemetrySource{} },
+		transformer: func(e any, d *schema.ResourceData) error {
+			return transformTelemetrySourceResource(e.(*ilert.TelemetrySource), d)
+		},
+	},
 	"ilert_status_page": {
 		factory: func() any { return &ilert.StatusPage{} },
 		transformer: func(e any, d *schema.ResourceData) error {
@@ -173,6 +179,8 @@ func getResourceType(resourceType string) string {
 		return "ilert_team"
 	case "USER":
 		return "ilert_user"
+	case "TELEMETRY_SOURCE":
+		return "ilert_telemetry_source"
 	case "STATUS_PAGE":
 		return "ilert_status_page"
 	case "STATUS_PAGE_GROUP":
