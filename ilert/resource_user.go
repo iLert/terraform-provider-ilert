@@ -80,6 +80,11 @@ func resourceUser() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
+			"purchase_seat": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Buy a license for this user instead of checking the account quota. The purchase is unconditional and charges the account, set it only when the account has run out of licenses. Only read when the user is created.",
+			},
 		},
 		CreateContext: resourceUserCreate,
 		ReadContext:   resourceUserRead,
@@ -152,6 +157,12 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 	input := &ilert.CreateUserInput{User: user}
 	if val, ok := d.GetOk("send_no_invitation"); ok {
 		input.SendNoInvitation = Bool(val.(bool))
+	}
+	// only sent when the configuration opts in explicitly: the purchase costs money,
+	// so an absent field must never buy a seat
+	if val, ok := d.GetOk("purchase_seat"); ok && val.(bool) {
+		log.Printf("[WARN] purchase_seat is set, creating user %s buys a license and charges the account", user.Email)
+		input.PurchaseSeat = Bool(true)
 	}
 
 	log.Printf("[INFO] Creating user %s", user.Username)
