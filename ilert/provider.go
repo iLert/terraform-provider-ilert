@@ -48,6 +48,7 @@ func Provider() *schema.Provider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
+			"ilert_account":                   dataSourceAccount(),
 			"ilert_alert_action":              dataSourceAlertAction(),
 			"ilert_alert_source":              dataSourceAlertSource(),
 			"ilert_event_flow":                dataSourceEventFlow(),
@@ -63,6 +64,7 @@ func Provider() *schema.Provider {
 			"ilert_schedule":                  dataSourceSchedule(),
 			"ilert_service":                   dataSourceService(),
 			"ilert_call_flow":                 dataSourceCallFlow(),
+			"ilert_call_flow_number":          dataSourceCallFlowNumber(),
 			"ilert_status_page":               dataSourceStatusPage(),
 			"ilert_status_page_group":         dataSourceStatusPageGroup(),
 			"ilert_support_hour":              dataSourceSupportHour(),
