@@ -10,7 +10,7 @@ description: |-
 
 Use this data source to get information about a specific [call flow number][1] of your account.
 
-These are the numbers assigned to your account, which is a different entity from the numbers ilert offers for purchase.
+These are the numbers assigned to your account, which is a different entity from the phone numbers ilert sends voice and SMS notifications from.
 
 ## Example Usage
 
