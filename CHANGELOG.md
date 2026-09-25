@@ -1,8 +1,9 @@
 # Changelog
 
-## 16.09.2026, Version 2.27.0
+## 25.09.2026, Version 2.27.0
 
 - add the `ilert_account` data source, describing the account the configured credentials belong to: organization name, time zone, language, region, the mobile protection and admin seat purchase settings, the AI mode and the plan the account is subscribed to. It takes no arguments, since the API only ever describes the caller's own account, and its `id` is the account slug rather than a number like every other entity [#163](https://github.com/iLert/terraform-provider-ilert/pull/163)
+- the account data source deliberately does not expose whether AI is allowed. The API still returns the legacy `allowAI` flag, but it is derived entirely from the AI mode and missing from the published spec, so `ai_mode` carries the same information through a documented field, with `DISABLED` meaning AI features are turned off [#163](https://github.com/iLert/terraform-provider-ilert/pull/163)
 - add the `ilert_call_flow_number` data source, resolving a call flow number of the account by name. These are the numbers assigned to the account, a different entity from the numbers ilert offers for purchase. The API matches the value against the phone number first and falls back to the name, so the number itself resolves too, and it omits the `state` when it matched that way [#163](https://github.com/iLert/terraform-provider-ilert/pull/163)
 - the call flow number data source deliberately does not expose the call flow a number is assigned to. The API only returns it from the list endpoint, only when it is explicitly included and only for numbers that are in use, so a lookup by name could never populate it and the attribute would read as empty on every number [#163](https://github.com/iLert/terraform-provider-ilert/pull/163)
 
