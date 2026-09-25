@@ -41,10 +41,6 @@ func dataSourceAccount() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"allow_ai": {
-				Type:     schema.TypeBool,
-				Computed: true,
-			},
 			"ai_mode": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -103,7 +99,6 @@ func dataSourceAccountRead(ctx context.Context, d *schema.ResourceData, meta any
 		d.Set("region", found.Region)
 		d.Set("enforce_mobile_protection", found.EnforceMobileProtection)
 		d.Set("allow_admin_seat_purchase", found.AllowAdminSeatPurchase)
-		d.Set("allow_ai", found.AllowAI)
 		d.Set("ai_mode", found.AiMode)
 		if err := d.Set("application_features", found.ApplicationFeatures); err != nil {
 			return resource.NonRetryableError(fmt.Errorf("could not set application features of the account, error: %s", err.Error()))

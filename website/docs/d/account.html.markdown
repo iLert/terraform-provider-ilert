@@ -33,8 +33,7 @@ This data source takes no arguments, it always describes the account of the conf
 - `region` - The default country of the account as an ISO 3166-1 alpha-2 code, for example `DE`.
 - `enforce_mobile_protection` - Whether users of the ilert mobile app must unlock it with an additional authentication layer.
 - `allow_admin_seat_purchase` - Whether admins may purchase additional seats when creating users, rather than the account owner only.
-- `allow_ai` - Whether AI features are enabled for the account.
-- `ai_mode` - Where AI features of the account are allowed to run. One of `DISABLED`, `ALL` or `EU`.
+- `ai_mode` - Where AI features of the account are allowed to run. One of `DISABLED`, `ALL` or `EU`, where `DISABLED` means AI features are turned off for the account.
 - `application_features` - The features unlocked for the account by its plan and add-ons. The set of possible values grows as ilert ships new features.
 - `subscription` - The plan the account is subscribed to.
   - `name` - The display name of the plan.

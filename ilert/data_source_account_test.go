@@ -16,6 +16,20 @@ func TestDataSourceAccount_TakesNoArguments(t *testing.T) {
 	}
 }
 
+// allow_ai is deliberately absent: the API still returns allowAI, but it is a legacy flag
+// derived from aiMode and missing from the published spec, so ai_mode carries the same
+// information through a documented field.
+func TestDataSourceAccount_Schema(t *testing.T) {
+	dataSourceSchema := dataSourceAccount().Schema
+
+	if _, ok := dataSourceSchema["ai_mode"]; !ok {
+		t.Error("schema is missing \"ai_mode\"")
+	}
+	if _, ok := dataSourceSchema["allow_ai"]; ok {
+		t.Error("allow_ai is exposed, but it is an undocumented legacy flag that ai_mode already covers")
+	}
+}
+
 func TestFlattenAccountSubscription(t *testing.T) {
 	if got := flattenAccountSubscription(nil); len(got) != 0 {
 		t.Errorf("flattenAccountSubscription(nil) = %v, want an empty list", got)
