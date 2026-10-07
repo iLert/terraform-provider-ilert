@@ -4,20 +4,23 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/iLert/ilert-go/v3"
 )
 
-// Legacy API - this resource is deprecated and will be removed in the next major version of the provider
+// uptimeMonitorDiscontinued is what the uptime monitor resource and data source answer with
+const uptimeMonitorDiscontinued = "ilert discontinued uptime monitoring after 30.06.2024 and no longer serves uptime monitors, remove the %s from your configuration. It will be removed in the next major version of the provider"
+
+// ilert discontinued uptime monitoring after 30.06.2024 and the API answers every uptime monitor request
+// with a 404. The resource keeps its schema so existing configurations still parse and plan as before,
+// but it no longer calls the API: creating one fails with an error that says so, and one found in the
+// state is dropped from it, which is what the 404 caused until now.
 func resourceUptimeMonitor() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: "The resource uptime monitor is deprecated!",
+		DeprecationMessage: fmt.Sprintf(uptimeMonitorDiscontinued, "ilert_uptime_monitor resource"),
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
@@ -145,7 +148,6 @@ func resourceUptimeMonitor() *schema.Resource {
 		ReadContext:   resourceUptimeMonitorRead,
 		UpdateContext: resourceUptimeMonitorUpdate,
 		DeleteContext: resourceUptimeMonitorDelete,
-		Exists:        resourceUptimeMonitorExists,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -158,297 +160,21 @@ func resourceUptimeMonitor() *schema.Resource {
 	}
 }
 
-func buildUptimeMonitor(d *schema.ResourceData) (*ilert.UptimeMonitor, error) {
-	name := d.Get("name").(string)
-	region := d.Get("region").(string)
-	checkType := d.Get("check_type").(string)
-	escalationPolicyID, err := strconv.ParseInt(d.Get("escalation_policy").(string), 10, 64)
-	if err != nil {
-		return nil, unconvertibleIDErr(d.Id(), err)
-	}
-
-	uptimeMonitor := &ilert.UptimeMonitor{
-		Name:      name,
-		Region:    region,
-		CheckType: checkType,
-		EscalationPolicy: &ilert.EscalationPolicy{
-			ID: escalationPolicyID,
-		},
-	}
-
-	if val, ok := d.GetOk("check_params"); ok {
-		vL := val.([]any)
-		if len(vL) > 0 {
-			v := vL[0].(map[string]any)
-			checkParams := ilert.UptimeMonitorCheckParams{}
-			if v["url"].(string) != "" {
-				checkParams.URL = v["url"].(string)
-			} else if v["host"].(string) != "" {
-				checkParams.Host = v["host"].(string)
-				if v["port"].(int) > 0 {
-					checkParams.Port = v["port"].(int)
-				}
-			}
-			if v["response_keywords"].([]any) != nil {
-				for _, keyword := range v["response_keywords"].([]any) {
-					checkParams.ResponseKeywords = append(checkParams.ResponseKeywords, keyword.(string))
-				}
-			}
-			if v["alert_before_sec"].(int) > 0 {
-				checkParams.AlertBeforeSec = v["alert_before_sec"].(int)
-			}
-			if v["alert_on_fingerprint_change"].(bool) {
-				checkParams.AlertOnFingerprintChange = v["alert_on_fingerprint_change"].(bool)
-			}
-			uptimeMonitor.CheckParams = checkParams
-		}
-	}
-
-	if val, ok := d.GetOk("interval_sec"); ok {
-		intervalSec := val.(int)
-		uptimeMonitor.IntervalSec = intervalSec
-	}
-
-	if val, ok := d.GetOk("timeout_ms"); ok {
-		timeoutMs := val.(int)
-		uptimeMonitor.TimeoutMs = timeoutMs
-	}
-
-	if val, ok := d.GetOk("create_incident_after_failed_checks"); ok {
-		createIncidentAfterFailedChecks := val.(int)
-		uptimeMonitor.CreateIncidentAfterFailedChecks = createIncidentAfterFailedChecks
-	}
-
-	if val, ok := d.GetOk("create_alert_after_failed_checks"); ok {
-		createAlertAfterFailedChecks := val.(int)
-		uptimeMonitor.CreateAlertAfterFailedChecks = createAlertAfterFailedChecks
-	}
-
-	if val, ok := d.GetOk("paused"); ok {
-		paused := val.(bool)
-		uptimeMonitor.Paused = paused
-	}
-
-	return uptimeMonitor, nil
+func resourceUptimeMonitorCreate(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
+	return diag.Errorf(uptimeMonitorDiscontinued, "ilert_uptime_monitor resource")
 }
 
-func resourceUptimeMonitorCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	client := m.(*ilert.Client)
-
-	uptimeMonitor, err := buildUptimeMonitor(d)
-	if err != nil {
-		log.Printf("[ERROR] Building uptime monitor error %s", err.Error())
-		return diag.FromErr(err)
-	}
-
-	log.Printf("[INFO] Creating uptime monitor %s", uptimeMonitor.Name)
-
-	result := &ilert.CreateUptimeMonitorOutput{}
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		r, err := client.CreateUptimeMonitor(&ilert.CreateUptimeMonitorInput{UptimeMonitor: uptimeMonitor})
-		if err != nil {
-			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Creating ilert uptime monitor error '%s', so retry again", err.Error())
-				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor to be created, error: %s", err.Error()))
-			}
-			return resource.NonRetryableError(err)
-		}
-		result = r
-		return nil
-	})
-	if err != nil {
-		log.Printf("[ERROR] Creating ilert uptime monitor error %s", err.Error())
-		return diag.FromErr(err)
-	}
-	if result == nil || result.UptimeMonitor == nil {
-		log.Printf("[ERROR] Creating ilert uptime monitor error: empty response ")
-		return diag.Errorf("alert source response is empty")
-	}
-
-	d.SetId(strconv.FormatInt(result.UptimeMonitor.ID, 10))
-
-	return resourceUptimeMonitorRead(ctx, d, m)
-}
-
-func resourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	client := m.(*ilert.Client)
-
-	uptimeMonitorID, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		log.Printf("[ERROR] Could not parse uptime monitor id %s", err.Error())
-		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
-	}
-	log.Printf("[DEBUG] Reading uptime monitor: %s", d.Id())
-
-	result := &ilert.GetUptimeMonitorOutput{}
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		r, err := client.GetUptimeMonitor(&ilert.GetUptimeMonitorInput{UptimeMonitorID: ilert.Int64(uptimeMonitorID)})
-		if err != nil {
-			if _, ok := err.(*ilert.NotFoundAPIError); ok {
-				log.Printf("[WARN] Removing uptime monitor %s from state because it no longer exist", d.Id())
-				d.SetId("")
-				return nil
-			}
-			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor with id '%s' to be read", d.Id()))
-			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an uptime monitor with ID %s", d.Id()))
-		}
-		result = r
-		return nil
-	})
-
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if result == nil || result.UptimeMonitor == nil {
-		log.Printf("[ERROR] Reading ilert uptime monitor error: empty response ")
-		return diag.Errorf("uptime monitor response is empty")
-	}
-
-	d.Set("name", result.UptimeMonitor.Name)
-	d.Set("region", result.UptimeMonitor.Region)
-	d.Set("check_type", result.UptimeMonitor.CheckType)
-
-	checkParams := map[string]any{}
-	if result.UptimeMonitor.CheckParams.URL != "" {
-		checkParams["url"] = result.UptimeMonitor.CheckParams.URL
-	} else if result.UptimeMonitor.CheckParams.Host != "" {
-		checkParams["host"] = result.UptimeMonitor.CheckParams.Host
-		if result.UptimeMonitor.CheckParams.Port > 0 {
-			checkParams["port"] = result.UptimeMonitor.CheckParams.Port
-		}
-	}
-	if result.UptimeMonitor.CheckParams.ResponseKeywords != nil && len(result.UptimeMonitor.CheckParams.ResponseKeywords) > 0 {
-		checkParams["response_keywords"] = result.UptimeMonitor.CheckParams.ResponseKeywords
-	}
-	if result.UptimeMonitor.CheckParams.AlertBeforeSec > 0 {
-		checkParams["alert_before_sec"] = result.UptimeMonitor.CheckParams.AlertBeforeSec
-	}
-	if result.UptimeMonitor.CheckParams.AlertOnFingerprintChange {
-		checkParams["alert_on_fingerprint_change"] = result.UptimeMonitor.CheckParams.AlertOnFingerprintChange
-	}
-	d.Set("check_params", []any{checkParams})
-
-	d.Set("interval_sec", result.UptimeMonitor.IntervalSec)
-	d.Set("timeout_ms", result.UptimeMonitor.TimeoutMs)
-
-	if d.Get("create_incident_after_failed_checks") != nil {
-		d.Set("create_incident_after_failed_checks", result.UptimeMonitor.CreateIncidentAfterFailedChecks)
-	}
-
-	if d.Get("create_alert_after_failed_checks") != nil {
-		d.Set("create_alert_after_failed_checks", result.UptimeMonitor.CreateAlertAfterFailedChecks)
-	}
-	d.Set("escalation_policy", strconv.FormatInt(result.UptimeMonitor.EscalationPolicy.ID, 10))
-	d.Set("paused", result.UptimeMonitor.Paused)
-	d.Set("status", result.UptimeMonitor.Status)
-	d.Set("embed_url", result.UptimeMonitor.EmbedURL)
-	d.Set("share_url", result.UptimeMonitor.ShareURL)
-
-	return nil
-}
-
-func resourceUptimeMonitorUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	client := m.(*ilert.Client)
-
-	uptimeMonitor, err := buildUptimeMonitor(d)
-	if err != nil {
-		log.Printf("[ERROR] Building uptime monitor error %s", err.Error())
-		return diag.FromErr(err)
-	}
-
-	uptimeMonitorID, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		log.Printf("[ERROR] Could not parse uptime monitor id %s", err.Error())
-		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
-	}
-	log.Printf("[DEBUG] Updating uptime monitor: %s", d.Id())
-
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
-		_, err = client.UpdateUptimeMonitor(&ilert.UpdateUptimeMonitorInput{UptimeMonitor: uptimeMonitor, UptimeMonitorID: ilert.Int64(uptimeMonitorID)})
-		if err != nil {
-			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor with id '%s' to be updated", d.Id()))
-			}
-			return resource.NonRetryableError(fmt.Errorf("could not update an uptime monitor with ID %s", d.Id()))
-		}
-		return nil
-	})
-
-	if err != nil {
-		log.Printf("[ERROR] Updating ilert uptime monitor error %s", err.Error())
-		return diag.FromErr(err)
-	}
-
-	return resourceUptimeMonitorRead(ctx, d, m)
-}
-
-func resourceUptimeMonitorDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	client := m.(*ilert.Client)
-
-	uptimeMonitorID, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		log.Printf("[ERROR] Could not parse uptime monitor id %s", err.Error())
-		return diag.FromErr(unconvertibleIDErr(d.Id(), err))
-	}
-	log.Printf("[DEBUG] Deleting uptime monitor: %s", d.Id())
-
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
-		_, err = client.DeleteUptimeMonitor(&ilert.DeleteUptimeMonitorInput{UptimeMonitorID: ilert.Int64(uptimeMonitorID)})
-		if err != nil {
-			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor with id '%s' to be deleted", d.Id()))
-			}
-			return resource.NonRetryableError(fmt.Errorf("could not delete an uptime monitor with ID %s", d.Id()))
-		}
-		return nil
-	})
-	if err != nil {
-		log.Printf("[ERROR] Deleting ilert uptime monitor error %s", err.Error())
-		return diag.FromErr(err)
-	}
-
+func resourceUptimeMonitorRead(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
+	log.Printf("[WARN] Removing uptime monitor %s from state because ilert discontinued uptime monitoring", d.Id())
 	d.SetId("")
 	return nil
 }
 
-func resourceUptimeMonitorExists(d *schema.ResourceData, m any) (bool, error) {
-	client := m.(*ilert.Client)
+func resourceUptimeMonitorUpdate(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
+	return diag.Errorf(uptimeMonitorDiscontinued, "ilert_uptime_monitor resource")
+}
 
-	uptimeMonitorID, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		log.Printf("[ERROR] Could not parse uptime monitor id %s", err.Error())
-		return false, unconvertibleIDErr(d.Id(), err)
-	}
-	log.Printf("[DEBUG] Reading uptime monitor: %s", d.Id())
-	ctx := context.Background()
-	result := false
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		_, err := client.GetUptimeMonitor(&ilert.GetUptimeMonitorInput{UptimeMonitorID: ilert.Int64(uptimeMonitorID)})
-		if err != nil {
-			if _, ok := err.(*ilert.NotFoundAPIError); ok {
-				result = false
-				return nil
-			}
-			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				log.Printf("[ERROR] Reading ilert uptime monitor error '%s', so retry again", err.Error())
-				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor to be read, error: %s", err.Error()))
-			}
-			return resource.NonRetryableError(err)
-		}
-		result = true
-		return nil
-	})
-
-	if err != nil {
-		return false, err
-	}
-	return result, nil
+func resourceUptimeMonitorDelete(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
+	d.SetId("")
+	return nil
 }

@@ -3,20 +3,18 @@ package ilert
 import (
 	"context"
 	"fmt"
-	"log"
-	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/iLert/ilert-go/v3"
 )
 
-// Legacy API - this resource is deprecated and will be removed in the next major version of the provider
+// ilert discontinued uptime monitoring after 30.06.2024, so there is no uptime monitor left to look up.
+// The data source keeps its schema so existing configurations still parse, and fails with an error
+// that says so instead of the 404 the API answers with.
 func dataSourceUptimeMonitor() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceUptimeMonitorRead,
+		DeprecationMessage: fmt.Sprintf(uptimeMonitorDiscontinued, "ilert_uptime_monitor data source"),
+		ReadContext:        dataSourceUptimeMonitorRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -39,43 +37,6 @@ func dataSourceUptimeMonitor() *schema.Resource {
 	}
 }
 
-func dataSourceUptimeMonitorRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*ilert.Client)
-
-	log.Printf("[DEBUG] Reading ilert uptime monitor")
-
-	searchName := d.Get("name").(string)
-
-	err := resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		resp, err := client.SearchUptimeMonitor(&ilert.SearchUptimeMonitorInput{UptimeMonitorName: &searchName})
-		if err != nil {
-			if _, ok := err.(*ilert.RetryableAPIError); ok {
-				time.Sleep(2 * time.Second)
-				return resource.RetryableError(fmt.Errorf("waiting for uptime monitor with name '%s' to be read", searchName))
-			}
-			return resource.NonRetryableError(fmt.Errorf("could not read an uptime monitor with name: %s", searchName))
-		}
-
-		found := resp.UptimeMonitor
-
-		if found == nil {
-			return resource.NonRetryableError(
-				fmt.Errorf("unable to locate any uptime monitor with the name: %s", searchName),
-			)
-		}
-
-		d.SetId(strconv.FormatInt(found.ID, 10))
-		d.Set("name", found.Name)
-		d.Set("status", found.Status)
-		d.Set("embed_url", found.EmbedURL)
-		d.Set("share_url", found.ShareURL)
-
-		return nil
-	})
-
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
+func dataSourceUptimeMonitorRead(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
+	return diag.Errorf(uptimeMonitorDiscontinued, "ilert_uptime_monitor data source")
 }

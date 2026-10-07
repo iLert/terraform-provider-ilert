@@ -3,14 +3,14 @@ layout: "ilert"
 page_title: "ilert: ilert_uptime_monitor"
 sidebar_current: "docs-ilert-resource-uptime-monitor"
 description: |-
-  Creates and manages an uptime monitor in ilert.
+  Discontinued: ilert no longer serves uptime monitors.
 ---
 
 # ilert_uptime_monitor
 
-An [uptime monitor](https://api.ilert.com/api-docs/#tag/Uptime-Monitors) allows you to quickly setup monitoring for any kind of exposed service e.g. HTTP (e.g. websites), ICMP (ping) or TCP and UDP servers.
+An uptime monitor monitored an exposed service e.g. HTTP (e.g. websites), ICMP (ping) or TCP and UDP servers. ilert [discontinued uptime monitoring](https://docs.ilert.com/developer-docs/api-version-history/discontinuation-of-uptime-monitoring) after 30.06.2024.
 
-> WARNING - this resource is deprecated and will be removed in the next major version of the provider
+> WARNING - ilert discontinued uptime monitoring after 30.06.2024 and no longer serves uptime monitors. Creating this resource fails, and an uptime monitor still in the state is dropped from it on the next refresh. Remove it from your configuration, the resource will be removed in the next major version of the provider
 
 ## Example Usage
 
