@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/iLert/ilert-go/v3"
+	"github.com/iLert/ilert-go/v4"
 )
 
 func resourceIncidentTemplate() *schema.Resource {
@@ -29,7 +29,7 @@ func resourceIncidentTemplate() *schema.Resource {
 			"status": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice(ilert.IncidentStatusAll, false),
+				ValidateFunc: validation.StringInSlice(ilert.StatusUpdateStatusAll, false),
 			},
 			"message": {
 				Type:     schema.TypeString,

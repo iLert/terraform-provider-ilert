@@ -3,7 +3,7 @@ package ilert
 import (
 	"testing"
 
-	ilertapi "github.com/iLert/ilert-go/v3"
+	ilertapi "github.com/iLert/ilert-go/v4"
 )
 
 func TestFlattenCallFlowNumberPhoneNumber(t *testing.T) {

@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/iLert/ilert-go/v3"
+	"github.com/iLert/ilert-go/v4"
 )
 
 // The iLert add-source / remove-source endpoints mutate the alert action's

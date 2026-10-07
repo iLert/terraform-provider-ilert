@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	ilertapi "github.com/iLert/ilert-go/v3"
+	ilertapi "github.com/iLert/ilert-go/v4"
 )
 
 func TestBuildEventFlow_BuildsTransformMetadata(t *testing.T) {

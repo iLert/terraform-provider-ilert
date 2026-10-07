@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/iLert/ilert-go/v3"
+	"github.com/iLert/ilert-go/v4"
 )
 
 // Provider represents the provider interface

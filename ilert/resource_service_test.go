@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	ilertapi "github.com/iLert/ilert-go/v3"
+	ilertapi "github.com/iLert/ilert-go/v4"
 )
 
 // Regression for the team block ordering bug: the API returns teams sorted by id,

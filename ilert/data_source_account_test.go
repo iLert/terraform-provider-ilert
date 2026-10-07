@@ -3,7 +3,7 @@ package ilert
 import (
 	"testing"
 
-	ilertapi "github.com/iLert/ilert-go/v3"
+	ilertapi "github.com/iLert/ilert-go/v4"
 )
 
 // The account data source describes the caller's own account, so it takes no arguments:
