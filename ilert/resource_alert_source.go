@@ -469,8 +469,9 @@ func resourceAlertSource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"text_template": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: suppressEquivalentTemplateDiff,
 						},
 					},
 				},
@@ -482,8 +483,9 @@ func resourceAlertSource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"text_template": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: suppressEquivalentTemplateDiff,
 						},
 					},
 				},
@@ -495,8 +497,9 @@ func resourceAlertSource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"text_template": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: suppressEquivalentTemplateDiff,
 						},
 					},
 				},
@@ -508,8 +511,9 @@ func resourceAlertSource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"text_template": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: suppressEquivalentTemplateDiff,
 						},
 					},
 				},
@@ -532,8 +536,9 @@ func resourceAlertSource() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"text_template": {
-										Type:     schema.TypeString,
-										Required: true,
+										Type:             schema.TypeString,
+										Required:         true,
+										DiffSuppressFunc: suppressEquivalentTemplateDiff,
 									},
 								},
 							},
@@ -546,8 +551,9 @@ func resourceAlertSource() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"text_template": {
-										Type:     schema.TypeString,
-										Required: true,
+										Type:             schema.TypeString,
+										Required:         true,
+										DiffSuppressFunc: suppressEquivalentTemplateDiff,
 									},
 								},
 							},
@@ -569,8 +575,9 @@ func resourceAlertSource() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"text_template": {
-										Type:     schema.TypeString,
-										Required: true,
+										Type:             schema.TypeString,
+										Required:         true,
+										DiffSuppressFunc: suppressEquivalentTemplateDiff,
 									},
 								},
 							},
@@ -610,8 +617,9 @@ func resourceAlertSource() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"text_template": {
-										Type:     schema.TypeString,
-										Required: true,
+										Type:             schema.TypeString,
+										Required:         true,
+										DiffSuppressFunc: suppressEquivalentTemplateDiff,
 									},
 								},
 							},
@@ -670,9 +678,10 @@ func resourceAlertSource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"text_template": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringIsNotEmpty,
+							Type:             schema.TypeString,
+							Required:         true,
+							DiffSuppressFunc: suppressEquivalentTemplateDiff,
+							ValidateFunc:     validation.StringIsNotEmpty,
 						},
 					},
 				},

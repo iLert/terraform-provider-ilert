@@ -34,7 +34,7 @@ resource "ilert_service" "example" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the service.
-- `alias` - (Optional) The alias of the service.
+- `alias` - (Optional) The alias of the service. The API stores it in lowercase with surrounding spaces removed, so differences in case or surrounding spaces are not shown as changes. A non-ASCII alias has to be written exactly the way the API returns it.
 - `status` - (Optional) The status of the service. Allowed values are `OPERATIONAL`, `UNDER_MAINTENANCE`, `DEGRADED`, `PARTIAL_OUTAGE`, `MAJOR_OUTAGE`.
 - `description` - (Optional) The description of the service.
 - `one_open_incident_only` - (Optional) Indicates whether or not only one incident should be opened. Default: `false`
