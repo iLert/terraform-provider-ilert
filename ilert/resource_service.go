@@ -23,9 +23,10 @@ func resourceService() *schema.Resource {
 				ValidateFunc: validation.StringLenBetween(1, 255),
 			},
 			"alias": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: suppressEquivalentServiceAliasDiff,
 			},
 			"status": {
 				Type:         schema.TypeString,
