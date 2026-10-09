@@ -22,6 +22,35 @@ func dataSourceSupportHour() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"support_windows": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"from": dataSourceSupportWindowTimeOfWeekSchema(),
+						"to":   dataSourceSupportWindowTimeOfWeekSchema(),
+					},
+				},
+			},
+		},
+	}
+}
+
+func dataSourceSupportWindowTimeOfWeekSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"day_of_week": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+				"time": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+			},
 		},
 	}
 }
@@ -53,6 +82,10 @@ func dataSourceSupportHourRead(ctx context.Context, d *schema.ResourceData, meta
 
 		d.SetId(strconv.FormatInt(found.ID, 10))
 		d.Set("name", found.Name)
+		// always the complete coverage, also where the API returns it as supportDays only
+		if err := d.Set("support_windows", flattenSupportWindows(supportHourWindows(found))); err != nil {
+			return resource.NonRetryableError(fmt.Errorf("could not set the support windows of the support hour with name: %s, error: %s", searchName, err.Error()))
+		}
 
 		return nil
 	})
