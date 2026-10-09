@@ -101,7 +101,7 @@ The following arguments are supported:
 
 #### Template Arguments
 
-- `text_template` - (Required) The content of the template. It is recommended to use the exact content as generated via blocks in the web UI to prevent inconsistencies between the ilert API and Terraform.
+- `text_template` - (Required) The content of the template. The API stores templates in its own format, so the text it returns can differ from the text that was sent. Spaces in the arguments of a function call outside of quotes and whitespace just inside the braces do not change the template and are ignored. Other rewrites, such as the quotes the API adds around bare arguments, still show as a change, so it is recommended to use the exact content as generated via blocks in the web UI.
 
 #### Link template Arguments
 
