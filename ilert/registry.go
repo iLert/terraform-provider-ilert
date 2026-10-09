@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/iLert/ilert-go/v3"
+	"github.com/iLert/ilert-go/v4"
 )
 
 type Transformer func(entity any, d *schema.ResourceData) error

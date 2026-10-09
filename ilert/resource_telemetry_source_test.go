@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	ilertapi "github.com/iLert/ilert-go/v3"
+	ilertapi "github.com/iLert/ilert-go/v4"
 )
 
 // Labels follow the same contract as the team blocks: removing every label has to reach
