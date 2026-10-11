@@ -71,6 +71,8 @@ The following arguments are supported:
 
 - `id` - The id of the support hour given as reference.
 
+Support hours defined inline on the alert source are one window per day. Coverage that needs more, such as several windows a day or windows across midnight or the weekend, has to be an `ilert_support_hour` with `support_windows`, referenced through `support_hours { id = ... }`.
+
 #### Resolve Key Extractor Arguments
 
 - `field` - The field of the resolve key extractor. Allowed values are `EMAIL_SUBJECT` and `EMAIL_BODY`.

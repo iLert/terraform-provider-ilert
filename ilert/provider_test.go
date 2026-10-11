@@ -24,6 +24,10 @@ func TestProvider(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
+	// an API token is enough, the provider prefers it over the basic credentials
+	if v := os.Getenv("ILERT_API_TOKEN"); v != "" {
+		return
+	}
 	if v := os.Getenv("ILERT_ORGANIZATION"); v == "" {
 		t.Fatal("ILERT_ORGANIZATION must be set for acceptance tests")
 	}
