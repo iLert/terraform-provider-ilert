@@ -651,7 +651,7 @@ func transformConnectorResource(connector *ilert.ConnectorOutput, d *schema.Reso
 			map[string]any{
 				"url":      connector.Params.URL,
 				"email":    connector.Params.Email,
-				"password": connector.Params.Password,
+				"password": connectorCredential(d, "jira", "password", connector.Params.Password),
 			},
 		})
 	case ilert.ConnectorTypes.MicrosoftTeams:
@@ -665,7 +665,7 @@ func transformConnectorResource(connector *ilert.ConnectorOutput, d *schema.Reso
 			map[string]any{
 				"url":      connector.Params.URL,
 				"username": connector.Params.Username,
-				"password": connector.Params.Password,
+				"password": connectorCredential(d, "servicenow", "password", connector.Params.Password),
 			},
 		})
 	case ilert.ConnectorTypes.Zendesk:
@@ -673,7 +673,7 @@ func transformConnectorResource(connector *ilert.ConnectorOutput, d *schema.Reso
 			map[string]any{
 				"url":     connector.Params.URL,
 				"email":   connector.Params.Email,
-				"api_key": connector.Params.APIKey,
+				"api_key": connectorCredential(d, "zendesk", "api_key", connector.Params.APIKey),
 			},
 		})
 	case ilert.ConnectorTypes.Discord:
@@ -685,7 +685,7 @@ func transformConnectorResource(connector *ilert.ConnectorOutput, d *schema.Reso
 	case ilert.ConnectorTypes.Github:
 		d.Set("github", []any{
 			map[string]any{
-				"api_key": connector.Params.APIKey,
+				"api_key": connectorCredential(d, "github", "api_key", connector.Params.APIKey),
 			},
 		})
 	case ilert.ConnectorTypes.Topdesk:
@@ -693,7 +693,7 @@ func transformConnectorResource(connector *ilert.ConnectorOutput, d *schema.Reso
 			map[string]any{
 				"url":      connector.Params.URL,
 				"username": connector.Params.Username,
-				"password": connector.Params.Password,
+				"password": connectorCredential(d, "topdesk", "password", connector.Params.Password),
 			},
 		})
 	case ilert.ConnectorTypes.Autotask:
@@ -701,7 +701,7 @@ func transformConnectorResource(connector *ilert.ConnectorOutput, d *schema.Reso
 			map[string]any{
 				"url":      connector.Params.URL,
 				"email":    connector.Params.Email,
-				"password": connector.Params.Password,
+				"password": connectorCredential(d, "autotask", "password", connector.Params.Password),
 			},
 		})
 	case ilert.ConnectorTypes.Mattermost:
@@ -714,17 +714,30 @@ func transformConnectorResource(connector *ilert.ConnectorOutput, d *schema.Reso
 		d.Set("zammad", []any{
 			map[string]any{
 				"url":     connector.Params.URL,
-				"api_key": connector.Params.APIKey,
+				"api_key": connectorCredential(d, "zammad", "api_key", connector.Params.APIKey),
 			},
 		})
 	case ilert.ConnectorTypes.DingTalk:
 		d.Set("dingtalk", []any{
 			map[string]any{
 				"url":    connector.Params.URL,
-				"secret": connector.Params.Secret,
+				"secret": connectorCredential(d, "dingtalk", "secret", connector.Params.Secret),
 			},
 		})
 	}
 
 	return nil
+}
+
+// connectorCredential returns the credential the API sent for a connector or, when it
+// sent none, the one already in the state. The API can leave stored credentials out of
+// its response, and every credential is required, so an empty one only means it was not
+// returned: writing it to the state would show the configured value as a change on
+// every plan.
+func connectorCredential(d *schema.ResourceData, block, key, fromAPI string) string {
+	if fromAPI != "" {
+		return fromAPI
+	}
+	value, _ := d.Get(block + ".0." + key).(string)
+	return value
 }
