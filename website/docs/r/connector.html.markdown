@@ -119,6 +119,10 @@ The following arguments are supported:
 - `url` - (Required) The Dingtalk server URL.
 - `secret` - (Required) The Dingtalk secret.
 
+#### Credentials Not Returned by the API
+
+The API can leave the stored `password`, `api_key` or `secret` of a connector out of its response. The state then keeps the configured credential, so it does not show as a change, but neither does a credential changed outside of Terraform, for example in the ilert web app. Changing the credential in the configuration still updates it in ilert.
+
 ## Attributes Reference
 
 The following attributes are exported:
@@ -136,3 +140,5 @@ Connectors can be imported using the `id`, e.g.
 ```sh
 $ terraform import ilert_connector.main 123456789
 ```
+
+A credential the API does not return is imported empty, so the first plan after an import shows it as a change, and applying the configuration sets it in ilert.
