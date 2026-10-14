@@ -61,6 +61,40 @@ resource "ilert_alert_action" "example" {
 }
 ```
 
+The following alert action reroutes alerts of the alert source above to another escalation policy when they are still not resolved after 10 minutes and their summary contains `PROD`:
+
+```hcl
+resource "ilert_escalation_policy" "fallback" {
+  name = "fallback"
+  escalation_rule {
+    escalation_timeout = 15
+    user               = ilert_user.example.id
+  }
+}
+
+resource "ilert_alert_action" "reroute" {
+  name = "Reroute unresolved production alerts"
+
+  alert_source {
+    id = ilert_alert_source.example.id
+  }
+
+  connector {
+    type = "reroute"
+  }
+
+  trigger_types          = ["v-alert-not-resolved"]
+  not_resolved_delay_sec = 600
+  conditions             = "alert.summary contains_any [\"PROD\"]"
+
+  reroute {
+    escalation_policy {
+      id = ilert_escalation_policy.fallback.id
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -70,7 +104,7 @@ The following arguments are supported:
 - `connector` - (Required) A [connector](#connector-arguments) block.
 - `trigger_mode` - (Optional) The trigger mode of the alert action. Allowed values are `AUTOMATIC` or `MANUAL`. Default: `AUTOMATIC`.
 - `escalation_ended_delay_sec` - (Optional) The number of seconds the alert action will be delayed when reaching end of escalation. Should only be set when one of `trigger_types` is set to `alert-escalation-ended`. Must be either `0` or a value between `30` and `7200`.
-- `not_resolved_delay_sec` - (Optional) The number of seconds the alert action will be delayed when the alert is not resolved yet. Should only be set when one of `trigger_types` is set to `v-alert-not-resolved`. Must be either `0` or a value between `60` and `7200`.
+- `not_resolved_delay_sec` - (Optional) The number of seconds the alert action will be delayed when the alert is not resolved yet. Should only be set when one of `trigger_types` is set to `v-alert-not-resolved`. Must be either `0` or a value between `60` and `172800`.
 - `trigger_types` - (Optional if the `MANUAL` trigger mode and required if the `AUTOMATIC` trigger mode) A list of the trigger types. Allowed values are `alert-created`, `alert-assigned`, `alert-auto-escalated`, `alert-acknowledged`, `alert-raised`, `alert-comment-added`, `alert-escalation-ended`, `alert-resolved`, `alert-auto-resolved`, `alert-responder-added`, `alert-responder-removed`, `alert-channel-attached`, `alert-channel-detached`, `v-alert-not-resolved`.
 - `jira` - (Optional) A [jira](#jira-arguments) block.
 - `servicenow` - (Optional) A [servicenow](#servicenow-arguments) block.
@@ -101,7 +135,7 @@ The following arguments are supported:
 #### Connector Arguments
 
 - `id` - (Optional) The connector id. Required if the connector `type` is one of values `jira`, `servicenow`, `zendesk`, `discord`, `github`, `topdesk`, `autotask`, `mattermost`, `zammad`, `dingtalk`, `microsoft_teams_bot`, `slack`.
-- `type` - (Required) The connector type. Allowed values are `jira`, `servicenow`, `zendesk`, `discord`, `github`, `topdesk`, `autotask`, `mattermost`, `zammad`, `dingtalk`, `microsoft_teams_bot`, `slack`.
+- `type` - (Required) The connector type. Allowed values are `jira`, `servicenow`, `zendesk`, `discord`, `github`, `topdesk`, `autotask`, `mattermost`, `zammad`, `dingtalk`, `microsoft_teams_bot`, `slack`, `reroute`.
 
 #### Jira Arguments
 
@@ -248,7 +282,13 @@ The following arguments are supported:
 
 #### Reroute Arguments
 
-- `escalation_policy` - (Required) An escalation policy block, containing the policy id.
+Reroutes the alert to another escalation policy. Set the connector `type` to `reroute` and leave out the connector `id`. A reroute alert action only works with the `AUTOMATIC` trigger mode, the default, and needs `trigger_types` set to `alert-escalation-ended`, `v-alert-not-resolved` or both. See the reroute example under [Example Usage](#example-usage).
+
+- `escalation_policy` - (Required) An [escalation_policy](#escalation-policy-arguments) block.
+
+#### Escalation Policy Arguments
+
+- `id` - (Required) The ID of the escalation policy the alert is rerouted to.
 
 #### Alert Filter Arguments
 
