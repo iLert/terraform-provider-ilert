@@ -1,5 +1,9 @@
 # Changelog
 
+## 14.10.2026, Version 2.29.1
+
+- document the `reroute` alert action: the trigger types and trigger mode it works with, that it takes no connector `id`, an example, and the `172800` limit of `not_resolved_delay_sec` [#169](https://github.com/iLert/terraform-provider-ilert/pull/169)
+
 ## 11.10.2026, Version 2.29.0
 
 - add `support_windows` to the `ilert_support_hour` resource: the weekly coverage as up to 84 windows, each covering the time from `from` up to `to`, which can hold what `support_days` cannot: several windows a day, windows across midnight or the weekend, and the whole week. A `to` at or before `from` wraps past Sunday midnight, and a `to` equal to `from` is the whole week. `support_days` is optional now and exactly one of the two is required, so existing configurations keep working unchanged [#166](https://github.com/iLert/terraform-provider-ilert/pull/166)
