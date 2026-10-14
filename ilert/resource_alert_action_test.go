@@ -1,6 +1,7 @@
 package ilert
 
 import (
+	"encoding/json"
 	"reflect"
 	"slices"
 	"testing"
@@ -238,5 +239,102 @@ func TestTransformAlertActionResource_AutotaskParams(t *testing.T) {
 	at = d.Get("autotask").([]any)[0].(map[string]any)
 	if at["company_id"] != "" {
 		t.Errorf("company_id = %v, want empty string when unset", at["company_id"])
+	}
+}
+
+func TestBuildAlertAction_Reroute(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertAction().Schema, map[string]any{
+		"name": "test-alert-action",
+		"connector": []any{
+			map[string]any{
+				"type": ilertapi.ConnectorTypes.Reroute,
+			},
+		},
+		"trigger_types":          []any{ilertapi.AlertActionTriggerTypes.AlertNotResolved},
+		"not_resolved_delay_sec": 600,
+		"conditions":             `alert.summary contains_any ["PROD"]`,
+		"reroute": []any{
+			map[string]any{
+				"escalation_policy": []any{
+					map[string]any{
+						"id": 2262584,
+					},
+				},
+			},
+		},
+	})
+
+	alertAction, err := buildAlertAction(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert action: %v", err)
+	}
+
+	body, err := json.Marshal(alertAction)
+	if err != nil {
+		t.Fatalf("unexpected error marshalling alert action: %v", err)
+	}
+	var got map[string]any
+	if err := json.Unmarshal(body, &got); err != nil {
+		t.Fatalf("unexpected error unmarshalling alert action: %v", err)
+	}
+
+	// The API rejects a connectorId for reroute and only accepts the AUTOMATIC trigger mode.
+	if _, ok := got["connectorId"]; ok {
+		t.Errorf("connectorId = %v, want it left out", got["connectorId"])
+	}
+	if got["connectorType"] != "reroute" {
+		t.Errorf("connectorType = %v, want \"reroute\"", got["connectorType"])
+	}
+	if got["triggerMode"] != "AUTOMATIC" {
+		t.Errorf("triggerMode = %v, want \"AUTOMATIC\"", got["triggerMode"])
+	}
+	wantParams := map[string]any{"escalationPolicyId": float64(2262584)}
+	if !reflect.DeepEqual(got["params"], wantParams) {
+		t.Errorf("params = %v, want %v", got["params"], wantParams)
+	}
+	if !reflect.DeepEqual(got["triggerTypes"], []any{"v-alert-not-resolved"}) {
+		t.Errorf("triggerTypes = %v, want [v-alert-not-resolved]", got["triggerTypes"])
+	}
+	if got["notResolvedDelaySec"] != float64(600) {
+		t.Errorf("notResolvedDelaySec = %v, want 600", got["notResolvedDelaySec"])
+	}
+}
+
+func TestTransformAlertActionResource_RerouteParams(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertAction().Schema, map[string]any{
+		"name": "test-alert-action",
+		"connector": []any{
+			map[string]any{
+				"type": ilertapi.ConnectorTypes.Reroute,
+			},
+		},
+	})
+	d.SetId("1")
+
+	alertAction := &ilertapi.AlertActionOutput{
+		Name:                "test-alert-action",
+		ConnectorType:       ilertapi.ConnectorTypes.Reroute,
+		TriggerMode:         ilertapi.AlertActionTriggerModes.Automatic,
+		TriggerTypes:        []string{ilertapi.AlertActionTriggerTypes.AlertNotResolved},
+		NotResolvedDelaySec: 600,
+		Params: &ilertapi.AlertActionOutputParams{
+			EscalationPolicyID: 2262584,
+		},
+	}
+
+	if err := transformAlertActionResource(alertAction, d); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got := d.Get("reroute.0.escalation_policy.0.id"); got != 2262584 {
+		t.Errorf("reroute escalation_policy id = %v, want 2262584", got)
+	}
+	if got := d.Get("connector.0.id"); got != "" {
+		t.Errorf("connector id = %v, want empty for reroute", got)
+	}
+	if got := d.Get("trigger_types"); !reflect.DeepEqual(got, []any{ilertapi.AlertActionTriggerTypes.AlertNotResolved}) {
+		t.Errorf("trigger_types = %v, want [v-alert-not-resolved]", got)
+	}
+	if got := d.Get("not_resolved_delay_sec"); got != 600 {
+		t.Errorf("not_resolved_delay_sec = %v, want 600", got)
 	}
 }
