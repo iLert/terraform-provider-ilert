@@ -4,6 +4,7 @@
 
 - fix a permanent diff on every connector credential the API leaves out of its response: `password`, `api_key` and `secret` were read back empty, so every plan showed the configured value as a change and no apply could settle it. The state now keeps the configured credential when the API does not return one, and a credential the API does return still replaces it, as before, so a credential changed outside of Terraform only shows in the plan while the API returns it. A credential the API does not return is imported empty: the first plan after an import shows it as a change, and applying the configuration sets it in ilert [#168](https://github.com/iLert/terraform-provider-ilert/pull/168)
 - document the `reroute` alert action: the trigger types and trigger mode it works with, that it takes no connector `id`, an example, and the `172800` limit of `not_resolved_delay_sec` [#169](https://github.com/iLert/terraform-provider-ilert/pull/169)
+- fix the `ilert_user` data source returning the username as `first_name` and `last_name`: both were filled from the username instead of the user's first and last name. Anything built from them changes to the actual names on the first plan after upgrading [#171](https://github.com/iLert/terraform-provider-ilert/pull/171)
 
 ## 11.10.2026, Version 2.29.0
 
