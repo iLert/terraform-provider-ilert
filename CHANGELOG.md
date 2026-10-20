@@ -1,5 +1,9 @@
 # Changelog
 
+## 20.10.2026, Version 2.29.1
+
+- fix a permanent diff on every connector credential the API leaves out of its response: `password`, `api_key` and `secret` were read back empty, so every plan showed the configured value as a change and no apply could settle it. The state now keeps the configured credential when the API does not return one, and a credential the API does return still replaces it, as before, so a credential changed outside of Terraform only shows in the plan while the API returns it. A credential the API does not return is imported empty: the first plan after an import shows it as a change, and applying the configuration sets it in ilert [#168](https://github.com/iLert/terraform-provider-ilert/pull/168)
+
 ## 11.10.2026, Version 2.29.0
 
 - add `support_windows` to the `ilert_support_hour` resource: the weekly coverage as up to 84 windows, each covering the time from `from` up to `to`, which can hold what `support_days` cannot: several windows a day, windows across midnight or the weekend, and the whole week. A `to` at or before `from` wraps past Sunday midnight, and a `to` equal to `from` is the whole week. `support_days` is optional now and exactly one of the two is required, so existing configurations keep working unchanged [#166](https://github.com/iLert/terraform-provider-ilert/pull/166)
