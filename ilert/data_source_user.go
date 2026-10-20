@@ -64,10 +64,9 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) d
 		}
 
 		d.SetId(strconv.FormatInt(found.ID, 10))
-		d.Set("email", found.Email)
-		d.Set("first_name", found.Username)
-		d.Set("last_name", found.Username)
-		d.Set("username", found.Username)
+		if err := transformUserDataSource(found, d); err != nil {
+			return resource.NonRetryableError(err)
+		}
 
 		return nil
 	})
@@ -75,6 +74,15 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) d
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	return nil
+}
+
+func transformUserDataSource(user *ilert.User, d *schema.ResourceData) error {
+	d.Set("email", user.Email)
+	d.Set("first_name", user.FirstName)
+	d.Set("last_name", user.LastName)
+	d.Set("username", user.Username)
 
 	return nil
 }
