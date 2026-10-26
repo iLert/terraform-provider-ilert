@@ -228,6 +228,11 @@ func resourceStatusPageGroupDelete(ctx context.Context, d *schema.ResourceData, 
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		_, err = client.DeleteStatusPageGroup(&ilert.DeleteStatusPageGroupInput{StatusPageGroupID: ilert.Int64(statusPageGroupID), StatusPageID: ilert.Int64(statusPageID)})
 		if err != nil {
+			if _, ok := err.(*ilert.NotFoundAPIError); ok {
+				// already gone: the API deletes the groups of a status page along
+				// with the page, and a destroy can delete the page first
+				return nil
+			}
 			if _, ok := err.(*ilert.RetryableAPIError); ok {
 				time.Sleep(2 * time.Second)
 				return resource.RetryableError(fmt.Errorf("waiting for status page group with id '%s' to be deleted, error: %s", d.Id(), err.Error()))

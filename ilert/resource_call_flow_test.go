@@ -1,6 +1,7 @@
 package ilert
 
 import (
+	"encoding/json"
 	"reflect"
 	"strings"
 	"testing"
@@ -9,43 +10,129 @@ import (
 	"github.com/iLert/ilert-go/v4"
 )
 
+// The API answers a route call node without a call style with a 500, which the
+// provider retried until the create timeout, and only accepts ORDERED or RANDOM
+// on ROUTE_CALL and PARALLEL on PARALLEL_ROUTE_CALL. See
+// iLert/engineering-tasks#2835.
 func TestBuildCallFlow_RequiresCallStyleForRouteCallNode(t *testing.T) {
-	d := schema.TestResourceDataRaw(t, resourceCallFlow().Schema, map[string]any{
-		"name":     "test-call-flow",
-		"language": "en",
-		"root_node": []any{
-			map[string]any{
-				"node_type": "ROOT",
-				"branches": []any{
+	tests := []struct {
+		nodeType  string
+		callStyle string
+		wantErr   string
+	}{
+		{"ROUTE_CALL", "", "node type 'ROUTE_CALL' requires 'call_style' metadata to be set to 'ORDERED' or 'RANDOM'"},
+		{"ROUTE_CALL", "ORDERED", ""},
+		{"ROUTE_CALL", "RANDOM", ""},
+		{"ROUTE_CALL", "PARALLEL", "node type 'ROUTE_CALL' does not support 'call_style' 'PARALLEL', use 'ORDERED' or 'RANDOM'"},
+		{"PARALLEL_ROUTE_CALL", "", "node type 'PARALLEL_ROUTE_CALL' requires 'call_style' metadata to be set to 'PARALLEL'"},
+		{"PARALLEL_ROUTE_CALL", "PARALLEL", ""},
+		{"PARALLEL_ROUTE_CALL", "ORDERED", "node type 'PARALLEL_ROUTE_CALL' does not support 'call_style' 'ORDERED', use 'PARALLEL'"},
+		{"PARALLEL_ROUTE_CALL", "RANDOM", "node type 'PARALLEL_ROUTE_CALL' does not support 'call_style' 'RANDOM', use 'PARALLEL'"},
+	}
+	for _, tt := range tests {
+		name := tt.nodeType + "/" + tt.callStyle
+		if tt.callStyle == "" {
+			name = tt.nodeType + "/unset"
+		}
+		t.Run(name, func(t *testing.T) {
+			metadata := map[string]any{
+				"targets": []any{
 					map[string]any{
-						"branch_type": "ANSWERED",
-						"target": []any{
+						"target": "1",
+						"type":   "USER",
+					},
+				},
+			}
+			if tt.callStyle != "" {
+				metadata["call_style"] = tt.callStyle
+			}
+			d := schema.TestResourceDataRaw(t, resourceCallFlow().Schema, map[string]any{
+				"name":     "test-call-flow",
+				"language": "en",
+				"root_node": []any{
+					map[string]any{
+						"node_type": "ROOT",
+						"branches": []any{
 							map[string]any{
-								"node_type": "ROUTE_CALL",
-								"metadata": []any{
+								"branch_type": "ANSWERED",
+								"target": []any{
 									map[string]any{
-										"targets": []any{
-											map[string]any{
-												"target": "1",
-												"type":   "USER",
-											},
-										},
+										"node_type": tt.nodeType,
+										"metadata":  []any{metadata},
 									},
 								},
 							},
 						},
 					},
 				},
-			},
+			})
+
+			_, err := buildCallFlow(d)
+			if tt.wantErr == "" {
+				if err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return
+			}
+			if err == nil || err.Error() != tt.wantErr {
+				t.Fatalf("got error %v, want %q", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// A route call node without metadata is rejected as well, rather than sent
+// without a call style.
+func TestBuildCallFlow_RequiresCallStyleForRouteCallNodeWithoutMetadata(t *testing.T) {
+	for _, nodeType := range []string{"ROUTE_CALL", "PARALLEL_ROUTE_CALL"} {
+		t.Run(nodeType, func(t *testing.T) {
+			d := schema.TestResourceDataRaw(t, resourceCallFlow().Schema, map[string]any{
+				"name":     "test-call-flow",
+				"language": "en",
+				"root_node": []any{
+					map[string]any{
+						"node_type": "ROOT",
+						"branches": []any{
+							map[string]any{
+								"branch_type": "ANSWERED",
+								"target":      []any{map[string]any{"node_type": nodeType}},
+							},
+						},
+					},
+				},
+			})
+
+			_, err := buildCallFlow(d)
+			if err == nil || !strings.Contains(err.Error(), "requires 'call_style'") {
+				t.Fatalf("got error %v, want the call_style validation error", err)
+			}
+		})
+	}
+}
+
+// A branch added to a node that already has branches has no id yet and has to be
+// sent without one: the API rejects an id of 0 on such a node with a 400. The
+// branches that exist keep their ids. See iLert/engineering-tasks#2835.
+func TestBuildCallFlowNodeFromMap_SendsNewBranchWithoutID(t *testing.T) {
+	node, err := buildCallFlowNodeFromMap(map[string]any{
+		"id":        10,
+		"node_type": "IVR_MENU",
+		"branches": []any{
+			map[string]any{"id": 11, "branch_type": "BRANCH", "condition": "context.option == '1'"},
+			map[string]any{"id": 0, "branch_type": "BRANCH", "condition": "context.option == '2'"},
 		},
 	})
-
-	_, err := buildCallFlow(d)
-	if err == nil {
-		t.Fatal("expected error for ROUTE_CALL node without metadata.call_style")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(err.Error(), "requires 'call_style'") {
-		t.Fatalf("expected metadata.call_style validation error, got: %v", err)
+
+	encoded, err := json.Marshal(node.Branches)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	want := `[{"id":11,"branchType":"BRANCH","condition":"context.option == '1'","target":null},{"branchType":"BRANCH","condition":"context.option == '2'","target":null}]`
+	if string(encoded) != want {
+		t.Errorf("branches = %s, want %s", encoded, want)
 	}
 }
 
