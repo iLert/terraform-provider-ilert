@@ -59,7 +59,7 @@ The following arguments are supported:
 - `show_incident_history_option` - (Optional) Indicates whether or not the incident history option should be shown.
 - `page_title` - (Optional) The title of the status page.
 - `page_description` - (Optional) The description of the status page.
-- `page_layout` - (Optional) The layout of the status page. Allowed values are `SINGLE_COLUMN` and `RESPONSIVE`.
+- `page_layout` - (Optional) The layout of the status page. Allowed values are `SINGLE_COLUMN`, `RESPONSIVE` and `GRID`. A status page with more than 100 services must use `GRID`.
 - `logo_redirect_url` - (Optional) The redirect url for the status page logo.
 - `team` - (Optional) One or more [team](#team-arguments) blocks. The order in which the blocks are declared is not significant.
 - `ip_whitelist` - (Optional) One or more IP's to whitelist.
