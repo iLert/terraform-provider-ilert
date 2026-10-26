@@ -142,6 +142,50 @@ resource "ilert_call_flow" "business_hours_support" {
   }
 }
 
+resource "ilert_call_flow" "regional_routing" {
+  name = "Regional Routing"
+  language = "en"
+
+  root_node {
+    node_type = "ROOT"
+    branches {
+      branch_type = "ANSWERED"
+      target {
+        node_type = "DEFINE_BRANCHES"
+        metadata {
+          definitions {
+            branch_name = "germany"
+            conditions = "context.fromCountry == 'DE'"
+          }
+        }
+        branches {
+          branch_type = "BRANCH"
+          condition = "context.matchingBranchName == 'germany'"
+          target {
+            node_type = "AUDIO_MESSAGE"
+            metadata {
+              text_message = "Vielen Dank für Ihren Anruf bei <company name>."
+              ai_voice_model = "ivy"
+              language = "de"
+            }
+          }
+        }
+        branches {
+          branch_type = "CATCH_ALL"
+          target {
+            node_type = "AUDIO_MESSAGE"
+            metadata {
+              text_message = "Thank you for calling <company name>."
+              ai_voice_model = "ivy"
+              language = "en"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 resource "ilert_call_flow" "interactive_menu" {
   name = "Interactive Menuu"
   language = "en"

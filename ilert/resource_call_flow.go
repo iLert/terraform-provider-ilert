@@ -380,6 +380,25 @@ func resourceCallFlowNodeMetadata() *schema.Resource {
 					},
 				},
 			},
+			"definitions": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 8,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"branch_name": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.All(validation.StringIsNotWhiteSpace, validation.StringDoesNotContainAny(`'\`)),
+						},
+						"conditions": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringIsNotWhiteSpace,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -682,6 +701,24 @@ func buildCallFlowNodeFromMap(rn map[string]any) (*ilert.CallFlowNode, error) {
 				enr.Sources = srcs
 			}
 			md.Enrichment = enr
+		}
+		if v, ok := mv["definitions"].([]any); ok && len(v) > 0 {
+			definitions := make([]ilert.CallFlowNodeMetadataDefinition, 0, len(v))
+			for _, it := range v {
+				if it == nil {
+					continue
+				}
+				dv := it.(map[string]any)
+				definition := ilert.CallFlowNodeMetadataDefinition{}
+				if s, ok := dv["branch_name"].(string); ok && s != "" {
+					definition.BranchName = s
+				}
+				if s, ok := dv["conditions"].(string); ok && s != "" {
+					definition.Conditions = s
+				}
+				definitions = append(definitions, definition)
+			}
+			md.Definitions = definitions
 		}
 		node.Metadata = md
 	}
@@ -1214,6 +1251,24 @@ func flattenCallFlowNode(node **ilert.CallFlowNode) ([]any, error) {
 				}
 				md.Blacklist = bl
 			}
+			if v, ok := mdMap["definitions"].([]any); ok && len(v) > 0 {
+				definitions := make([]ilert.CallFlowNodeMetadataDefinition, 0, len(v))
+				for _, it := range v {
+					if it == nil {
+						continue
+					}
+					dv := it.(map[string]any)
+					definition := ilert.CallFlowNodeMetadataDefinition{}
+					if s, ok := dv["branchName"].(string); ok && s != "" {
+						definition.BranchName = s
+					}
+					if s, ok := dv["conditions"].(string); ok && s != "" {
+						definition.Conditions = s
+					}
+					definitions = append(definitions, definition)
+				}
+				md.Definitions = definitions
+			}
 
 			mds, err := flattenCallFlowNodeMetadata(md)
 			if err != nil {
@@ -1414,6 +1469,20 @@ func flattenCallFlowNodeMetadata(md *ilert.CallFlowNodeMetadata) ([]any, error) 
 			em["sources"] = srcMap
 		}
 		result["enrichment"] = []any{em}
+	}
+	if len(md.Definitions) > 0 {
+		definitions := make([]any, 0, len(md.Definitions))
+		for _, definition := range md.Definitions {
+			m := make(map[string]any)
+			if definition.BranchName != "" {
+				m["branch_name"] = definition.BranchName
+			}
+			if definition.Conditions != "" {
+				m["conditions"] = definition.Conditions
+			}
+			definitions = append(definitions, m)
+		}
+		result["definitions"] = definitions
 	}
 
 	return []any{result}, nil

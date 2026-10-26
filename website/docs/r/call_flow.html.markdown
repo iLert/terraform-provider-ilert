@@ -52,7 +52,7 @@ The following arguments are supported:
 #### Node Arguments
 
 - `name` - (Optional) The name of the node.
-- `node_type` - (Required) The node type. Allowed values: `ROOT`, `IVR_MENU`, `AUDIO_MESSAGE`, `PLAIN`, `SUPPORT_HOURS`, `ROUTE_CALL`, `VOICEMAIL`, `PIN_CODE`, `CREATE_ALERT`, `BLOCK_NUMBERS`, `AGENTIC`, `PARALLEL_ROUTE_CALL`.
+- `node_type` - (Required) The node type. Allowed values: `ROOT`, `IVR_MENU`, `AUDIO_MESSAGE`, `PLAIN`, `SUPPORT_HOURS`, `ROUTE_CALL`, `VOICEMAIL`, `PIN_CODE`, `CREATE_ALERT`, `BLOCK_NUMBERS`, `AGENTIC`, `PARALLEL_ROUTE_CALL`, `DEFINE_BRANCHES`.
 - `metadata` - (Optional) A single [metadata](#metadata-arguments) block.
 - `branches` - (Optional) A list of [branch](#branch-arguments) blocks.
 
@@ -60,7 +60,7 @@ The following arguments are supported:
 
 - `text_message` - (Optional) Used by node types: `IVR_MENU`, `AUDIO_MESSAGE`, `VOICEMAIL`, `PIN_CODE`.
 - `custom_audio_url` - (Optional) Used by node types: `IVR_MENU`, `AUDIO_MESSAGE`, `VOICEMAIL`, `PIN_CODE`.
-- `ai_voice_model` - (Optional) Used by node types: `IVR_MENU`, `AUDIO_MESSAGE`, `VOICEMAIL`, `PIN_CODE`. Allowed values: `emma`, `liam`, `oliver`, `andreas`, `sophie`, `isabelle`, `gordon`, `bruce`, `alfred`, `ellen`, `barbara`.
+- `ai_voice_model` - (Optional) Used by node types: `IVR_MENU`, `AUDIO_MESSAGE`, `VOICEMAIL`, `PIN_CODE`. Allowed values: `emma`, `liam`, `oliver`, `andreas`, `sophie`, `isabelle`, `gordon`, `bruce`, `alfred`, `ellen`, `barbara`, `ivy`.
 - `enabled_options` - (Optional) Used by node type: `IVR_MENU`.
 - `language` - (Optional) Used by node types: `IVR_MENU`, `AUDIO_MESSAGE`. Allowed values: `en`, `de`, `fr`, `es`, `nl`, `ru`, `it`.
 - `var_key` - (Optional) Used by node type: `PLAIN`.
@@ -79,6 +79,7 @@ The following arguments are supported:
 - `intents` - (Optional) Used by node type: `AGENTIC`. A list of intent objects with attributes `type`, `label`, `description`, `examples`. `type` allowed values: `INCIDENT`, `SYSTEM_OUTAGE`, `SECURITY_BREACH`, `TECHNICAL_SUPPORT`, `INQUIRY`.
 - `gathers` - (Optional) Used by node type: `AGENTIC`. A list of gather objects with attributes `type`, `label`, `var_type`, `required`, `question`. `type` allowed values: `CALLER_NAME`, `CONTACT_NUMBER`, `EMAIL`, `INCIDENT`, `AFFECTED_SERVICES`. `var_type` allowed values: `NUMBER`, `DATE`, `BOOLEAN`, `STRING`.
 - `enrichment` - (Optional) Used by node type: `AGENTIC`. A single [enrichment](#enrichment-arguments) block.
+- `definitions` - (Optional) Required with node type: `DEFINE_BRANCHES`. A list of 1 to 8 definition objects with attributes `branch_name` and `conditions`, both required. Neither may be blank, and branch names must be unique and must not contain single quotes or backslashes. The node takes the branch of the first definition whose `conditions` match, and its branches select a definition with the `condition` `context.matchingBranchName == '<branch_name>'`.
 
 ##### Enrichment Arguments
 

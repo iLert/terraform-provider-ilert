@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.10.2026, Version 2.30.0
+
+- add the `DEFINE_BRANCHES` node to the `ilert_call_flow` resource, with the `definitions` it requires in its `metadata`: 1 to 8 objects with a `branch_name` and the `conditions` that select it. A blank `branch_name` or `conditions`, and a `branch_name` with a single quote or backslash, which the API rejects, fail at plan time. A call flow with such a node, created in the web app or exported to Terraform from it, was rejected at plan time, and the definitions of a branch node were not read into state [#172](https://github.com/iLert/terraform-provider-ilert/pull/172)
+- add the `ivy` AI voice model to the `ilert_call_flow` resource. The API accepts it, so a call flow using it in the web app, or exported to Terraform from it, was rejected at plan time [#172](https://github.com/iLert/terraform-provider-ilert/pull/172)
+- add the `GRID` page layout to the `ilert_status_page` resource, which the API requires on a status page with more than 100 services. A status page using it, or exported to Terraform from the web app, was rejected at plan time [#172](https://github.com/iLert/terraform-provider-ilert/pull/172)
+
 ## 20.10.2026, Version 2.29.1
 
 - fix a permanent diff on every connector credential the API leaves out of its response: `password`, `api_key` and `secret` were read back empty, so every plan showed the configured value as a change and no apply could settle it. The state now keeps the configured credential when the API does not return one, and a credential the API does return still replaces it, as before, so a credential changed outside of Terraform only shows in the plan while the API returns it. A credential the API does not return is imported empty: the first plan after an import shows it as a change, and applying the configuration sets it in ilert [#168](https://github.com/iLert/terraform-provider-ilert/pull/168)
