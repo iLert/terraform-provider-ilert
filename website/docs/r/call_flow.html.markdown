@@ -67,14 +67,14 @@ The following arguments are supported:
 - `var_value` - (Optional) Used by node type: `PLAIN`.
 - `codes` - (Optional) Used by node type: `PIN_CODE`. A list of code objects with attributes `code` and `label`.
 - `support_hours_id` - (Optional) Used by node type: `SUPPORT_HOURS`.
-- `hold_audio_url` - (Optional) Used by node type: `ROUTE_CALL`.
-- `targets` - (Optional) Used by node type: `ROUTE_CALL`. A list of targets with attributes `target` and `type`. `type` allowed values: `USER`, `ON_CALL_SCHEDULE`, `NUMBER`.
-- `call_style` - (Optional) Required with node type: `ROUTE_CALL`. Allowed values: `ORDERED`, `RANDOM`, `PARALLEL`.
+- `hold_audio_url` - (Optional) Used by node types: `ROUTE_CALL`, `PARALLEL_ROUTE_CALL`.
+- `targets` - (Optional) Required with node types: `ROUTE_CALL`, `PARALLEL_ROUTE_CALL`. A list of targets with attributes `target` and `type`. `type` allowed values: `USER`, `ON_CALL_SCHEDULE`, `NUMBER`. `NUMBER` is only allowed with `ROUTE_CALL`.
+- `call_style` - (Optional) Required with node types: `ROUTE_CALL`, `PARALLEL_ROUTE_CALL`. Allowed values: `ORDERED` or `RANDOM` with `ROUTE_CALL`, `PARALLEL` with `PARALLEL_ROUTE_CALL`. `PARALLEL_ROUTE_CALL` needs a plan with parallel calls, the API rejects it with `Missing Tenant Feature 'PARALLEL_CR_CALLS'` otherwise.
 - `alert_source_id` - (Optional) Used by node type: `CREATE_ALERT`.
 - `accept_alert_on_answer` - (Optional) Used by node type: `CREATE_ALERT`. When enabled, the created alert is accepted automatically once the call is answered.
 - `disable_transcription` - (Optional) Used by node type: `VOICEMAIL`. When enabled, the voicemail recording is not transcribed.
-- `retries` - (Optional) Used by node types: `IVR_MENU`, `PIN_CODE`, `ROUTE_CALL`.
-- `call_timeout_sec` - (Optional) Used by node type: `ROUTE_CALL`.
+- `retries` - (Optional) Used by node types: `IVR_MENU`, `PIN_CODE`, `ROUTE_CALL`, `PARALLEL_ROUTE_CALL`.
+- `call_timeout_sec` - (Optional) Used by node types: `ROUTE_CALL`, `PARALLEL_ROUTE_CALL`.
 - `blacklist` - (Optional) Used by node type: `BLOCK_NUMBERS`.
 - `intents` - (Optional) Used by node type: `AGENTIC`. A list of intent objects with attributes `type`, `label`, `description`, `examples`. `type` allowed values: `INCIDENT`, `SYSTEM_OUTAGE`, `SECURITY_BREACH`, `TECHNICAL_SUPPORT`, `INQUIRY`.
 - `gathers` - (Optional) Used by node type: `AGENTIC`. A list of gather objects with attributes `type`, `label`, `var_type`, `required`, `question`. `type` allowed values: `CALLER_NAME`, `CONTACT_NUMBER`, `EMAIL`, `INCIDENT`, `AFFECTED_SERVICES`. `var_type` allowed values: `NUMBER`, `DATE`, `BOOLEAN`, `STRING`.

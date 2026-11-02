@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -479,15 +481,26 @@ func buildCallFlow(d *schema.ResourceData) (*ilert.CallFlow, error) {
 	return callFlow, nil
 }
 
+// callFlowNodeCallStyles are the call styles the API accepts per node type. It
+// answers a route call node without a call style with a 500, which would be
+// retried until the timeout, and any other call style with a 400.
+var callFlowNodeCallStyles = map[string][]string{
+	ilert.CallFlowNodeType.RouteCall:         {ilert.CallFlowNodeMetadataCallStyle.Ordered, ilert.CallFlowNodeMetadataCallStyle.Random},
+	ilert.CallFlowNodeType.ParallelRouteCall: {ilert.CallFlowNodeMetadataCallStyle.Parallel},
+}
+
 func validateCallFlowNodeRouteCallStyle(node *ilert.CallFlowNode) error {
 	if node == nil {
 		return nil
 	}
 
-	if node.NodeType == ilert.CallFlowNodeType.RouteCall {
-		md, ok := node.Metadata.(*ilert.CallFlowNodeMetadata)
-		if !ok || md == nil || md.CallStyle == "" {
-			return fmt.Errorf("Node type 'ROUTE_CALL' requires 'call_style' metadata to be set")
+	if styles, ok := callFlowNodeCallStyles[node.NodeType]; ok {
+		md, _ := node.Metadata.(*ilert.CallFlowNodeMetadata)
+		if md == nil || md.CallStyle == "" {
+			return fmt.Errorf("node type '%s' requires 'call_style' metadata to be set to '%s'", node.NodeType, strings.Join(styles, "' or '"))
+		}
+		if !slices.Contains(styles, md.CallStyle) {
+			return fmt.Errorf("node type '%s' does not support 'call_style' '%s', use '%s'", node.NodeType, md.CallStyle, strings.Join(styles, "' or '"))
 		}
 	}
 
