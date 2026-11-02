@@ -1,6 +1,6 @@
 # Changelog
 
-## 26.10.2026, Version 2.30.1
+## 02.11.2026, Version 2.30.1
 
 - fix adding a branch to a call flow node that already has branches, such as a new option on an `IVR_MENU` node or a new definition and its branch on a `DEFINE_BRANCHES` node: the new branch was sent with an id of 0, which the API rejects on such a node with a 400, `You have provided a branch id 0 in node <id>, which does not exist`, so the branch could only be added in the web app first or by replacing the call flow. A new branch is now sent without an id, with `ilert-go` v4.2.1 [#173](https://github.com/iLert/terraform-provider-ilert/pull/173)
 - fix a `PARALLEL_ROUTE_CALL` node without a `call_style` hanging the apply until it timed out, after 10 minutes on a create: the API answers it with a 500, which the provider retries. It now fails on apply before anything is sent, as a `ROUTE_CALL` node without one has since v2.16.4 ([#124](https://github.com/iLert/terraform-provider-ilert/pull/124)). A `call_style` the node type does not take fails the same way instead of with a 400 from the API: `ROUTE_CALL` takes `ORDERED` or `RANDOM`, `PARALLEL_ROUTE_CALL` takes `PARALLEL`, and the docs listed all three for `ROUTE_CALL`. The docs now also list `targets`, `hold_audio_url`, `retries` and `call_timeout_sec` for `PARALLEL_ROUTE_CALL`, which takes them like `ROUTE_CALL` except for `NUMBER` targets [#173](https://github.com/iLert/terraform-provider-ilert/pull/173)
