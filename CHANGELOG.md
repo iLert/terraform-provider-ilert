@@ -1,5 +1,10 @@
 # Changelog
 
+## 09.11.2026, Version 2.31.0
+
+- add `auto_raise_alerts` to the `ilert_alert_source` resource, which raises the priority of all pending alerts to high when the support hours begin, for support hours referenced through `support_hours { id = ... }`. The nested `support_hours.auto_raise_alerts` only applies to inline support hours and conflicts with `id`, so it could not be set on referenced support hours. Set to `true` without referenced support hours, it fails at plan time
+- fix every apply that updates an alert source with referenced support hours turning off auto raise set in the web app, without the plan showing it: the API sets it from every write, and the provider left it out, which turns it off. Left out of the configuration, `auto_raise_alerts` now holds the value read from ilert, which is sent back with `ilert-go` v4.3.0, and `false` turns it off
+
 ## 02.11.2026, Version 2.30.1
 
 - fix adding a branch to a call flow node that already has branches, such as a new option on an `IVR_MENU` node or a new definition and its branch on a `DEFINE_BRANCHES` node: the new branch was sent with an id of 0, which the API rejects on such a node with a 400, `You have provided a branch id 0 in node <id>, which does not exist`, so the branch could only be added in the web app first or by replacing the call flow. A new branch is now sent without an id, with `ilert-go` v4.2.1 [#173](https://github.com/iLert/terraform-provider-ilert/pull/173)
