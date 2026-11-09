@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/go-cty/cty"
+	ctyjson "github.com/hashicorp/go-cty/cty/json"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	ilertapi "github.com/iLert/ilert-go/v4"
@@ -683,5 +685,245 @@ func TestFlattenLinkTemplatesList(t *testing.T) {
 	}
 	if got := second["link_text_template"].([]any); len(got) != 0 {
 		t.Fatalf("expected no link_text_template for a legacy link template, got %v", got)
+	}
+}
+
+// With referenced support hours the API sets autoRaiseAlerts from every write and
+// turns it off when the field is left out, so it has to be sent each time.
+func TestBuildAlertSource_SendsAutoRaiseAlertsWithReferencedSupportHours(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+		"name":                "test-alert-source",
+		"integration_type":    "API",
+		"escalation_policy":   "1",
+		"alert_priority_rule": "HIGH_DURING_SUPPORT_HOURS",
+		"support_hours":       []any{map[string]any{"id": 5}},
+		"auto_raise_alerts":   true,
+	})
+
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert source: %v", err)
+	}
+
+	payload, err := json.Marshal(alertSource)
+	if err != nil {
+		t.Fatalf("unexpected error marshalling alert source: %v", err)
+	}
+	if !strings.Contains(string(payload), `"autoRaiseAlerts":true`) {
+		t.Fatalf("expected payload to contain \"autoRaiseAlerts\":true, got %s", payload)
+	}
+}
+
+// Left out of the configuration, the value read from ilert is sent back, so an
+// apply does not turn off auto raise set in the web app.
+func TestBuildAlertSource_KeepsAutoRaiseAlertsWhenNotConfigured(t *testing.T) {
+	d := testResourceDataForUpdate(t, resourceAlertSource(),
+		map[string]any{
+			"name":                "test-alert-source",
+			"integration_type":    "API",
+			"escalation_policy":   "1",
+			"alert_priority_rule": "HIGH_DURING_SUPPORT_HOURS",
+			"support_hours":       []any{map[string]any{"id": 5}},
+			"auto_raise_alerts":   true,
+		},
+		map[string]any{
+			"name":                "renamed-alert-source",
+			"integration_type":    "API",
+			"escalation_policy":   "1",
+			"alert_priority_rule": "HIGH_DURING_SUPPORT_HOURS",
+			"support_hours":       []any{map[string]any{"id": 5}},
+		})
+
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert source: %v", err)
+	}
+	if alertSource.AutoRaiseAlerts == nil || !*alertSource.AutoRaiseAlerts {
+		t.Fatalf("expected auto raise alerts to stay true, got %v", alertSource.AutoRaiseAlerts)
+	}
+}
+
+func TestBuildAlertSource_LeavesAutoRaiseAlertsOutWithInlineSupportHours(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+		"name":                "test-alert-source",
+		"integration_type":    "API",
+		"escalation_policy":   "1",
+		"alert_priority_rule": "HIGH_DURING_SUPPORT_HOURS",
+		"support_hours": []any{map[string]any{
+			"timezone":          "Europe/Berlin",
+			"auto_raise_alerts": true,
+			"support_days": []any{map[string]any{
+				"monday": []any{map[string]any{"start": "08:00", "end": "17:00"}},
+			}},
+		}},
+	})
+
+	alertSource, err := buildAlertSource(d)
+	if err != nil {
+		t.Fatalf("unexpected error building alert source: %v", err)
+	}
+	if alertSource.AutoRaiseAlerts != nil {
+		t.Fatalf("expected no top-level auto raise alerts with inline support hours, got %v", *alertSource.AutoRaiseAlerts)
+	}
+	supportHours, ok := alertSource.SupportHours.(*ilertapi.SupportHours)
+	if !ok || !supportHours.AutoRaiseAlerts {
+		t.Fatalf("expected the inline support hours to carry auto raise alerts, got %#v", alertSource.SupportHours)
+	}
+}
+
+func TestTransformAlertSourceResource_ReadsAutoRaiseAlerts(t *testing.T) {
+	tests := []struct {
+		autoRaiseAlerts *bool
+		want            bool
+	}{
+		{ilertapi.Bool(true), true},
+		{ilertapi.Bool(false), false},
+		{nil, false},
+	}
+	for _, tt := range tests {
+		d := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+			"name":              "test-alert-source",
+			"integration_type":  "API",
+			"escalation_policy": "1",
+		})
+		alertSource := &ilertapi.AlertSource{
+			Name:             "test-alert-source",
+			EscalationPolicy: &ilertapi.EscalationPolicy{ID: 1},
+			SupportHours:     map[string]any{"id": float64(5)},
+			AutoRaiseAlerts:  tt.autoRaiseAlerts,
+		}
+
+		if err := transformAlertSourceResource(alertSource, d); err != nil {
+			t.Fatalf("unexpected error transforming alert source: %v", err)
+		}
+		if got := d.Get("auto_raise_alerts").(bool); got != tt.want {
+			t.Fatalf("auto_raise_alerts = %v for %v, want %v", got, tt.autoRaiseAlerts, tt.want)
+		}
+	}
+}
+
+// diffAlertSource plans raw against prior with the raw configuration Terraform
+// sends, which validateAutoRaiseAlerts reads. The paths in unknown are not known
+// until apply.
+func diffAlertSource(t *testing.T, prior *terraform.InstanceState, raw map[string]any, unknown ...cty.Path) (*terraform.InstanceDiff, error) {
+	t.Helper()
+
+	resource := resourceAlertSource()
+	coreSchema := resource.CoreConfigSchema()
+
+	encoded, err := json.Marshal(raw)
+	if err != nil {
+		t.Fatalf("unexpected error marshalling config: %v", err)
+	}
+	val, err := ctyjson.Unmarshal(encoded, coreSchema.ImpliedType())
+	if err != nil {
+		t.Fatalf("unexpected error building config: %v", err)
+	}
+	if val, err = coreSchema.CoerceValue(val); err != nil {
+		t.Fatalf("unexpected error coercing config: %v", err)
+	}
+	for _, path := range unknown {
+		val, err = cty.Transform(val, func(p cty.Path, v cty.Value) (cty.Value, error) {
+			if p.Equals(path) {
+				return cty.UnknownVal(v.Type()), nil
+			}
+			return v, nil
+		})
+		if err != nil {
+			t.Fatalf("unexpected error marking %#v unknown: %v", path, err)
+		}
+	}
+
+	if prior == nil {
+		prior = &terraform.InstanceState{}
+	}
+	prior.RawConfig = val
+	return resource.Diff(context.Background(), prior, terraform.NewResourceConfigShimmed(val, coreSchema), nil)
+}
+
+func TestResourceAlertSource_AutoRaiseAlertsRequiresReferencedSupportHours(t *testing.T) {
+	referenced := []any{map[string]any{"id": 5}}
+	inline := []any{map[string]any{
+		"timezone": "Europe/Berlin",
+		"support_days": []any{map[string]any{
+			"monday": []any{map[string]any{"start": "08:00", "end": "17:00"}},
+		}},
+	}}
+
+	cases := map[string]struct {
+		supportHours    []any
+		autoRaiseAlerts any
+		unknown         []cty.Path
+		wantErr         bool
+	}{
+		"referenced support hours":                      {supportHours: referenced, autoRaiseAlerts: true},
+		"referenced support hours not known yet":        {supportHours: referenced, autoRaiseAlerts: true, unknown: []cty.Path{cty.GetAttrPath("support_hours").IndexInt(0).GetAttr("id")}},
+		"inline support hours":                          {supportHours: inline, autoRaiseAlerts: true, wantErr: true},
+		"no support hours":                              {autoRaiseAlerts: true, wantErr: true},
+		"false without support hours":                   {autoRaiseAlerts: false},
+		"left out without support hours":                {},
+		"a value not known until apply, as in validate": {supportHours: inline, autoRaiseAlerts: true, unknown: []cty.Path{cty.GetAttrPath("auto_raise_alerts")}},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			raw := map[string]any{
+				"name":                "test-alert-source",
+				"integration_type":    "API",
+				"escalation_policy":   "1",
+				"alert_priority_rule": "HIGH_DURING_SUPPORT_HOURS",
+			}
+			if tc.supportHours != nil {
+				raw["support_hours"] = tc.supportHours
+			}
+			if tc.autoRaiseAlerts != nil {
+				raw["auto_raise_alerts"] = tc.autoRaiseAlerts
+			}
+
+			_, err := diffAlertSource(t, nil, raw, tc.unknown...)
+			if tc.wantErr {
+				if err == nil || !strings.Contains(err.Error(), "auto_raise_alerts requires support hours referenced") {
+					t.Errorf("error = %v, want one about referenced support hours", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+// Switching from referenced to inline support hours, a value left out of the
+// configuration is planned as false, which is what the API returns then.
+func TestResourceAlertSource_AutoRaiseAlertsPlannedFalseWhenSupportHoursNoLongerReferenced(t *testing.T) {
+	prior := schema.TestResourceDataRaw(t, resourceAlertSource().Schema, map[string]any{
+		"name":                "test-alert-source",
+		"integration_type":    "API",
+		"escalation_policy":   "1",
+		"alert_priority_rule": "HIGH_DURING_SUPPORT_HOURS",
+		"support_hours":       []any{map[string]any{"id": 5}},
+		"auto_raise_alerts":   true,
+	})
+	prior.SetId("1")
+
+	diff, err := diffAlertSource(t, prior.State(), map[string]any{
+		"name":                "test-alert-source",
+		"integration_type":    "API",
+		"escalation_policy":   "1",
+		"alert_priority_rule": "HIGH_DURING_SUPPORT_HOURS",
+		"support_hours": []any{map[string]any{
+			"timezone": "Europe/Berlin",
+			"support_days": []any{map[string]any{
+				"monday": []any{map[string]any{"start": "08:00", "end": "17:00"}},
+			}},
+		}},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	attr, ok := diff.Attributes["auto_raise_alerts"]
+	if !ok || attr.New != "false" {
+		t.Fatalf("auto_raise_alerts planned as %#v, want false", attr)
 	}
 }
