@@ -247,7 +247,7 @@ func resourceAlertSource() *schema.Resource {
 						"auto_raise_alerts": {
 							Type:       schema.TypeBool,
 							Optional:   true,
-							Deprecated: "The field `auto_raise_alerts` is deprecated! Please use the support hour resource instead and reference it via field `id`."},
+							Deprecated: "The field `auto_raise_alerts` is deprecated! Please use the support hour resource instead, reference it via field `id` and set `auto_raise_alerts` on the alert source."},
 						"support_days": {
 							Type:         schema.TypeList,
 							Optional:     true,
@@ -312,6 +312,12 @@ func resourceAlertSource() *schema.Resource {
 						},
 					},
 				},
+			},
+			"auto_raise_alerts": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Raise the priority of all pending alerts to high when the support hours referenced via `support_hours.0.id` begin. When left out, the value set in ilert is kept.",
 			},
 			"autotask_metadata": {
 				Type:       schema.TypeList,
@@ -722,7 +728,7 @@ func resourceAlertSource() *schema.Resource {
 		UpdateContext: resourceAlertSourceUpdate,
 		DeleteContext: resourceAlertSourceDelete,
 		Exists:        resourceAlertSourceExists,
-		CustomizeDiff: validateLinkTemplates,
+		CustomizeDiff: validateAlertSourceDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -733,6 +739,13 @@ func resourceAlertSource() *schema.Resource {
 			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 	}
+}
+
+func validateAlertSourceDiff(ctx context.Context, diff *schema.ResourceDiff, m any) error {
+	if err := validateLinkTemplates(ctx, diff, m); err != nil {
+		return err
+	}
+	return validateAutoRaiseAlerts(ctx, diff, m)
 }
 
 // validateLinkTemplates surfaces the API requirement that every link template
@@ -778,6 +791,37 @@ func validateLinkTemplates(ctx context.Context, diff *schema.ResourceDiff, m any
 		return fmt.Errorf("[ERROR] Each link template requires a display name, please set link_text_template (or the deprecated text) on link_template %d", i)
 	}
 	return nil
+}
+
+// validateAutoRaiseAlerts rejects auto_raise_alerts set to true without support
+// hours referenced by id at plan time: the API ignores it then, so every plan
+// would show it as a change. It reads the raw configuration, since a value left
+// out holds the one read from ilert, and skips values not known until apply, as
+// the variables of a module are in terraform validate. Left out, it is planned
+// as false once the support hours are no longer referenced, which is what the
+// API returns then.
+func validateAutoRaiseAlerts(ctx context.Context, diff *schema.ResourceDiff, m any) error {
+	if !diff.NewValueKnown("support_hours.0.id") {
+		return nil
+	}
+	if id, _ := diff.Get("support_hours.0.id").(int); id > 0 {
+		return nil
+	}
+	raw := diff.GetRawConfig()
+	if raw.IsNull() || !raw.IsKnown() {
+		return nil
+	}
+	autoRaiseAlerts := raw.GetAttr("auto_raise_alerts")
+	if autoRaiseAlerts.IsNull() {
+		if diff.Get("auto_raise_alerts").(bool) {
+			return diff.SetNew("auto_raise_alerts", false)
+		}
+		return nil
+	}
+	if !autoRaiseAlerts.IsKnown() || autoRaiseAlerts.False() {
+		return nil
+	}
+	return fmt.Errorf("[ERROR] auto_raise_alerts requires support hours referenced via support_hours { id = ... }, inline support hours take support_hours.auto_raise_alerts instead")
 }
 
 func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
@@ -897,6 +941,9 @@ func buildAlertSource(d *schema.ResourceData) (*ilert.AlertSource, error) {
 				alertSource.SupportHours = &ilert.SupportHour{
 					ID: id,
 				}
+				// every write with referenced support hours sets this, an omitted field turns it off. Left out of
+				// the configuration, it holds the value read from ilert, so one set in the web app is kept
+				alertSource.AutoRaiseAlerts = ilert.Bool(d.Get("auto_raise_alerts").(bool))
 			} else {
 				// legacy
 				supportHours := &ilert.SupportHours{
@@ -1668,6 +1715,9 @@ func transformAlertSourceResource(alertSource *ilert.AlertSource, d *schema.Reso
 			return fmt.Errorf("[ERROR] Error setting support hours: %s", err.Error())
 		}
 	}
+
+	// only returned with referenced support hours
+	d.Set("auto_raise_alerts", alertSource.AutoRaiseAlerts != nil && *alertSource.AutoRaiseAlerts)
 
 	return nil
 }
