@@ -189,6 +189,10 @@ func buildCredential(d *schema.ResourceData) (*ilert.Credential, error) {
 }
 
 func resourceCredentialCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	if err := requireEarlyAccess(m, "ilert_credential"); err != nil {
+		return diag.FromErr(err)
+	}
+
 	client := m.(*ilert.Client)
 
 	credential, err := buildCredential(d)
@@ -228,6 +232,10 @@ func resourceCredentialCreate(ctx context.Context, d *schema.ResourceData, m any
 }
 
 func resourceCredentialRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	if err := requireEarlyAccess(m, "ilert_credential"); err != nil {
+		return diag.FromErr(err)
+	}
+
 	client := m.(*ilert.Client)
 
 	credentialID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -278,6 +286,10 @@ func resourceCredentialRead(ctx context.Context, d *schema.ResourceData, m any) 
 }
 
 func resourceCredentialDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	if err := requireEarlyAccess(m, "ilert_credential"); err != nil {
+		return diag.FromErr(err)
+	}
+
 	client := m.(*ilert.Client)
 
 	credentialID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -311,6 +323,10 @@ func resourceCredentialDelete(ctx context.Context, d *schema.ResourceData, m any
 }
 
 func resourceCredentialExists(d *schema.ResourceData, m any) (bool, error) {
+	if err := requireEarlyAccess(m, "ilert_credential"); err != nil {
+		return false, err
+	}
+
 	client := m.(*ilert.Client)
 
 	credentialID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -416,6 +432,10 @@ func flattenCredentialTeams(teams []ilert.TeamShort, d *schema.ResourceData) []a
 // from the state would replace it on the first apply. The teams are taken with their
 // names, as the IaC exporter writes them.
 func resourceCredentialImport(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
+	if err := requireEarlyAccess(m, "ilert_credential"); err != nil {
+		return nil, err
+	}
+
 	client := m.(*ilert.Client)
 
 	credentialID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -554,7 +574,12 @@ type planValues interface {
 	HasChanges(keys ...string) bool
 }
 
-func validateCredentialDiff(_ context.Context, d *schema.ResourceDiff, _ any) error {
+// validateCredentialDiff fails the plan of a credential while ilert_credential is
+// not in early_access_enabled, then checks its arguments
+func validateCredentialDiff(_ context.Context, d *schema.ResourceDiff, m any) error {
+	if err := requireEarlyAccess(m, "ilert_credential"); err != nil {
+		return err
+	}
 	return validateCredentialArguments(d)
 }
 

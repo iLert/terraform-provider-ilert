@@ -31,6 +31,10 @@ func dataSourceAgent() *schema.Resource {
 }
 
 func dataSourceAgentRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	if err := requireEarlyAccess(meta, "ilert_agent"); err != nil {
+		return diag.FromErr(err)
+	}
+
 	client := meta.(*ilert.Client)
 
 	log.Printf("[DEBUG] Reading ilert agent")

@@ -2,6 +2,7 @@
 layout: "ilert"
 page_title: "ilert: ilert_credential"
 sidebar_current: "docs-ilert-resource-credential"
+subcategory: "Early access"
 description: |-
   Creates and manages a credential in ilert.
 ---
@@ -10,13 +11,17 @@ description: |-
 
 A credential holds a secret that ilert uses against another system, such as the token the MCP server of an [agent](agent.html) authenticates with. ilert stores the secret encrypted and never returns it.
 
--> **Early access:** credentials are an early access resource of the ilert API. The provider sends the `ilert-beta` header the API requires for them. The contract may change while it is in early access.
+~> **Early access:** credentials are an [early access](https://docs.ilert.com/developer-docs/rest-api/api-reference/introduction/early-access) resource of the ilert API, and disabled by default: add `"ilert_credential"` to `early_access_enabled` in the [provider configuration](../index.html#early-access) to use this resource and its data source. The provider sends the `ilert-beta` header the API requires for them. They may change or be removed, and so may this resource, even in a minor version of the provider.
 
 ~> **A credential cannot be changed.** The API rejects every update, so changing any argument replaces the credential: Terraform deletes it and creates a new one with a new `id`. Names are unique, so the new credential can only be created once the old one is deleted, and whatever uses the credential is without it in between. Agents that reference it as `ilert_credential.<name>.id` are switched to the new one in the same apply. The API does not check whether a credential is still in use when it is deleted.
 
 ## Example Usage
 
 ```hcl
+provider "ilert" {
+  early_access_enabled = ["ilert_credential"]
+}
+
 # the credential of a built-in MCP server
 resource "ilert_credential" "github" {
   name         = "github"

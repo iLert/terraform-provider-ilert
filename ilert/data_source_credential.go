@@ -43,6 +43,10 @@ func dataSourceCredential() *schema.Resource {
 }
 
 func dataSourceCredentialRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	if err := requireEarlyAccess(meta, "ilert_credential"); err != nil {
+		return diag.FromErr(err)
+	}
+
 	client := meta.(*ilert.Client)
 
 	log.Printf("[DEBUG] Reading ilert credential")

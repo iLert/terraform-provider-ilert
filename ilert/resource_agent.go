@@ -154,6 +154,7 @@ func resourceAgent() *schema.Resource {
 				Computed: true,
 			},
 		},
+		CustomizeDiff: resourceAgentCustomizeDiff,
 		CreateContext: resourceAgentCreate,
 		ReadContext:   resourceAgentRead,
 		UpdateContext: resourceAgentUpdate,
@@ -169,6 +170,12 @@ func resourceAgent() *schema.Resource {
 			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 	}
+}
+
+// resourceAgentCustomizeDiff fails the plan of an agent while ilert_agent is not in
+// early_access_enabled, before anything is created
+func resourceAgentCustomizeDiff(_ context.Context, _ *schema.ResourceDiff, m any) error {
+	return requireEarlyAccess(m, "ilert_agent")
 }
 
 // applyAgentConfig writes the configuration onto agent: an empty one on create, the
@@ -287,6 +294,10 @@ func buildAgentMcpTools(vL []any) []ilert.AgentMcpTool {
 }
 
 func resourceAgentCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	if err := requireEarlyAccess(m, "ilert_agent"); err != nil {
+		return diag.FromErr(err)
+	}
+
 	client := m.(*ilert.Client)
 
 	agent := &ilert.Agent{}
@@ -357,6 +368,10 @@ func fetchAgent(ctx context.Context, client *ilert.Client, d *schema.ResourceDat
 }
 
 func resourceAgentRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	if err := requireEarlyAccess(m, "ilert_agent"); err != nil {
+		return diag.FromErr(err)
+	}
+
 	client := m.(*ilert.Client)
 
 	log.Printf("[DEBUG] Reading agent: %s", d.Id())
@@ -381,6 +396,10 @@ func resourceAgentRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 }
 
 func resourceAgentUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	if err := requireEarlyAccess(m, "ilert_agent"); err != nil {
+		return diag.FromErr(err)
+	}
+
 	client := m.(*ilert.Client)
 
 	agentID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -422,6 +441,10 @@ func resourceAgentUpdate(ctx context.Context, d *schema.ResourceData, m any) dia
 }
 
 func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	if err := requireEarlyAccess(m, "ilert_agent"); err != nil {
+		return diag.FromErr(err)
+	}
+
 	client := m.(*ilert.Client)
 
 	agentID, err := strconv.ParseInt(d.Id(), 10, 64)
@@ -455,6 +478,10 @@ func resourceAgentDelete(ctx context.Context, d *schema.ResourceData, m any) dia
 }
 
 func resourceAgentExists(d *schema.ResourceData, m any) (bool, error) {
+	if err := requireEarlyAccess(m, "ilert_agent"); err != nil {
+		return false, err
+	}
+
 	client := m.(*ilert.Client)
 
 	agentID, err := strconv.ParseInt(d.Id(), 10, 64)

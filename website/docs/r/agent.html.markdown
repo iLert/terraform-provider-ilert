@@ -2,6 +2,7 @@
 layout: "ilert"
 page_title: "ilert: ilert_agent"
 sidebar_current: "docs-ilert-resource-agent"
+subcategory: "Early access"
 description: |-
   Creates and manages an agent in ilert.
 ---
@@ -10,11 +11,15 @@ description: |-
 
 An agent is an AI agent in ilert. It acts through the tools of the MCP servers it is given, which reach other systems with the [credentials](credential.html) they authenticate with.
 
--> **Early access:** agents are an early access resource of the ilert API. The provider sends the `ilert-beta` header the API requires for them. The contract may change while it is in early access.
+~> **Early access:** agents are an [early access](https://docs.ilert.com/developer-docs/rest-api/api-reference/introduction/early-access) resource of the ilert API, and disabled by default: add `"ilert_agent"` to `early_access_enabled` in the [provider configuration](../index.html#early-access) to use this resource and its data source. The provider sends the `ilert-beta` header the API requires for them. They may change or be removed, and so may this resource, even in a minor version of the provider.
 
 ## Example Usage
 
 ```hcl
+provider "ilert" {
+  early_access_enabled = ["ilert_agent", "ilert_credential"]
+}
+
 resource "ilert_credential" "github" {
   name         = "github"
   type         = "BEARER"

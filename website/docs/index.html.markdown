@@ -40,3 +40,23 @@ The following arguments are supported in the `provider` block:
 - `endpoint` - (Optional) This is the target ilert base API endpoint. Providing a value is a requirement when working with ilert Enterprise. It is optional to provide this value and it can also be sourced from the `ILERT_ENDPOINT` environment variable. The value must end with a slash, for example: `https://ilert.example.com/`
 
 - `debug` - (Optional) When set to `true`, the provider logs full request and response details (method, URL, headers and body) to help diagnose API issues such as WAF/proxy blocks, timeouts or authentication errors. Defaults to `false` and can also be sourced from the `ILERT_DEBUG` environment variable. Combine with `TF_LOG=DEBUG` to see the output. **Warning:** the debug output contains request and response bodies and other potentially sensitive data (the `Authorization` header is masked). Do not share these logs or persist them in CI. Only enable `debug` in trusted environments.
+
+- `early_access_enabled` - (Optional) The [early access](#early-access) resources to enable, each together with its data source, for example `["ilert_agent", "ilert_credential"]`. None is enabled by default, and the value cannot be set with an environment variable.
+
+## Early access
+
+~> **Early access** Some resources are built on [early access APIs](https://docs.ilert.com/developer-docs/rest-api/api-reference/introduction/early-access) of ilert, which may change or be removed. So may the resources, even in a minor version of the provider. They are disabled by default: to use one, add its name to `early_access_enabled` in the provider configuration. A configuration that uses one that is not enabled fails at plan time, before anything is created. Each has to be enabled on its own, so enabling one does not enable the next one added to the provider.
+
+```hcl
+provider "ilert" {
+  api_token            = "your api token, excluding Bearer prefix"
+  early_access_enabled = ["ilert_agent", "ilert_credential"]
+}
+```
+
+The early access resources, each with its data source, are:
+
+- [`ilert_agent`](r/agent.html)
+- [`ilert_credential`](r/credential.html)
+
+A resource that leaves early access is enabled by default from then on, and its name stays accepted in `early_access_enabled` until the next major version of the provider.
