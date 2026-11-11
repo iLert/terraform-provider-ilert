@@ -20,6 +20,12 @@ var resourceRegistry = map[string]struct {
 	factory     func() any
 	transformer Transformer
 }{
+	"ilert_agent": {
+		factory: func() any { return &ilert.Agent{} },
+		transformer: func(e any, d *schema.ResourceData) error {
+			return transformAgentResource(e.(*ilert.Agent), d)
+		},
+	},
 	"ilert_alert_action": {
 		factory: func() any { return &ilert.AlertActionOutput{} },
 		transformer: func(e any, d *schema.ResourceData) error {
@@ -42,6 +48,12 @@ var resourceRegistry = map[string]struct {
 		factory: func() any { return &ilert.ConnectorOutput{} },
 		transformer: func(e any, d *schema.ResourceData) error {
 			return transformConnectorResource(e.(*ilert.ConnectorOutput), d)
+		},
+	},
+	"ilert_credential": {
+		factory: func() any { return &ilert.Credential{} },
+		transformer: func(e any, d *schema.ResourceData) error {
+			return transformCredentialResource(e.(*ilert.Credential), d)
 		},
 	},
 	"ilert_deployment_pipeline": {
@@ -145,6 +157,8 @@ var resourceRegistry = map[string]struct {
 
 func getResourceType(resourceType string) string {
 	switch resourceType {
+	case "AGENT":
+		return "ilert_agent"
 	case "ALERT_ACTION":
 		return "ilert_alert_action"
 	case "ALERT_SOURCE":
@@ -153,6 +167,8 @@ func getResourceType(resourceType string) string {
 		return "ilert_call_flow"
 	case "ALERT_ACTION_CONNECTOR":
 		return "ilert_connector"
+	case "CUSTOMER_CREDENTIAL":
+		return "ilert_credential"
 	case "DEPLOYMENT_PIPELINE":
 		return "ilert_deployment_pipeline"
 	case "ESCALATION_POLICY":

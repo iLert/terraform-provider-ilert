@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/iLert/ilert-go/v4"
 )
 
@@ -46,15 +47,29 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("ILERT_DEBUG", false),
 				Description: "Enable full request/response tracing (method, URL, headers, body) to diagnose API issues such as WAF/proxy blocks. Can also be enabled via the ILERT_DEBUG environment variable. WARNING: the resulting debug logs contain request and response bodies and other potentially sensitive data (the Authorization header is masked) - do not share them or commit them to CI logs.",
 			},
+			"early_access_enabled": {
+				// a set of names, not a switch: opting in to one early access resource
+				// does not opt in to the next. Not read from the environment, so the
+				// opt-in is part of the configuration that uses the resource.
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringInSlice(earlyAccessResources, false),
+				},
+				Description: "The early access resources to enable, each with its data source: ilert_agent and ilert_credential. They may change or be removed, even in a minor version, while they are in early access, and a resource that leaves early access stays accepted here until the next major version.",
+			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"ilert_account":                   dataSourceAccount(),
+			"ilert_agent":                     dataSourceAgent(),
 			"ilert_alert_action":              dataSourceAlertAction(),
 			"ilert_alert_source":              dataSourceAlertSource(),
 			"ilert_event_flow":                dataSourceEventFlow(),
 			"ilert_event_flow_integration":    dataSourceEventFlowIntegration(),
 			"ilert_connection":                dataSourceConnection(),
 			"ilert_connector":                 dataSourceConnector(),
+			"ilert_credential":                dataSourceCredential(),
 			"ilert_deployment_pipeline":       dataSourceDeploymentPipeline(),
 			"ilert_escalation_policy":         dataSourceEscalationPolicy(),
 			"ilert_heartbeat_monitor":         dataSourceHeartbeatMonitor(),
@@ -75,6 +90,7 @@ func Provider() *schema.Provider {
 			"ilert_user_phone_number_contact": dataSourceUserPhoneNumberContact(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
+			"ilert_agent":                          resourceAgent(),
 			"ilert_alert_action":                   resourceAlertAction(),
 			"ilert_alert_action_source_attachment": resourceAlertActionSourceAttachment(),
 			"ilert_alert_source":                   resourceAlertSource(),
@@ -84,6 +100,7 @@ func Provider() *schema.Provider {
 			"ilert_event_flow_integration":         resourceEventFlowIntegration(),
 			"ilert_connection":                     resourceConnection(),
 			"ilert_connector":                      resourceConnector(),
+			"ilert_credential":                     resourceCredential(),
 			"ilert_deployment_pipeline":            resourceDeploymentPipeline(),
 			"ilert_escalation_policy":              resourceEscalationPolicy(),
 			"ilert_heartbeat_monitor":              resourceHeartbeatMonitor(),
@@ -140,6 +157,13 @@ func providerConfigure(_ context.Context, d *schema.ResourceData, terraformVersi
 		log.Printf("[DEBUG] ilert: debug tracing enabled - full request/response details will be logged")
 		ilert.WithDebug(true)(client)
 	}
+	if val, ok := d.GetOk("early_access_enabled"); ok {
+		apis := make([]string, 0)
+		for _, typeName := range val.(*schema.Set).List() {
+			apis = append(apis, earlyAccessAPIs[typeName.(string)])
+		}
+		ilert.WithEarlyAccess(apis...)(client)
+	}
 	if apiToken != "" {
 		ilert.WithAPIToken(apiToken)(client)
 	} else if organization != "" && username != "" && password != "" {
@@ -153,4 +177,24 @@ func providerConfigure(_ context.Context, d *schema.ResourceData, terraformVersi
 		return nil, diags
 	}
 	return client, nil
+}
+
+// earlyAccessAPIs maps the early access resources, each with its data source, to
+// the early access API of ilert-go they call
+var earlyAccessAPIs = map[string]string{
+	"ilert_agent":      ilert.EarlyAccess.Agents,
+	"ilert_credential": ilert.EarlyAccess.Credentials,
+}
+
+// earlyAccessResources are the names early_access_enabled takes
+var earlyAccessResources = []string{"ilert_agent", "ilert_credential"}
+
+// requireEarlyAccess fails the early access resource or data source typeName while
+// it is not in early_access_enabled. Without a configured client nothing is checked
+// here, ilert-go refuses the call itself.
+func requireEarlyAccess(m any, typeName string) error {
+	if client, ok := m.(*ilert.Client); ok && !client.EarlyAccessEnabled(earlyAccessAPIs[typeName]) {
+		return fmt.Errorf("%[1]s is an early access resource of the ilert API, and must be enabled by adding %[1]q to early_access_enabled in the provider configuration", typeName)
+	}
+	return nil
 }
