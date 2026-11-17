@@ -59,4 +59,6 @@ The early access resources, each with its data source, are:
 - [`ilert_agent`](r/agent.html)
 - [`ilert_credential`](r/credential.html)
 
+A configuration exported from the web app with "Export to Terraform" contains only the resources, so add the early access resources it uses to `early_access_enabled` in your provider configuration.
+
 A resource that leaves early access is enabled by default from then on, and its name stays accepted in `early_access_enabled` until the next major version of the provider.
