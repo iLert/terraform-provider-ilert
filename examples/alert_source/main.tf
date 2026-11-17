@@ -57,6 +57,34 @@ resource "ilert_alert_source" "example_with_support_hours" {
   }
 }
 
+resource "ilert_support_hour" "example" {
+  name     = "example"
+  timezone = "Europe/Berlin"
+  support_days {
+    monday {
+      start = "08:00"
+      end   = "17:00"
+    }
+
+    friday {
+      start = "08:00"
+      end   = "17:00"
+    }
+  }
+}
+
+resource "ilert_alert_source" "example_with_referenced_support_hours" {
+  name                = "My Grafana Integration from terraform with referenced support hours"
+  integration_type    = "GRAFANA"
+  escalation_policy   = ilert_escalation_policy.example.id
+  alert_priority_rule = "HIGH_DURING_SUPPORT_HOURS"
+  auto_raise_alerts   = true
+
+  support_hours {
+    id = ilert_support_hour.example.id
+  }
+}
+
 resource "ilert_alert_source" "example_email" {
   name              = "My Email Integration from terraform"
   integration_type  = "EMAIL2"
