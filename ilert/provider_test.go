@@ -58,9 +58,9 @@ func TestProviderConfiguresEarlyAccess(t *testing.T) {
 		enabled []any
 		want    map[string]bool
 	}{
-		{"off by default", nil, map[string]bool{"ilert_agent": false, "ilert_credential": false}},
-		{"one API", []any{"agents"}, map[string]bool{"ilert_agent": true, "ilert_credential": false}},
-		{"both", []any{"agents", "credentials"}, map[string]bool{"ilert_agent": true, "ilert_credential": true}},
+		{"off by default", nil, map[string]bool{"ilert_action": false, "ilert_agent": false, "ilert_credential": false}},
+		{"one API", []any{"agents"}, map[string]bool{"ilert_action": false, "ilert_agent": true, "ilert_credential": false}},
+		{"all", []any{"actions", "agents", "credentials"}, map[string]bool{"ilert_action": true, "ilert_agent": true, "ilert_credential": true}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			config := map[string]any{"api_token": "test-token"}
@@ -107,6 +107,7 @@ func TestEarlyAccessResourcesAreMapped(t *testing.T) {
 
 	client := ilertapi.NewClient(ilertapi.WithAPIToken("test-token"))
 	calls := map[string]func() error{
+		"ilert_action":     func() error { _, err := client.GetActions(nil); return err },
 		"ilert_agent":      func() error { _, err := client.GetAgents(nil); return err },
 		"ilert_credential": func() error { _, err := client.GetCredentials(nil); return err },
 	}
@@ -150,7 +151,7 @@ func TestEarlyAccessResourcesNeedTheProviderOptIn(t *testing.T) {
 		return nil
 	}
 
-	for typeName, r := range map[string]*schema.Resource{"ilert_agent": resourceAgent(), "ilert_credential": resourceCredential()} {
+	for typeName, r := range map[string]*schema.Resource{"ilert_action": resourceAction(), "ilert_agent": resourceAgent(), "ilert_credential": resourceCredential()} {
 		d := r.TestResourceData()
 		d.SetId("1")
 
@@ -164,14 +165,16 @@ func TestEarlyAccessResourcesNeedTheProviderOptIn(t *testing.T) {
 		_, err := r.Exists(d, client)
 		expectRefused(typeName+" exists", typeName, err)
 	}
-	// the agent import passes the id through to the read, the credential import
-	// reads the credential itself
-	d := resourceCredential().TestResourceData()
-	d.SetId("1")
-	_, err := resourceCredential().Importer.StateContext(ctx, d, client)
-	expectRefused("ilert_credential import", "ilert_credential", err)
+	// the agent import passes the id through to the read, the credential and action
+	// imports read it themselves
+	for typeName, r := range map[string]*schema.Resource{"ilert_action": resourceAction(), "ilert_credential": resourceCredential()} {
+		d := r.TestResourceData()
+		d.SetId("1")
+		_, err := r.Importer.StateContext(ctx, d, client)
+		expectRefused(typeName+" import", typeName, err)
+	}
 
-	for typeName, r := range map[string]*schema.Resource{"ilert_agent": dataSourceAgent(), "ilert_credential": dataSourceCredential()} {
+	for typeName, r := range map[string]*schema.Resource{"ilert_action": dataSourceAction(), "ilert_agent": dataSourceAgent(), "ilert_credential": dataSourceCredential()} {
 		d := r.TestResourceData()
 		d.Set("name", "triage")
 		expectRefused("data source "+typeName, typeName, diagErr(r.ReadContext(ctx, d, client)))

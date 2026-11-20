@@ -24,10 +24,11 @@ func TestGetResourceInfo_TelemetrySource(t *testing.T) {
 	}
 }
 
-// AGENT and CUSTOMER_CREDENTIAL are the entity types the API reports for agents and
-// credentials.
-func TestGetResourceInfo_AgentAndCredential(t *testing.T) {
+// GLOBAL_ACTION, AGENT and CUSTOMER_CREDENTIAL are the entity types the API reports
+// for actions, agents and credentials.
+func TestGetResourceInfo_ActionAgentAndCredential(t *testing.T) {
 	for entityType, resourceType := range map[string]string{
+		"GLOBAL_ACTION":       "ilert_action",
 		"AGENT":               "ilert_agent",
 		"CUSTOMER_CREDENTIAL": "ilert_credential",
 	} {

@@ -20,6 +20,12 @@ var resourceRegistry = map[string]struct {
 	factory     func() any
 	transformer Transformer
 }{
+	"ilert_action": {
+		factory: func() any { return &ilert.Action{} },
+		transformer: func(e any, d *schema.ResourceData) error {
+			return transformActionResource(e.(*ilert.Action), d)
+		},
+	},
 	"ilert_agent": {
 		factory: func() any { return &ilert.Agent{} },
 		transformer: func(e any, d *schema.ResourceData) error {
@@ -169,6 +175,8 @@ func getResourceType(resourceType string) string {
 		return "ilert_connector"
 	case "CUSTOMER_CREDENTIAL":
 		return "ilert_credential"
+	case "GLOBAL_ACTION":
+		return "ilert_action"
 	case "DEPLOYMENT_PIPELINE":
 		return "ilert_deployment_pipeline"
 	case "ESCALATION_POLICY":

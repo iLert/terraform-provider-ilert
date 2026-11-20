@@ -56,6 +56,7 @@ provider "ilert" {
 
 The early access APIs, and the resources and data sources built on them, are:
 
+- `actions`: [`ilert_action`](r/action.html)
 - `agents`: [`ilert_agent`](r/agent.html)
 - `credentials`: [`ilert_credential`](r/credential.html)
 

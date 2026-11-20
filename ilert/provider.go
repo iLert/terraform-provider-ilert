@@ -57,11 +57,12 @@ func Provider() *schema.Provider {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringInSlice(earlyAccessAPIs, false),
 				},
-				Description: "The early access APIs of ilert to enable, each named after its path under /api/beta: agents for ilert_agent and credentials for ilert_credential, each with its data source. They may change or be removed, even in a minor version, while they are in early access, and the name of an API that leaves early access stays accepted here, without effect.",
+				Description: "The early access APIs of ilert to enable, each named after its path under /api/beta: actions for ilert_action, agents for ilert_agent and credentials for ilert_credential, each with its data source. They may change or be removed, even in a minor version, while they are in early access, and the name of an API that leaves early access stays accepted here, without effect.",
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"ilert_account":                   dataSourceAccount(),
+			"ilert_action":                    dataSourceAction(),
 			"ilert_agent":                     dataSourceAgent(),
 			"ilert_alert_action":              dataSourceAlertAction(),
 			"ilert_alert_source":              dataSourceAlertSource(),
@@ -90,6 +91,7 @@ func Provider() *schema.Provider {
 			"ilert_user_phone_number_contact": dataSourceUserPhoneNumberContact(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
+			"ilert_action":                         resourceAction(),
 			"ilert_agent":                          resourceAgent(),
 			"ilert_alert_action":                   resourceAlertAction(),
 			"ilert_alert_action_source_attachment": resourceAlertActionSourceAttachment(),
@@ -183,11 +185,12 @@ func providerConfigure(_ context.Context, d *schema.ResourceData, terraformVersi
 // ilert, each named after its path under /api/beta, as in ilert-go. The name of an
 // API that leaves early access stays here, so configurations that list it keep
 // working.
-var earlyAccessAPIs = []string{"agents", "credentials"}
+var earlyAccessAPIs = []string{"actions", "agents", "credentials"}
 
 // earlyAccessResources maps the early access resources, each with its data source,
 // to the early access API they call
 var earlyAccessResources = map[string]string{
+	"ilert_action":     "actions",
 	"ilert_agent":      "agents",
 	"ilert_credential": "credentials",
 }
