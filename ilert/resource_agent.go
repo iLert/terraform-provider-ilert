@@ -172,7 +172,7 @@ func resourceAgent() *schema.Resource {
 	}
 }
 
-// resourceAgentCustomizeDiff fails the plan of an agent while ilert_agent is not in
+// resourceAgentCustomizeDiff fails the plan of an agent while agents are not in
 // early_access_enabled, before anything is created
 func resourceAgentCustomizeDiff(_ context.Context, _ *schema.ResourceDiff, m any) error {
 	return requireEarlyAccess(m, "ilert_agent")

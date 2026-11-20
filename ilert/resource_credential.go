@@ -574,8 +574,8 @@ type planValues interface {
 	HasChanges(keys ...string) bool
 }
 
-// validateCredentialDiff fails the plan of a credential while ilert_credential is
-// not in early_access_enabled, then checks its arguments
+// validateCredentialDiff fails the plan of a credential while credentials are not
+// in early_access_enabled, then checks its arguments
 func validateCredentialDiff(_ context.Context, d *schema.ResourceDiff, m any) error {
 	if err := requireEarlyAccess(m, "ilert_credential"); err != nil {
 		return err
