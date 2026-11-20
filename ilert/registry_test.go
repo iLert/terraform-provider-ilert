@@ -23,3 +23,24 @@ func TestGetResourceInfo_TelemetrySource(t *testing.T) {
 		t.Fatal("Schema is nil")
 	}
 }
+
+// GLOBAL_ACTION, AGENT and CUSTOMER_CREDENTIAL are the entity types the API reports
+// for actions, agents and credentials.
+func TestGetResourceInfo_ActionAgentAndCredential(t *testing.T) {
+	for entityType, resourceType := range map[string]string{
+		"GLOBAL_ACTION":       "ilert_action",
+		"AGENT":               "ilert_agent",
+		"CUSTOMER_CREDENTIAL": "ilert_credential",
+	} {
+		info, err := GetResourceInfo(entityType)
+		if err != nil {
+			t.Fatalf("%s: unexpected error: %v", entityType, err)
+		}
+		if info.ResourceType != resourceType {
+			t.Fatalf("%s: ResourceType = %q, want %s", entityType, info.ResourceType, resourceType)
+		}
+		if info.NewEntity() == nil || info.Transformer == nil || info.Schema == nil {
+			t.Fatalf("%s: registry entry is incomplete", entityType)
+		}
+	}
+}
