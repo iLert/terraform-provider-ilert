@@ -11,7 +11,7 @@ description: |-
 
 Use this data source to get information about a specific [credential](../r/credential.html), for example to attach a credential created in the web app to an agent.
 
-~> **Early access:** credentials are an [early access](https://docs.ilert.com/developer-docs/rest-api/api-reference/introduction/early-access) resource of the ilert API, and disabled by default: add `"ilert_credential"` to `early_access_enabled` in the [provider configuration](../index.html#early-access) to use this data source and its resource. They may change or be removed, and so may this data source, even in a minor version of the provider.
+~> **Early access:** credentials are an [early access](https://docs.ilert.com/developer-docs/rest-api/api-reference/introduction/early-access) resource of the ilert API, and disabled by default: add `"credentials"` (for `/api/beta/credentials`) to `early_access_enabled` in the [provider configuration](../index.html#early-access) to use this data source and its resource. They may change or be removed, and so may this data source, even in a minor version of the provider.
 
 ## Example Usage
 

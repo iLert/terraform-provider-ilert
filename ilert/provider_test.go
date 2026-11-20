@@ -2,6 +2,7 @@ package ilert
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -49,8 +50,8 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
-// early_access_enabled opts in to each early access resource on its own, and
-// nothing is enabled by default
+// early_access_enabled opts in to each early access API on its own, and nothing is
+// enabled by default
 func TestProviderConfiguresEarlyAccess(t *testing.T) {
 	for _, tc := range []struct {
 		name    string
@@ -58,8 +59,8 @@ func TestProviderConfiguresEarlyAccess(t *testing.T) {
 		want    map[string]bool
 	}{
 		{"off by default", nil, map[string]bool{"ilert_agent": false, "ilert_credential": false}},
-		{"one resource", []any{"ilert_agent"}, map[string]bool{"ilert_agent": true, "ilert_credential": false}},
-		{"both", []any{"ilert_agent", "ilert_credential"}, map[string]bool{"ilert_agent": true, "ilert_credential": true}},
+		{"one API", []any{"agents"}, map[string]bool{"ilert_agent": true, "ilert_credential": false}},
+		{"both", []any{"agents", "credentials"}, map[string]bool{"ilert_agent": true, "ilert_credential": true}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			config := map[string]any{"api_token": "test-token"}
@@ -80,27 +81,42 @@ func TestProviderConfiguresEarlyAccess(t *testing.T) {
 		})
 	}
 
-	// a name that is not an early access resource is rejected at plan time
-	config := terraform.NewResourceConfigRaw(map[string]any{"api_token": "test-token", "early_access_enabled": []any{"ilert_agents"}})
-	if diags := Provider().Validate(config); !diags.HasError() {
-		t.Error("early_access_enabled accepted ilert_agents, want only the early access resources")
+	// a name that is not an early access API is rejected at plan time, the names of
+	// the resources included
+	for _, name := range []string{"agent", "ilert_agent"} {
+		config := terraform.NewResourceConfigRaw(map[string]any{"api_token": "test-token", "early_access_enabled": []any{name}})
+		if diags := Provider().Validate(config); !diags.HasError() {
+			t.Errorf("early_access_enabled accepted %s, want only the early access APIs", name)
+		}
 	}
 }
 
-// Every name early_access_enabled takes is an early access resource with a data
-// source of the same name, mapped to the ilert-go API it calls
+// Every early access resource has a data source of the same name, and is mapped to
+// a name early_access_enabled takes, the one ilert-go refuses its calls under: the
+// path of its API under /api/beta
 func TestEarlyAccessResourcesAreMapped(t *testing.T) {
 	p := Provider()
-	if len(earlyAccessAPIs) != len(earlyAccessResources) {
-		t.Errorf("%d resources take early_access_enabled, %d are mapped to an API", len(earlyAccessResources), len(earlyAccessAPIs))
-	}
-	for _, typeName := range earlyAccessResources {
-		api, ok := earlyAccessAPIs[typeName]
-		if !ok || !slices.Contains(ilertapi.EarlyAccessAll, api) {
-			t.Errorf("%s is mapped to %q, want an early access API of ilert-go", typeName, api)
+	for typeName, api := range earlyAccessResources {
+		if !slices.Contains(earlyAccessAPIs, api) {
+			t.Errorf("%s is mapped to %q, which early_access_enabled does not take", typeName, api)
 		}
 		if p.ResourcesMap[typeName] == nil || p.DataSourcesMap[typeName] == nil {
 			t.Errorf("%s is not registered as both a resource and a data source", typeName)
+		}
+	}
+
+	client := ilertapi.NewClient(ilertapi.WithAPIToken("test-token"))
+	calls := map[string]func() error{
+		"ilert_agent":      func() error { _, err := client.GetAgents(nil); return err },
+		"ilert_credential": func() error { _, err := client.GetCredentials(nil); return err },
+	}
+	if len(calls) != len(earlyAccessResources) {
+		t.Errorf("%d early access resources, %d are checked against ilert-go", len(earlyAccessResources), len(calls))
+	}
+	for typeName, call := range calls {
+		var disabled *ilertapi.EarlyAccessDisabledError
+		if err := call(); !errors.As(err, &disabled) || disabled.API != earlyAccessResources[typeName] {
+			t.Errorf("%s: ilert-go refused with %v, want the API %q", typeName, err, earlyAccessResources[typeName])
 		}
 	}
 }
@@ -120,7 +136,7 @@ func TestEarlyAccessResourcesNeedTheProviderOptIn(t *testing.T) {
 
 	expectRefused := func(what, typeName string, err error) {
 		t.Helper()
-		want := fmt.Sprintf("must be enabled by adding %q to early_access_enabled", typeName)
+		want := fmt.Sprintf("must be enabled by adding %q to early_access_enabled", earlyAccessResources[typeName])
 		if err == nil || !strings.Contains(err.Error(), want) {
 			t.Errorf("%s: err = %v, want it to say it %s", what, err, want)
 		}
@@ -166,11 +182,11 @@ func TestEarlyAccessResourcesNeedTheProviderOptIn(t *testing.T) {
 	}
 
 	// enabling one does not enable the other
-	ilertapi.WithEarlyAccess(ilertapi.EarlyAccess.Agents)(client)
+	ilertapi.WithEarlyAccess("agents")(client)
 	if err := requireEarlyAccess(client, "ilert_agent"); err != nil {
-		t.Errorf("ilert_agent enabled: err = %v, want none", err)
+		t.Errorf("agents enabled: err = %v, want none", err)
 	}
-	expectRefused("ilert_credential while only ilert_agent is enabled", "ilert_credential", requireEarlyAccess(client, "ilert_credential"))
+	expectRefused("ilert_credential while only agents are enabled", "ilert_credential", requireEarlyAccess(client, "ilert_credential"))
 
 	if err := requireEarlyAccess(nil, "ilert_agent"); err != nil {
 		t.Errorf("no configured client: err = %v, want none, ilert-go refuses the call itself", err)

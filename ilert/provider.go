@@ -48,16 +48,16 @@ func Provider() *schema.Provider {
 				Description: "Enable full request/response tracing (method, URL, headers, body) to diagnose API issues such as WAF/proxy blocks. Can also be enabled via the ILERT_DEBUG environment variable. WARNING: the resulting debug logs contain request and response bodies and other potentially sensitive data (the Authorization header is masked) - do not share them or commit them to CI logs.",
 			},
 			"early_access_enabled": {
-				// a set of names, not a switch: opting in to one early access resource
-				// does not opt in to the next. Not read from the environment, so the
-				// opt-in is part of the configuration that uses the resource.
+				// a set of names, not a switch: opting in to one early access API does
+				// not opt in to the next. Not read from the environment, so the opt-in
+				// is part of the configuration that uses the resource.
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(earlyAccessResources, false),
+					ValidateFunc: validation.StringInSlice(earlyAccessAPIs, false),
 				},
-				Description: "The early access resources to enable, each with its data source: ilert_agent and ilert_credential. They may change or be removed, even in a minor version, while they are in early access, and a resource that leaves early access stays accepted here until the next major version.",
+				Description: "The early access APIs of ilert to enable, each named after its path under /api/beta: agents for ilert_agent and credentials for ilert_credential, each with its data source. They may change or be removed, even in a minor version, while they are in early access, and the name of an API that leaves early access stays accepted here, without effect.",
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
@@ -159,8 +159,8 @@ func providerConfigure(_ context.Context, d *schema.ResourceData, terraformVersi
 	}
 	if val, ok := d.GetOk("early_access_enabled"); ok {
 		apis := make([]string, 0)
-		for _, typeName := range val.(*schema.Set).List() {
-			apis = append(apis, earlyAccessAPIs[typeName.(string)])
+		for _, api := range val.(*schema.Set).List() {
+			apis = append(apis, api.(string))
 		}
 		ilert.WithEarlyAccess(apis...)(client)
 	}
@@ -179,22 +179,26 @@ func providerConfigure(_ context.Context, d *schema.ResourceData, terraformVersi
 	return client, nil
 }
 
-// earlyAccessAPIs maps the early access resources, each with its data source, to
-// the early access API of ilert-go they call
-var earlyAccessAPIs = map[string]string{
-	"ilert_agent":      ilert.EarlyAccess.Agents,
-	"ilert_credential": ilert.EarlyAccess.Credentials,
+// earlyAccessAPIs are the names early_access_enabled takes: the early access APIs of
+// ilert, each named after its path under /api/beta, as in ilert-go. The name of an
+// API that leaves early access stays here, so configurations that list it keep
+// working.
+var earlyAccessAPIs = []string{"agents", "credentials"}
+
+// earlyAccessResources maps the early access resources, each with its data source,
+// to the early access API they call
+var earlyAccessResources = map[string]string{
+	"ilert_agent":      "agents",
+	"ilert_credential": "credentials",
 }
 
-// earlyAccessResources are the names early_access_enabled takes
-var earlyAccessResources = []string{"ilert_agent", "ilert_credential"}
-
 // requireEarlyAccess fails the early access resource or data source typeName while
-// it is not in early_access_enabled. Without a configured client nothing is checked
-// here, ilert-go refuses the call itself.
+// its API is not in early_access_enabled. Without a configured client nothing is
+// checked here, ilert-go refuses the call itself.
 func requireEarlyAccess(m any, typeName string) error {
-	if client, ok := m.(*ilert.Client); ok && !client.EarlyAccessEnabled(earlyAccessAPIs[typeName]) {
-		return fmt.Errorf("%[1]s is an early access resource of the ilert API, and must be enabled by adding %[1]q to early_access_enabled in the provider configuration", typeName)
+	api := earlyAccessResources[typeName]
+	if client, ok := m.(*ilert.Client); ok && !client.EarlyAccessEnabled(api) {
+		return fmt.Errorf("%s is an early access resource of the ilert API, and must be enabled by adding %q to early_access_enabled in the provider configuration", typeName, api)
 	}
 	return nil
 }

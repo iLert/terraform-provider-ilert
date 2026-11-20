@@ -10,5 +10,5 @@ terraform {
 provider "ilert" {
   endpoint             = var.endpoint
   api_token            = var.api_token
-  early_access_enabled = ["ilert_agent", "ilert_credential"]
+  early_access_enabled = ["agents", "credentials"]
 }
