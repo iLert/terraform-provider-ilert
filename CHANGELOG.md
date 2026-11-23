@@ -1,6 +1,6 @@
 # Changelog
 
-## 17.11.2026, Version 2.31.0
+## 23.11.2026, Version 2.31.0
 
 - add the `ilert_agent` resource and data source, an AI agent with the MCP servers it can call tools on, their tools and the values of tool inputs it is given. Agents are early access: the provider calls the API at `/api/beta/agents` with the `ilert-beta` header it requires there, with `ilert-go` v4.3.0, and it may change or be removed while it is in early access [#174](https://github.com/iLert/terraform-provider-ilert/pull/174)
 - the API replaces an agent with what an update sends and clears most of what it leaves out, so the provider reads the agent before every update and sends back what it does not manage: the avatar, the settings the resource has no argument for, such as the additional instructions and the policy for root cause investigations, and the teams, MCP servers and tools while they are not declared, the MCP servers and tools exactly as the API returned them. Like teams, `mcp_server` and `mcp_tool` are managed once a block is declared, so an agent set up in the web app can be taken over in parts [#174](https://github.com/iLert/terraform-provider-ilert/pull/174)
