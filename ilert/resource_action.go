@@ -125,8 +125,9 @@ func resourceAction() *schema.Resource {
 				DiffSuppressFunc: suppressEquivalentJSON,
 			},
 			"credential_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[0-9]+$`), "must be the id of a credential"),
 			},
 			"bidirectional": {
 				Type:     schema.TypeBool,
@@ -483,11 +484,17 @@ func fetchAction(ctx context.Context, client *ilert.Client, id string, timeout t
 	return action, nil
 }
 
+// actionsUnavailableMessage is matched in the message of the 404 the API answers an
+// account without actions with, "Global actions are not available for this account".
+// That 404 carries no code of its own to tell it from a deleted action, so this has
+// to change along with the message of the API.
+const actionsUnavailableMessage = "not available"
+
 // actionsUnavailable turns the 404 of an account without actions into an error that
 // says so, instead of the not found that would remove the action from the state
 func actionsUnavailable(err error) error {
 	var notFound *ilert.NotFoundAPIError
-	if errors.As(err, &notFound) && strings.Contains(notFound.Message, "not available") {
+	if errors.As(err, &notFound) && strings.Contains(notFound.Message, actionsUnavailableMessage) {
 		return fmt.Errorf("actions are not available for this ilert account, they are enabled account by account while they are in early access: %s", notFound.Message)
 	}
 	return err

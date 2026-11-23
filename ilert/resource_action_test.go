@@ -228,3 +228,15 @@ func TestActionsUnavailableAndMirrors(t *testing.T) {
 		t.Errorf("mirror of an alert action: err = %v, want it refused", err)
 	}
 }
+
+func TestActionCredentialIDIsValidatedAtPlan(t *testing.T) {
+	validate := resourceAction().Schema["credential_id"].ValidateFunc
+	if _, errs := validate("189530", "credential_id"); len(errs) != 0 {
+		t.Errorf("an id was refused: %v", errs)
+	}
+	for _, bad := range []string{"abc", "12a", "-1", " 1"} {
+		if _, errs := validate(bad, "credential_id"); len(errs) == 0 {
+			t.Errorf("credential_id %q was accepted, want it refused at plan time", bad)
+		}
+	}
+}
