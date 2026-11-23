@@ -131,7 +131,7 @@ The following arguments are supported:
 
 ### Condition and permissions
 
-ilert checks the condition against the user of the API token. A user who is not an admin has to restrict every `or` branch of it to alerts or incidents they can reach: for alerts their teams (`entity.teamIds`) or alert sources they can read (`entity.source.id`), for incidents their teams or services they can read (`entity.serviceIds`), with the IDs as strings, such as `entity.source.id in ["1234"]`.
+ilert checks the condition against the user of the API token. A user who is not an admin has to restrict every `or` branch of it to alerts or incidents they can reach: for alerts their teams, as in `entity.teamIds contains_any ["12"]`, or alert sources they can read, as in `entity.source.id in ["1234"]`, and for incidents their teams or services they can read, as in `entity.serviceIds contains_any ["56"]`. The IDs are strings, and teams and services only restrict the condition with `contains_any`.
 
 An action without a condition, whose template does not set one either, runs on every alert or every incident of the account, those of alert sources and services created later included. Only one enabled `AUTOMATIC` action per entity kind may run without a condition.
 
